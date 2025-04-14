@@ -1,29 +1,39 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
 import BottomPlayer from "./BottomPlayer";
-import "./layout.css";
 import PlaylistContent from "../playlist/playlistcontent";
 import Rightbar from "../sidebar/rightbar/rightbar";
 import Sidebar from "../sidebar/leftbar/sidebar";
 import ContentPlaylist from "../listContent/contentPlaylist";
+import UserProfile from "../../pages/UserProfile/UserProfile";
 import TopBar from "./TopBar";
 
 const Layout = () => {
-  console.log("Layout is rendering"); // Log để debug
   return (
-    <div className="layout">
-      <TopBar />
-      {/* Thêm div bọc phần chính để đảm bảo top-bar không che mất nội dung */}
-      <div className="main-container">
+    <div className="flex flex-col h-screen bg-black text-white">
+      {/* Top Bar */}
+      <div className="fixed top-0 left-0 w-full z-10">
+        <TopBar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden pt-16 pb-16">
+        {/* Sidebar */}
         <Sidebar />
-        <div className="main-content">
-          <PlaylistContent />
+
+        {/* Playlist Content */}
+        <div className="flex-1 overflow-y-auto">
           {/* <ContentPlaylist /> */}
-          <Outlet /> {/* Điểm render các route con */}
+          <PlaylistContent />
         </div>
+
+        {/* Rightbar */}
         <Rightbar />
       </div>
-      <BottomPlayer />
+
+      {/* Bottom Player */}
+      <div className="fixed bottom-0 left-0 w-full z-10">
+        <BottomPlayer />
+      </div>
     </div>
   );
 };

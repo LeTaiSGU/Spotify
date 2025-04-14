@@ -18,12 +18,13 @@ const MusicSession = () => {
   const scroll = (ref, direction) => {
     if (ref.current) {
       const scrollAmount = 300;
-      ref.current.scrollLeft += direction === "left" ? -scrollAmount : scrollAmount;
+      ref.current.scrollLeft +=
+        direction === "left" ? -scrollAmount : scrollAmount;
     }
   };
 
   return (
-    <div className="p-5">
+    <div className="p-5 bg-[#121212] rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
       <div className="relative w-full">
         <button
@@ -33,10 +34,17 @@ const MusicSession = () => {
           <LeftOutlined />
         </button>
 
-        <div ref={recommendedRef} className="flex gap-4 overflow-x-auto hidden-scrollbar scroll-smooth px-12">
+        <div
+          ref={recommendedRef}
+          className="flex gap-4 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
+        >
           {sessions.recommended.map((song) => (
             <Card key={song.id} className="w-40 flex-shrink-0">
-              <img src={song.cover} alt={song.title} className="w-40 h-20 object-cover" />
+              <img
+                src={song.cover}
+                alt={song.title}
+                className="w-40 h-20 object-cover"
+              />
               <h3 className="mt-2 text-lg">{song.title}</h3>
               <p className="text-sm text-gray-500">{song.artist}</p>
             </Card>
@@ -60,10 +68,17 @@ const MusicSession = () => {
           <LeftOutlined />
         </button>
 
-        <div ref={topChartsRef} className="flex gap-4 overflow-x-auto hidden-scrollbar scroll-smooth px-12">
+        <div
+          ref={topChartsRef}
+          className="flex gap-4 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
+        >
           {sessions.topCharts.map((song) => (
             <Card key={song.id} className="w-40 flex-shrink-0">
-              <img src={song.cover} alt={song.title} className="w-40 h-40 object-cover" />
+              <img
+                src={song.cover}
+                alt={song.title}
+                className="w-40 h-40 object-cover"
+              />
               <h3 className="mt-2 text-lg">{song.title}</h3>
               <p className="text-sm text-gray-500">{song.artist}</p>
             </Card>

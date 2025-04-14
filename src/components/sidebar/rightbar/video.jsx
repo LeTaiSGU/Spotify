@@ -3,7 +3,7 @@ import React from "react";
 const Video = () => {
   return (
     <video
-      className="h-[30%] w-[100%] rounded-lg my-25"
+      className="h-[30%] w-[100%] my-25"
       autoPlay
       muted
       playsInline
