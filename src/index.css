@@ -26,21 +26,21 @@ html {
   color: white;
 }
 
-
 .ant-popover-inner {
   color: var(--color-white-500) !important;
-  padding: 0  !important;
+  padding: 0 !important;
 }
 
 .ant-popover-arrow {
   display: none !important;
 }
 
-.ant-modal-content, .ant-modal-header, .ant-modal-title {
+.ant-modal-content,
+.ant-modal-header,
+.ant-modal-title {
   background-color: var(--color-zinc-900) !important;
   color: white !important;
 }
-
 
 :where(.ant-btn-primary) {
   background-color: var(--color-green-500) !important;
@@ -51,8 +51,6 @@ html {
   background-color: var(--color-green-600) !important;
   border-color: var(--color-green-600) !important;
 }
-
-
 
 @keyframes marquee {
   0% {
@@ -72,20 +70,23 @@ html {
 
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
-    width: 15px;
+    width: 12px; /* Độ rộng thanh cuộn */
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
+  /* Ẩn thanh cuộn mặc định */
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
+    background: transparent; /* Làm trong suốt */
     border-radius: 6px;
-    height: 40px; /* Giới hạn chiều dài của thanh cuộn */
+    height: 40px;
+    transition: background 0.3s ease-in-out;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  /* Hover vào phần container mới hiện thanh cuộn */
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .custom-scrollbar:hover::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
   }
 }

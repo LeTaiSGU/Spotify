@@ -19,16 +19,18 @@ const PasswordField = ({ password, setPassword, setIsPasswordValid }) => {
   }, [password, setIsPasswordValid]);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
+      <label htmlFor={""} className="block text-sm font-medium text-white">
+        {"Mật khẩu"}
+      </label>
       <div className="relative">
         <InputField
-          label={"Mật khẩu"}
           id="password"
           type={showPassword ? "text" : "password"}
           value={password}
           error={passwordError}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded border border-gray-600 bg-[#E8F0FE] px-3 py-2 text-black focus:border-white focus:outline-none"
+          placeholder={"Nhập mật khẩu của bạn"}
         />
         <PasswordToggleButton
           showPassword={showPassword}
