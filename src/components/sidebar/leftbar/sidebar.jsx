@@ -65,7 +65,7 @@ const Sidebar = () => {
     <div
       className={`flex flex-col h-full transition-[width] duration-300 ${
         isExpanded ? "w-[25%]" : "w-[20%]"
-      } mx-2 bg-[#121212] rounded-xl text-white`}
+      } mx-2 bg-stone-900 rounded-xl text-white`}
     >
       <SidebarHeader onToggle={toggleSidebar} isExpanded={isExpanded} />
 

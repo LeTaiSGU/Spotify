@@ -7,12 +7,12 @@ import ProfileHeader from "./ProfileHeader";
 
 function UserProfile() {
   return (
-    <div>
+    <div className="w-full">
       <ProfileHeader />
       <LessListSongs />
       <AvatarBar />
-      <MoreListSongs />
-      <AllAvatar />
+      {/* <MoreListSongs /> */}
+      {/* <AllAvatar /> */}
     </div>
   );
 }

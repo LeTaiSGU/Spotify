@@ -6,7 +6,7 @@ import Playlist from "./playlist";
 
 const PlaylistContent = () => {
   return (
-    <div className="flex flex-col h-full w-full rounded-xl bg-gradient-to-b from-[#6c04ab] to-[#1A0A12] text-white  overflow-auto custom-scrollbar">
+    <div className="flex flex-col w-full rounded-xl bg-gradient-to-b from-[#868588] to-[#1A0A12] text-white custom-scrollbar">
       <PlaylistHeader />
       <div className="flex flex-col h-full w-full p-4 bg-black/20 ">
         <div className="flex flex-row items-center gap-4 m-3">

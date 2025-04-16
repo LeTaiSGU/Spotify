@@ -2,11 +2,8 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import BottomPlayer from "./BottomPlayer";
 import "./layout.css";
-import PlaylistContent from "../playlist/playlistcontent";
 import Rightbar from "../sidebar/rightbar/rightbar";
 import Sidebar from "../sidebar/leftbar/sidebar";
-import ContentPlaylist from "../listContent/contentPlaylist";
-import UserProfile from "../../pages/UserProfile/UserProfile";
 import TopBar from "./TopBar";
 
 const Layout = () => {
@@ -17,13 +14,9 @@ const Layout = () => {
       <div className="main-container">
         <Sidebar />
         <div className="main-content">
-          <PlaylistContent />
-          {/* <ContentPlaylist /> */}
-          {/* <UserProfile /> */}
-          <Outlet />
+          <Outlet /> 
         </div>
         <Rightbar />
-
       </div>
       <BottomPlayer />
     </div>

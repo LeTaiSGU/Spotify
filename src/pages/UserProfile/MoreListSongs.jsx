@@ -59,7 +59,7 @@ const MusicList = () => {
   const [liked, setLiked] = useState(false);
 
   const content = (
-    <div className="w-64 bg-zinc-900 text-white rounded-lg shadow-lg p-2">
+    <div className="w-64 bg-gray-800 text-white rounded-lg shadow-lg p-2">
       <ul className="space-y-2">
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách phát</li>
         <li
@@ -79,7 +79,7 @@ const MusicList = () => {
   );
 
   return (
-    <div className="p-6 bg-zinc-950 min-h-screen text-white">
+    <div className="p-6 bg-stone-900 min-h-screen text-white w-full">
       <h2 className="text-3xl font-bold">Bản nhạc hàng đầu tháng này</h2>
       <p className="text-gray-400 text-sm">Chỉ hiển thị với bạn</p>
 

@@ -35,14 +35,14 @@ function AllAvatar() {
   }, []);
 
   return (
-    <div className="bg-zinc-950 min-h-screen p-8 text-white">
+    <div className="bg-stone-900 min-h-screen p-8 text-white">
       <h1 className="text-3xl font-bold mb-2">Nghệ sĩ hàng đầu tháng này</h1>
       <p className="text-gray-400 mb-6">Chỉ hiển thị với bạn</p>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {mockData.map((item, index) => (
           <div
             key={index}
-            className="flex flex-col items-center p-5 rounded-lg relative transition-all duration-200 hover:bg-zinc-800 "
+            className="flex flex-col items-center p-5 rounded-lg relative transition-all duration-200 hover:bg-gray-700 "
             onMouseLeave={() => setHoveredIndex(null)}
             onMouseEnter={() => setHoveredIndex(index)}
           >
