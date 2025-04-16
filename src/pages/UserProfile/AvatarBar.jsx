@@ -1,6 +1,7 @@
 import React from 'react';
 import { Avatar } from 'antd';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -38,6 +39,7 @@ const mockData = [
 function AvatarBar() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [visibleItems, setVisibleItems] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateVisibleItems = () => {
@@ -56,17 +58,17 @@ function AvatarBar() {
   }, []);
 
   return (
-    <div className='p-6 bg-zinc-950 '>
+    <div className='p-6 bg-stone-900 '>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-semibold text-white">Avatar</h1>
-        <span className="text-lg text-gray-400 cursor-pointer hover:text-white">Xem tất cả</span>
+        <span className="text-lg text-gray-400 cursor-pointer hover:text-white" onClick={ () => { navigate("/user/more-artists") }}>Xem tất cả</span>
       </div>
       <div className='flex flex-row flex-nowrap overflow-hidden gap-4 place-content-around'>
         {
           visibleItems.map( (item,index) => (
             <div className='flex flex-col hover:bg-gray-700 p-4 rounded-lg relative' onMouseLeave={() => setHoveredIndex(null)} onMouseEnter={() => setHoveredIndex(index)}>
               <Avatar src={item.avatar} size={150} />
-              <p className='text-start text-xl font-medium mt-3'>{item.displayname}</p>
+              <p className='text-start text-xl font-medium mt-3 text-white'>{item.displayname}</p>
               <p className="self-start text-xl font-medium mt-2 text-gray-400">Artist</p>
               <svg
                 width="50"
@@ -92,3 +94,4 @@ function AvatarBar() {
 }
 
 export default AvatarBar;
+

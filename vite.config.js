@@ -10,6 +10,11 @@ export default defineConfig({
     port: 3000,
     hmr: true, // Bật Hot Module Replacement để tăng tốc dev
   },
+  resolve: {
+    alias: [
+      { find: '~', replacement: '/src' }
+    ]
+  },
   build: {
     rollupOptions: {
       output: {

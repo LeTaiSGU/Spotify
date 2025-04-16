@@ -11,7 +11,7 @@ const SidebarPlaylists = ({ playlists, isExpanded }) => {
         playlists.map((playlist) => (
           <div
             key={playlist.id}
-            className="flex items-center gap-3 p-2 mx-2 rounded-md hover:bg-zinc-800 cursor-pointer"
+            className="flex items-center gap-3 p-2 mx-2 rounded-md hover:bg-gray-700 cursor-pointer"
           >
             <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">
               {playlist.isLiked ? (
@@ -48,7 +48,7 @@ const SidebarPlaylists = ({ playlists, isExpanded }) => {
           {playlists.map((playlist) => (
             <div
               key={playlist.id}
-              className="grid grid-cols-[1fr_120px_100px] items-center gap-2 p-2 mx-2 rounded-md hover:bg-zinc-800 cursor-pointer"
+              className="grid grid-cols-[1fr_120px_100px] items-center gap-2 p-2 mx-2 rounded-md hover:bg-gray-700 cursor-pointer"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">

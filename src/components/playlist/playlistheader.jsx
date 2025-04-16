@@ -68,7 +68,7 @@ const PlaylistHeader = () => {
           <p className="mb-2 text-gray-300 truncate text-xs">{description}</p>
 
           {/* Tooltip hiển thị toàn bộ mô tả khi hover - cũng điều chỉnh kích thước chữ */}
-          <div className="absolute hidden group-hover:block bottom-full mb-2 w-max max-w-md bg-gray-800 text-white text-xs p-2 rounded-lg shadow-lg z-10">
+          <div className="absolute hidden group-hover:block bottom-full mb-2 w-max max-w-md bg-gray-700 text-white text-xs p-2 rounded-lg shadow-lg z-10">
             {description}
           </div>
         </div>

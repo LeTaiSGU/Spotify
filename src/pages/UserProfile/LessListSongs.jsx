@@ -2,6 +2,7 @@ import { Avatar, Popover } from 'antd';
 import { PlusCircleOutlined, CheckCircleFilled, EllipsisOutlined } from '@ant-design/icons';
 import { FaCheckCircle } from "react-icons/fa";
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Mock dữ liệu bài hát
 const mockSongs = [
@@ -41,9 +42,10 @@ const mockSongs = [
 
 function LessListSongs() {
   const [liked, setLiked] = useState(false);
+  const navigate = useNavigate();
 
   const content = (
-    <div className="w-64 bg-zinc-900 text-white rounded-lg shadow-lg p-2">
+    <div className="w-64 bg-gray-800 text-white rounded-lg shadow-lg p-2">
       <ul className="space-y-2">
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách phát</li>
         <li
@@ -64,11 +66,11 @@ function LessListSongs() {
   );
 
   return (
-    <div className='bg-zinc-950'>
+    <div className='bg-stone-900'>
     <div className="p-6 text-white rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-semibold text-white">Top List Songs</h1>
-        <span className="text-lg text-gray-400 cursor-pointer hover:text-white">Xem tất cả</span>
+        <span className="text-lg text-gray-400 cursor-pointer hover:text-white" onClick={ () => { navigate("/user/more-songs") }}>Xem tất cả</span>
       </div>
 
       <table className="table-auto w-full shadow-lg rounded-lg overflow-hidden">

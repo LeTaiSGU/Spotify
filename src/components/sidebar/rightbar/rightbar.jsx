@@ -49,25 +49,13 @@ const Rightbar = () => {
   const song = useSelector((state) => state.song.song);
 
   return (
-    <div className="h-full flex flex-col mx-3 bg-[#121212] rounded-xl text-white w-[20%] overflow-auto custom-scrollbar">
+    <div className="h-full flex flex-col ml-3 bg-stone-900 rounded-xl text-white w-[20%]">
       <Header />
       <Video />
       <div className="flex flex-row justify-between px-4">
         <div className="flex flex-col">
-          <MarqueeSpan>{song.title}</MarqueeSpan>
-          <div className="relative group">
-            {" "}
-            {/* Thêm class group cho chứa tooltip */}
-            <h2 className="text-base font-semibold overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]">
-              {song.artist1}
-              {song.artist2.length > 0 && `, ${song.artist2.join(", ")}`}
-            </h2>
-            {/* Tooltip khi hover vào */}
-            <span className="absolute left-0 top-full hidden group-hover:block bg-black text-white text-xs p-2 rounded-md mt-1 w-max max-w-[300px]">
-              {song.artist1}
-              {song.artist2.length > 0 && `, ${song.artist2.join(", ")}`}
-            </span>
-          </div>
+          <MarqueeSpan>Songs 1</MarqueeSpan>
+          <h2>Artis name</h2>
         </div>
         <PlusCircle className="my-4" />
       </div>

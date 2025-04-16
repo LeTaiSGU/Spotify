@@ -11,13 +11,13 @@ const SidebarHeader = ({ onToggle, isExpanded }) => {
         <h1 className="text-lg font-semibold">Thư viện</h1>
       </div>
       <div className="flex items-center gap-2">
-        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white transition hover:cursor-pointer">
+        <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 hover:bg-gray-700 text-white transition hover:cursor-pointer">
           <Plus size={16} />
           <span className="text-sm font-semibold">Tạo</span>
         </button>
         <button
           onClick={onToggle}
-          className="p-2 rounded-full hover:bg-zinc-800 transition-transform duration-200"
+          className="p-2 rounded-full hover:bg-gray-700 transition-transform duration-200"
         >
           <ArrowRight
             size={20}
