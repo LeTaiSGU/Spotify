@@ -31,6 +31,10 @@ html {
   padding: 0 !important;
 }
 
+.toast-position {
+  bottom: 50px !important;
+}
+
 .ant-popover-arrow {
   display: none !important;
 }
