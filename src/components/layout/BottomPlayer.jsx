@@ -34,7 +34,7 @@ const BottomPlayer = () => {
           "https://i.scdn.co/image/ab67616d0000b273d2a7d2231a8b3d9a9b27a5f",
         duration: 244,
         audioUrl:
-          "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+          "https://music-app-buckets.s3.ap-southeast-2.amazonaws.com/song_file/3.mp3",
       };
       setSongData(mockData);
     } catch (error) {
