@@ -9,7 +9,7 @@ const SidebarSearchFilter = ({ isExpanded = true }) => {
         isExpanded ? "gap-1" : "justify-between p-4"
       }`}
     >
-      <button className="p-2 rounded-full hover:bg-zinc-800 hover:cursor-pointer">
+      <button className="p-2 rounded-full hover:bg-gray-700 hover:cursor-pointer">
         <Search size={20} />
       </button>
       <div className="flex items-center gap-1">

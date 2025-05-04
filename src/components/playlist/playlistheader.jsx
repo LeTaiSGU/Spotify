@@ -40,6 +40,7 @@ const Avatar = ({ src }) => {
 };
 
 const PlaylistHeader = () => {
+  // const [isExpanded, setIsExpanded] = useState(window.innerWidth > 650);
   const title = "Rap On Trap";
   const description =
     "Playlist A selection of carefully selected synthwave tracks to recharge your inspiration upon";
@@ -48,7 +49,7 @@ const PlaylistHeader = () => {
 
   // Xác định class kích thước chữ dựa trên số ký tự
   let titleSizeClass;
-  if (charCount <= 15) {
+  if (charCount <= 14) {
     titleSizeClass = "text-7xl";
   } else if (charCount <= 35) {
     titleSizeClass = "text-5xl";
@@ -65,10 +66,10 @@ const PlaylistHeader = () => {
 
         <div className="relative group max-w-lg">
           {/* Văn bản bị cắt ngắn - điều chỉnh kích thước chữ */}
-          <p className="mb-2 text-gray-300 truncate text-xs">{description}</p>
+          <p className="mb-2 text-gray-300 truncate text-sm">{description}</p>
 
           {/* Tooltip hiển thị toàn bộ mô tả khi hover - cũng điều chỉnh kích thước chữ */}
-          <div className="absolute hidden group-hover:block bottom-full mb-2 w-max max-w-md bg-gray-800 text-white text-xs p-2 rounded-lg shadow-lg z-10">
+          <div className="absolute hidden group-hover:block bottom-full mb-2 w-max max-w-md bg-gray-700 text-white text-xs p-2 rounded-lg shadow-lg z-10">
             {description}
           </div>
         </div>
