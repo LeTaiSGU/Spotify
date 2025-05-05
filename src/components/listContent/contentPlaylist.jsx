@@ -106,23 +106,10 @@ const MusicSession = () => {
   // Thêm effect để reset selectedSong khi showPlaylistContent thay đổi
 
   const scroll = (ref, direction) => {
-    console.log("Scroll direction:", direction);
-    console.log("Ref current:", ref.current); // Thêm log để kiểm tra ref
-    console.log("Current scroll position:", ref.current?.scrollLeft); // Kiểm tra vị trí scroll hiện tại
-
     if (ref.current) {
       const scrollAmount = 300;
-      const newScrollPosition =
-        direction === "left"
-          ? ref.current.scrollLeft - scrollAmount
-          : ref.current.scrollLeft + scrollAmount;
-
-      console.log("New scroll position:", newScrollPosition);
-
-      ref.current.scrollTo({
-        left: newScrollPosition,
-        behavior: "smooth",
-      });
+      ref.current.scrollLeft +=
+        direction === "left" ? -scrollAmount : scrollAmount;
     }
   };
 
@@ -132,9 +119,9 @@ const MusicSession = () => {
   };
 
   return (
-    <div className="p-5 bg-stone-900 rounded-xl h-full text-white">
+    <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
-      <div className="relative w-full overflow-hidden">
+      <div className="relative">
         {/* Nút trái */}
         <button
           onClick={() => scroll(recommendedRef, "left")}
@@ -145,8 +132,7 @@ const MusicSession = () => {
 
         <div
           ref={recommendedRef}
-          className="flex gap-4 overflow-x-scroll whitespace-nowrap scrollbar-hide px-12"
-          style={{ scrollBehavior: "smooth" }}
+          className="w-full flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
         >
           {loading ? (
             <p>Loading...</p>
