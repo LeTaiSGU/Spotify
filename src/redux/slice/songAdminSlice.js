@@ -4,17 +4,17 @@ import axios from "axios";
 // Fetch danh sách song
 export const fetchSongsAdmin = createAsyncThunk(
   "songAdmin/fetchSongsAdmin",
-  async ({ pageNo, pageSize } = {}, thunkAPI) => {
+  async ({ pageNo } = {}, thunkAPI) => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/songs/pageAdmin?pageNo=${pageNo}&pageSize=${pageSize}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        `http://localhost:8000/api/songs/page/${pageNo}`
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${localStorage.getItem("token")}`,
+        //   },
+        // }
       );
-      return res.data.result;
+      return res;
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.response?.data?.message || "Fetch failed"

@@ -14,17 +14,15 @@ const Songs = () => {
   useEffect(() => {
     dispatch(
       fetchSongsAdmin({
-        pageNo: 0,
-        pageSize: 10,
+        pageNo: 1,
       })
     );
   }, [dispatch]);
   const {
     content: songAdmin = [],
-    pageNo = 0,
-    pageSize = 10,
+    pageNo = 1,
     totalElements = 0,
-  } = useSelector((state) => state.songAdmin.items || {});
+  } = useSelector((state) => state.songAdmin.items.data || {});
 
   const handleStatusChange = (songId) => {
     dispatch(toggleSongStatus(songId));
@@ -124,8 +122,7 @@ const Songs = () => {
     setSortedInfo(sorter);
     dispatch(
       fetchSongsAdmin({
-        pageNo: pagination.current - 1,
-        pageSize: pagination.pageSize,
+        pageNo: pagination.current,
       })
     );
   };
@@ -143,7 +140,7 @@ const Songs = () => {
         rowKey="songId"
         handleChange={handleChange}
         pageNo={pageNo}
-        pageSize={pageSize}
+        pageSize={8}
         totalElements={totalElements}
       />
     </div>
