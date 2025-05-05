@@ -132,7 +132,7 @@ const MusicSession = () => {
   };
 
   return (
-    <div className="p-5 bg-[#121212] rounded-xl h-full text-white">
+    <div className="p-5 bg-stone-900 rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
       <div className="relative w-full overflow-hidden">
         {/* Nút trái */}

@@ -1,16 +1,74 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { HiOutlinePencil } from "react-icons/hi";
 import { X } from "lucide-react";
+import { updatePlaylist } from "~/apis";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
 
-const PlaylistEditModal = ({ isOpen, onClose, title, description, cover }) => {
-  const [playlistName, setPlaylistName] = useState(title || "Rap On Trap");
-  const [newDescription, setNewDescription] = useState(description || "");
+const PlaylistEditModal = ({ isOpen, onClose, title, cover, playlistId, onSave }) => {
+  const [playlistName, setPlaylistName] = useState(title || "");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
+  const dispatch = useDispatch();
 
   if (!isOpen) return null;
 
-  const handleSave = () => {
-    console.log("Saved: ", { playlistName, description: newDescription });
-    onClose(); // Đóng modal sau khi lưu
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+    }
+  };
+
+  const openFileSelector = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSave = async () => {
+    if (!playlistId) {
+      toast.error("Không có playlist ID");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Tạo Form Data với cấu trúc theo yêu cầu
+      const data = new FormData();
+
+      // Thêm data dưới dạng JSON string
+      const playlistData = {
+        name: playlistName
+      };
+      data.append('data', JSON.stringify(playlistData));
+
+      // Thêm file hình ảnh (nếu có)
+      if (selectedImage) {
+        data.append('img_upload', selectedImage);
+      }
+
+      // Gọi API cập nhật
+      const response = await updatePlaylist(playlistId, data);
+
+      await dispatch(fetchLibraryDetailsAPI());
+
+
+      toast.success("Cập nhật playlist thành công!");
+
+      // Gọi callback để refresh dữ liệu nếu có
+      if (onSave) {
+        onSave(response);
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Error updating playlist:", error);
+      toast.error("Cập nhật playlist thất bại!");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -27,9 +85,9 @@ const PlaylistEditModal = ({ isOpen, onClose, title, description, cover }) => {
         {/* Nội dung modal */}
         <div className="flex gap-4 mb-4">
           {/* Ảnh bìa */}
-          <div className="relative group w-40 h-40">
+          <div className="relative group w-40 h-40" onClick={openFileSelector}>
             <img
-              src={cover || "https://via.placeholder.com/150"}
+              src={selectedImage ? URL.createObjectURL(selectedImage) : cover || "https://via.placeholder.com/150"}
               alt="Playlist Cover"
               className="w-40 h-40 object-cover rounded-sm transition-opacity group-hover:opacity-70"
             />
@@ -37,7 +95,15 @@ const PlaylistEditModal = ({ isOpen, onClose, title, description, cover }) => {
               <HiOutlinePencil className="text-4xl text-white" />
               <span className="text-sm text-white mt-1">Chọn ảnh</span>
             </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
           </div>
+
           {/* Form chỉnh sửa */}
           <div className="flex-1">
             <input
@@ -45,12 +111,7 @@ const PlaylistEditModal = ({ isOpen, onClose, title, description, cover }) => {
               className="w-full p-3 bg-[#3e3e3e] rounded text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-500"
               value={playlistName}
               onChange={(e) => setPlaylistName(e.target.value)}
-            />
-            <textarea
-              className="w-full p-3 mt-2 bg-[#3e3e3e] rounded text-white text-sm placeholder-gray-600 h-27 resize-none focus:outline-none focus:ring-2 focus:ring-gray-500"
-              placeholder="Thêm phần mô tả không bắt buộc"
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
+              placeholder="Tên playlist"
             />
           </div>
         </div>
@@ -58,10 +119,11 @@ const PlaylistEditModal = ({ isOpen, onClose, title, description, cover }) => {
         {/* Nút Lưu */}
         <div className="flex justify-end">
           <button
-            className="bg-white text-black font-semibold py-2 px-6 rounded-full hover:bg-gray-200 transition"
+            className={`bg-white text-black font-semibold py-2 px-6 rounded-full hover:bg-gray-200 transition ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
             onClick={handleSave}
+            disabled={isLoading}
           >
-            Lưu
+            {isLoading ? 'Đang lưu...' : 'Lưu'}
           </button>
         </div>
 
