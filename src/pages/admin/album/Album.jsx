@@ -3,45 +3,71 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAlbums,
   toggleAlbumStatus,
-} from "../../../redux/slice/albumSlice"; // Giả sử bạn có action này
-import { Table, Button, Space } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; // Giả sử bạn có component này
+  selectItemsAlbum,
+  selectAlbumLoading,
+} from "../../../redux/slice/albumSlice";
+import { Table, Button, Space, message } from "antd";
+import AdminTable from "../../../components/admin/ui/Table";
 
 const Album = () => {
   const dispatch = useDispatch();
   const [sortedInfo, setSortedInfo] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchAlbums({ pageNo: 0, pageSize: 10 }));
+    setLoading(true);
+    dispatch(fetchAlbums({ pageNo: 0, pageSize: 10 }))
+      .unwrap()
+      .then(() => setLoading(false))
+      .catch((err) => {
+        setLoading(false);
+        message.error(
+          "Không thể tải danh sách album: " + (err.message || "Lỗi")
+        );
+      });
   }, [dispatch]);
 
-  const {
-    content: albums = [],
-    pageNo = 0,
-    pageSize = 10,
-    totalElements = 0,
-  } = useSelector((state) => state.album.items || {});
+  // Điều chỉnh để xử lý cấu trúc dữ liệu từ API Django
+  const albumsData = useSelector(selectItemsAlbum);
+  const isLoading = useSelector(selectAlbumLoading);
+
+  // Xử lý cả hai định dạng dữ liệu (phân trang hoặc mảng đơn giản)
+  const albums = Array.isArray(albumsData)
+    ? albumsData
+    : albumsData?.content || [];
+  const pageNo = albumsData?.pageNo || 0;
+  const pageSize = albumsData?.pageSize || 10;
+  const totalElements = albumsData?.totalElements || albums.length;
 
   const handleStatusChange = (albumId) => {
-    // Cập nhật trạng thái album (Active/Inactive)
-    dispatch(toggleAlbumStatus(albumId));
+    setLoading(true);
+    dispatch(toggleAlbumStatus(albumId))
+      .unwrap()
+      .then(() => {
+        setLoading(false);
+        message.success("Đã cập nhật trạng thái album");
+      })
+      .catch((err) => {
+        setLoading(false);
+        message.error(
+          "Không thể cập nhật trạng thái: " + (err.message || "Lỗi")
+        );
+      });
   };
 
   const columns = [
     {
       title: "ID",
-      dataIndex: "albumId",
-      key: "albumId",
-      sorter: (a, b) => a.albumId - b.albumId,
-      sortOrder: sortedInfo.columnKey === "albumId" ? sortedInfo.order : null,
+      dataIndex: "id",
+      key: "id",
+      sorter: (a, b) => a.id - b.id,
+      sortOrder: sortedInfo.columnKey === "id" ? sortedInfo.order : null,
     },
     {
       title: "Nghệ sĩ",
       dataIndex: "artist",
       key: "artist",
-      render: (artist) => {
-        return artist?.name;
-      },
+      render: (artist) => artist?.name || "N/A",
     },
     {
       title: "Tiêu đề",
@@ -53,55 +79,41 @@ const Album = () => {
     },
     {
       title: "Ngày phát hành",
-      dataIndex: "releaseDate",
-      key: "releaseDate",
-      sorter: (a, b) => new Date(a.releaseDate) - new Date(b.releaseDate),
+      dataIndex: "release_date",
+      key: "release_date",
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "N/A"),
+      sorter: (a, b) =>
+        new Date(a.release_date || 0) - new Date(b.release_date || 0),
       sortOrder:
-        sortedInfo.columnKey === "releaseDate" ? sortedInfo.order : null,
+        sortedInfo.columnKey === "release_date" ? sortedInfo.order : null,
     },
     {
       title: "Hình ảnh",
-      dataIndex: "coverImage",
-      key: "coverImage",
+      dataIndex: "avatar",
+      key: "avatar",
       render: (url) => (
         <img
           src={url}
           alt="Cover"
           style={{ width: 40, height: 40, objectFit: "cover" }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://via.placeholder.com/40";
+          }}
         />
       ),
     },
     {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Ngày khởi tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      sortOrder: sortedInfo.columnKey === "createdAt" ? sortedInfo.order : null,
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) => (
-        <Space>
-          <Button
-            onClick={() => handleStatusChange(record.albumId)}
-            type={status ? "default" : "primary"}
-            danger={status} // nút màu đỏ nếu đang active
-          >
-            {status ? "Hủy" : "Kích hoạt"}
-          </Button>
-        </Space>
-      ),
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+      render: (text) =>
+        text?.length > 30 ? `${text.substring(0, 30)}...` : text,
     },
   ];
 
-  const handleChange = (pagination, filter, sorter) => {
+  const handleChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter);
     dispatch(
       fetchAlbums({
@@ -118,12 +130,19 @@ const Album = () => {
   return (
     <div className="p-4">
       <Space style={{ marginBottom: 16 }}>
-        <Button onClick={clearAll}>Clear</Button>
+        <Button onClick={clearAll}>Xóa bộ lọc</Button>
+        <Button
+          type="primary"
+          onClick={() => dispatch(fetchAlbums({ pageNo: 0, pageSize: 10 }))}
+        >
+          Làm mới
+        </Button>
       </Space>
       <AdminTable
         columns={columns}
         dataSource={albums}
-        rowKey="albumId"
+        rowKey={(record) => record.id}
+        loading={isLoading || loading}
         handleChange={handleChange}
         pageNo={pageNo}
         pageSize={pageSize}
