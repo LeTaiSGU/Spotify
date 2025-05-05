@@ -1,6 +1,8 @@
 import { Clock, Play } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { getSongBylistId, getSongsByAlbumId, getSongById } from "~/apis";
+import { getSongBylistId, getSongsByAlbumId, getSongById, getPlaylistsById,
+  addSongToPlaylist
+ } from "~/apis";
 import { useParams } from "react-router-dom";
 import { Avatar, Popover } from 'antd';
 import { PlusCircleOutlined, CheckCircleFilled, EllipsisOutlined } from '@ant-design/icons';
@@ -12,6 +14,7 @@ import {
 } from "../../redux/slice/songSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import AddToPlaylistModal from "~/components/Modal/AddToPlaylistModal";
 
 
 
@@ -25,8 +28,36 @@ const Playlist = ({ type }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [playlists, setPlaylists] = useState([]); // Danh sách playlist
 
 
+  const handleOpenModal = async () => {
+    try {
+      console.log("Song ID:" ); 
+      const response = await getPlaylistsById();
+      setPlaylists(response);
+      setIsModalVisible(true);
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách playlist:", error);
+    }
+  };
+
+  const handleAddSongToPlaylist = async (playlistId, songId) => {
+    try {
+      // Gọi API để thêm bài hát vào playlist
+      console.log("Thêm bài hát vào playlist:", playlistId, songId);
+      await addSongToPlaylist(playlistId, songId);
+
+      // Đóng modal
+      setIsModalVisible(false);
+
+      alert("Thêm bài hát vào danh sách phát thành công!");
+    } catch (error) {
+      console.error("Lỗi khi thêm bài hát vào danh sách phát:", error);
+      alert("Thêm bài hát thất bại!");
+    }
+  };
 
 
   const fetchSongs = async () => {
@@ -66,10 +97,15 @@ const Playlist = ({ type }) => {
 
 
 
-  const content = (
+  const renderContent = (songId) => (
     <div className="w-64 bg-gray-800 text-white rounded-lg shadow-lg p-2">
       <ul className="space-y-2">
-        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách phát</li>
+        <li
+          className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded"
+          onClick={() => handleOpenModal(songId)} // Truyền songId vào hàm
+        >
+          Thêm vào danh sách phát
+        </li>
         <li
           className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2 rounded"
           onClick={() => setLiked(!liked)}
@@ -78,12 +114,18 @@ const Playlist = ({ type }) => {
           {liked ? "Xóa khỏi Bài hát yêu thích" : "Thêm vào Bài hát yêu thích"}
         </li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách chờ</li>
-        <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Bắt đầu một Jam</li>
+        {type === "playlist" && <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Xóa khỏi Playlist</li> }
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Chuyển tới nghệ sĩ</li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Chuyển đến album</li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Xem thông tin</li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Chia sẻ</li>
       </ul>
+      <AddToPlaylistModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        playlists={playlists}
+        onAddSong={(playlistId) => handleAddSongToPlaylist(playlistId, songId)}
+      />
     </div>
   );
 
@@ -145,7 +187,7 @@ const Playlist = ({ type }) => {
                         : "group-hover:text-white hover:underline"
                         }`}
                       title={song.title} // Hiển thị tooltip khi hover
-                      onClick={() => {navigate(`/song/${song.id}`)}}
+                      onClick={() => { navigate(`/song/${song.id}`) }}
                     >
                       {song.song_name}
                     </h1>
@@ -164,7 +206,7 @@ const Playlist = ({ type }) => {
                 {song.duration}
                 {/* Biểu tượng ba chấm khi hover */}
                 <div className="absolute top-1/2 right-2 transform -translate-y-1/2">
-                  <Popover placement='bottom' content={content} trigger="click">
+                  <Popover placement='bottom' content={renderContent(song.id)} trigger="click">
                     <EllipsisOutlined className="text-white text-xl cursor-pointer hover:text-gray-400" />
                   </Popover>
                 </div>

@@ -14,6 +14,11 @@ export const getPlaylist = async (playlistId) => {
   return response.data
 }
 
+export const getPlaylistsById = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/playlists/user/1/`)
+  return response.data
+}
+
 export const updatePlaylist = async (playlistId, data) => {
   const response = await authorizedAxiosInstance.patch(
     `${API_ROOT}/api/playlists/${playlistId}/`, 
@@ -38,7 +43,7 @@ export const getSongBylistId = async (playlistId) => {
 }
 
 export const addSongToPlaylist = async (playlistId, songId) => {
-  const response = await authorizedAxiosInstance.post(`${API_ROOT}/api/playlist_songs/${playlistId}/add/${ songId }`)
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/api/playlist_songs/${playlistId}/add/${ songId }/`)
   return response.data
 }
 

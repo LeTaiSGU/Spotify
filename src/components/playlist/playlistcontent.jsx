@@ -15,14 +15,14 @@ import { useDispatch } from "react-redux";
 import { FaRandom } from "react-icons/fa";
 
 function PlaylistContent({ type }) {
-  const { playlistId } = useParams()
+  const { id } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch();
 
 
   const handleDeletePlaylist = async () => {
     try {
-      await deletePlaylist(playlistId);
+      await deletePlaylist(id);
       toast.success("Xóa playlist thành công")
       await dispatch(fetchLibraryDetailsAPI());
       navigate("/")
