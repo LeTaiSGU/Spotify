@@ -8,7 +8,7 @@ const Video = () => {
         autoPlay
         muted
         playsInline
-        controls={false}
+        controls={true}
         controlsList="nodownload nofullscreen noremoteplayback"
       >
         <source

@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color:  black !important;
+  background-color: black !important;
   padding: 10px;
   color: #fff;
   width: 100%;
@@ -262,6 +262,20 @@
   width: 16px;
   height: 16px;
   object-fit: contain;
+}
+
+/* Rightbar Toggle */
+.rightbar-toggle {
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.rightbar-toggle.active {
+  color: #1db954; /* Spotify green color when active */
+}
+
+.rightbar-toggle:hover {
+  transform: scale(1.1);
 }
 
 /* Responsive Adjustments */
