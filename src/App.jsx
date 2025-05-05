@@ -9,8 +9,8 @@ import ContentPlaylist from "~/components/listContent/contentPlaylist";
 import NotFound from "./pages/404/404";
 import AllAvatar from "./pages/UserProfile/AllAvatar";
 import MusicList from "./pages/UserProfile/MoreListSongs";
-
-
+import Payment from "./components/payment/Payment";
+import PaymentSuccess from "./components/payment/PaymentSuccess";
 
 
 function App() {
@@ -23,8 +23,10 @@ function App() {
           <Route path="user" element={<UserProfile />} />
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
+          <Route path="user/payment" element={<Payment />} />
+          
         </Route>
-
+        <Route path="user/payment/success" element={<PaymentSuccess />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
 
