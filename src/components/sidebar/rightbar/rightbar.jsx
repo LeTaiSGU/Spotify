@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Dropdown } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { message } from "antd";
+import { saveAs } from "file-saver";
 import ReactPlayer from "react-player";
 import Header from "./header";
 import { X, Download, TvMinimalPlay } from "lucide-react";
@@ -81,6 +81,25 @@ const Rightbar = () => {
   const selectedSong = useSelector((state) => state.songs.selectedSong);
   const [mainArtistInfo, setMainArtistInfo] = useState(null);
 
+  //Test user
+  const getUser = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/users/${id}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("User not found");
+        } else {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch user:", error.message);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const fetchMainArtist = async () => {
       if (selectedSong?.artist_owner) {
@@ -112,15 +131,68 @@ const Rightbar = () => {
 
   //download
   // Add download handlers
-  const handleDownloadAudio = () => {
-    console.log("Downloading audio:", selectedSong?.file_upload);
-    setShowDownloadMenu(false);
-  };
+  async function handleDownloadAudio(url, songName) {
+    try {
+      const user = await getUser(1); // hoặc thay 1 bằng userId thực tế nếu có
 
-  const handleDownloadVideo = () => {
-    console.log("Downloading video:", selectedSong?.mv);
-    setShowDownloadMenu(false);
-  };
+      console.log("User data:", user); // Kiểm tra dữ liệu người dùng
+      if (!user || !user.is_premium) {
+        message.info(
+          "Vui lòng nâng cấp lên tài khoản premium để sử dụng chức năng này."
+        );
+        return;
+      }
+
+      const urlWithoutParams = url.split("?")[0];
+      const extension = urlWithoutParams.substring(
+        urlWithoutParams.lastIndexOf(".") + 1
+      );
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải file âm thanh");
+      }
+
+      const blob = await response.blob();
+      const fileName = `${songName}.${extension}`;
+      saveAs(blob, fileName);
+      message.success("Tải nhạc thành công!");
+    } catch (error) {
+      console.error("Lỗi khi tải file:", error);
+      message.error("Đã xảy ra lỗi khi tải nhạc.");
+    }
+  }
+
+  async function handleDownloadVideo(url, videoName) {
+    try {
+      const user = await getUser(1); // hoặc thay 1 bằng userId thực tế nếu có
+      console.log("User data:", user); // Kiểm tra dữ liệu người dùng
+      if (!user || !user.is_premium) {
+        message.info(
+          "Vui lòng nâng cấp lên tài khoản premium để sử dụng chức năng này."
+        );
+        return;
+      }
+
+      const urlWithoutParams = url.split("?")[0];
+      const extension = urlWithoutParams.substring(
+        urlWithoutParams.lastIndexOf(".") + 1
+      );
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải video");
+      }
+
+      const blob = await response.blob();
+      const fileName = `${videoName}.${extension}`;
+      saveAs(blob, fileName);
+      message.success("Tải video thành công!");
+    } catch (error) {
+      console.error("Lỗi khi tải file:", error);
+      message.error("Đã xảy ra lỗi khi tải video.");
+    }
+  }
   // Add click outside handler
   const downloadMenuRef = useRef(null);
 
@@ -139,7 +211,7 @@ const Rightbar = () => {
   }, []);
 
   return (
-    <div className="h-full flex flex-col ml-3 bg-stone-900 rounded-xl text-white w-[20%] overflow-auto">
+    <div className="h-full flex flex-col ml-3 bg-stone-900 rounded-xl text-white w-[20%]">
       <Header />
       {/* <Video /> */}
       <div className="w-full px-4 mb-10 ">
@@ -174,18 +246,28 @@ const Rightbar = () => {
             {showDownloadMenu && (
               <div className="absolute right-0 mt-2 py-2 w-40 bg-[#282828] rounded-md shadow-lg z-50">
                 <button
-                  onClick={handleDownloadAudio}
-                  className="w-full px-4 py-2 text-left text-sm text-white hover:bg-[#1DB954] transition-colors duration-200"
+                  onClick={() =>
+                    handleDownloadAudio(
+                      selectedSong?.file_upload,
+                      selectedSong?.song_name
+                    )
+                  }
+                  className="w-full px-4 py-2 text-left text-sm text-white hover:bg-[#1DB954] hover:cursor-pointer transition-colors duration-200"
                 >
                   Tải nhạc
                 </button>
                 <button
-                  onClick={handleDownloadVideo}
+                  onClick={() =>
+                    handleDownloadVideo(
+                      selectedSong?.mv,
+                      selectedSong?.song_name
+                    )
+                  }
                   disabled={!selectedSong?.mv || selectedSong.mv === "none"}
                   className={`w-full px-4 py-2 text-left text-sm transition-colors duration-200 
                 ${
                   selectedSong?.mv && selectedSong.mv !== "none"
-                    ? "text-white hover:bg-[#1DB954]"
+                    ? "text-white hover:bg-[#1DB954] hover:cursor-pointer"
                     : "text-gray-500 cursor-not-allowed"
                 }`}
                 >
