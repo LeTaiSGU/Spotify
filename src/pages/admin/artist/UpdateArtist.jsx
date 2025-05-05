@@ -8,6 +8,7 @@ import {
   fetchArtistById,
   updateArtist,
   selectArtist,
+  clearSelectedArtist, // Thêm action này vào slice của bạn
 } from "../../../redux/slice/artistSlice";
 
 const { TextArea } = Input;
@@ -24,16 +25,25 @@ const UpdateArtist = () => {
   const artistDetail = useSelector(selectArtist);
 
   useEffect(() => {
+    // Reset form khi component được mount
+    form.resetFields();
     dispatch(fetchArtistsSelect());
-  }, [dispatch]);
+
+    // Cleanup khi component unmount
+    return () => {
+      // Xóa nghệ sĩ đã chọn khi rời khỏi trang
+      dispatch(clearSelectedArtist());
+      form.resetFields();
+    };
+  }, [dispatch, form]);
 
   useEffect(() => {
     if (artistDetail) {
       form.setFieldsValue({
-        id: artistDetail.id, // Sử dụng id thay vì artistId
+        id: artistDetail.id,
         name: artistDetail.name,
         description: artistDetail.description,
-        image: artistDetail.avatar // Sử dụng avatar thay vì img/image
+        image: artistDetail.avatar
           ? [
               {
                 uid: "-1",
@@ -45,6 +55,9 @@ const UpdateArtist = () => {
             ]
           : [],
       });
+    } else {
+      // Reset form khi không có nghệ sĩ được chọn
+      form.resetFields();
     }
   }, [artistDetail, form]);
 

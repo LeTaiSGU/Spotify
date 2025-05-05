@@ -273,8 +273,14 @@ const artistSlice = createSlice({
   initialState: {
     items: [], // Danh sách nghệ sĩ
     artistSelected: {}, // Nghệ sĩ đang được chọn
+    loading: false,
+    error: null,
   },
-  reducers: {},
+  reducers: {
+    clearSelectedArtist: (state) => {
+      state.artistSelected = {};
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch all artists
@@ -303,7 +309,7 @@ const artistSlice = createSlice({
       });
   },
 });
-
+export const { clearSelectedArtist } = artistSlice.actions;
 export const selectItemsArtist = (state) => {
   return state.artist.items; // Trả về danh sách nghệ sĩ
 };
