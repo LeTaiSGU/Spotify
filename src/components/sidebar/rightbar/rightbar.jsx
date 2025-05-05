@@ -96,9 +96,16 @@ const Rightbar = () => {
     fetchMainArtist();
   }, [selectedSong?.artist_owner]);
   return (
-    <div className="h-full flex flex-col ml-3 bg-stone-900 rounded-xl text-white w-[20%]">
+    <div className="h-full flex flex-col ml-3 bg-stone-900 rounded-xl text-white w-[20%] overflow-auto">
       <Header />
       {/* <Video /> */}
+      <div className="w-full px-4 mb-10 ">
+        <img
+          src={selectedSong?.img}
+          alt={selectedSong?.song_name}
+          className="w-full aspect-square object-cover rounded-lg"
+        />
+      </div>
       <div className="flex flex-row justify-between px-4">
         <div className="flex flex-col">
           <MarqueeSpan>{selectedSong.song_name}</MarqueeSpan>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { togglePlay } from "../../redux/slice/songSlice";
 import "./BottomPlayer.css";
@@ -22,6 +22,7 @@ const timeStringToSeconds = (timeString) => {
 
 const BottomPlayer = () => {
   const dispatch = useDispatch();
+  const [daCapNhatLuotNghe, setDaCapNhatLuotNghe] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(50);
   const [previousVolume, setPreviousVolume] = useState(50);
@@ -221,6 +222,81 @@ const BottomPlayer = () => {
   //   }
   // };
 
+  //update listening counts
+  // Thêm useEffect mới để theo dõi thời gian nghe
+  useEffect(() => {
+    const capNhatLuotNghe = async () => {
+      if (!audioRef.current || !selectedSong || daCapNhatLuotNghe) return;
+
+      const tongThoiGian = audioRef.current.duration;
+      const thoiGianHienTai = audioRef.current.currentTime;
+
+      if (thoiGianHienTai > tongThoiGian * 0.75) {
+        try {
+          console.log("Đã nghe hơn 75% bài hát");
+          const response = await fetch(
+            `http://localhost:8000/api/songs/playcount/${selectedSong.id}`,
+            {
+              method: "put",
+            }
+          );
+
+          if (response.ok) {
+            setDaCapNhatLuotNghe(true);
+            console.log("Đã cập nhật lượt nghe thành công");
+          }
+        } catch (error) {
+          console.error("Lỗi khi cập nhật lượt nghe:", error);
+        }
+      }
+    };
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("timeupdate", capNhatLuotNghe);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("timeupdate", capNhatLuotNghe);
+      }
+    };
+  }, [selectedSong, daCapNhatLuotNghe]);
+
+  const handleAudioEnd = useCallback(() => {
+    console.log("Audio ended - Resetting state");
+
+    // Reset thời gian về 0
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+    }
+
+    // Sau đó mới cập nhật các state khác
+    setDaCapNhatLuotNghe(false);
+    dispatch(togglePlay(false));
+
+    console.log("Đã reset time và state");
+  }, [dispatch]);
+  // Thêm useEffect để reset trạng thái khi đổi bài
+  useEffect(() => {
+    // Chỉ reset daCapNhatLuotNghe khi thay đổi bài hát
+    if (selectedSong) {
+      setDaCapNhatLuotNghe(false);
+    }
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("ended", handleAudioEnd);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("ended", handleAudioEnd);
+      }
+    };
+  }, [selectedSong, handleAudioEnd]);
+
   const formatTime = (seconds) => {
     if (!seconds) return "00:00:00";
 
@@ -268,7 +344,9 @@ const BottomPlayer = () => {
           <img src={selectedSong.img} alt="Album" className="album-cover" />
           <div className="song-details">
             <span className="song-title">{selectedSong.song_name}</span>
-            <span className="song-artist">{mainArtistInfo.name}</span>
+            <span className="song-artist">
+              {mainArtistInfo?.name || "Loading..."}
+            </span>
           </div>
         </div>
       ) : (
@@ -402,7 +480,7 @@ const BottomPlayer = () => {
           ref={audioRef}
           src={selectedSong.fileUpload}
           onTimeUpdate={handleTimeUpdate}
-          onEnded={selectedSong}
+          onEnded={handleAudioEnd}
         />
       )}
     </div>
