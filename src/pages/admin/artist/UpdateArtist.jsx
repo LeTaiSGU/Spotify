@@ -8,7 +8,7 @@ import {
   fetchArtistById,
   updateArtist,
   selectArtist,
-} from "../../../redux/slice/artistSlice"; // giả sử bạn đã có các action này
+} from "../../../redux/slice/artistSlice";
 
 const { TextArea } = Input;
 
@@ -16,7 +16,11 @@ const UpdateArtist = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
-  const { content: artistList = [] } = useSelector(selectItemsArtist);
+  // Điều chỉnh để phù hợp với cấu trúc dữ liệu từ API Django
+  const artists = useSelector(selectItemsArtist);
+  // Điều chỉnh để sử dụng đúng định dạng response
+  const artistList = Array.isArray(artists) ? artists : artists?.content || [];
+
   const artistDetail = useSelector(selectArtist);
 
   useEffect(() => {
@@ -26,17 +30,17 @@ const UpdateArtist = () => {
   useEffect(() => {
     if (artistDetail) {
       form.setFieldsValue({
-        artistId: artistDetail.artistId,
+        id: artistDetail.id, // Sử dụng id thay vì artistId
         name: artistDetail.name,
         description: artistDetail.description,
-        image: artistDetail.image
+        image: artistDetail.avatar // Sử dụng avatar thay vì img/image
           ? [
               {
                 uid: "-1",
                 name: "Ảnh hiện tại",
                 status: "done",
-                url: artistDetail.image,
-                thumbUrl: artistDetail.image,
+                url: artistDetail.avatar,
+                thumbUrl: artistDetail.avatar,
               },
             ]
           : [],
@@ -46,7 +50,7 @@ const UpdateArtist = () => {
 
   const artistOptions = artistList.map((artist) => ({
     label: artist.name,
-    value: artist.artistId,
+    value: artist.id, // Sử dụng id thay vì artistId
   }));
 
   const onSelectArtist = (value) => {
@@ -55,7 +59,7 @@ const UpdateArtist = () => {
 
   const onFinish = (values) => {
     const payload = {
-      artistId: values.artistId,
+      id: values.id, // Sử dụng id thay vì artistId
       name: values.name,
       description: values.description,
       image: values.image || [],
@@ -66,10 +70,14 @@ const UpdateArtist = () => {
       .then(() => {
         message.success("Cập nhật nghệ sĩ thành công!");
         form.resetFields();
+        // Làm mới danh sách nghệ sĩ
+        dispatch(fetchArtistsSelect());
       })
       .catch((err) => {
         console.error(err);
-        message.error("Cập nhật thất bại!");
+        message.error(
+          "Cập nhật thất bại: " + (err.message || "Vui lòng thử lại")
+        );
       });
   };
 
@@ -106,7 +114,7 @@ const UpdateArtist = () => {
         </Form.Item>
 
         {/* ID nghệ sĩ */}
-        <Form.Item label="Artist ID" name="artistId">
+        <Form.Item label="Artist ID" name="id">
           <Input disabled />
         </Form.Item>
 

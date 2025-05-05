@@ -97,7 +97,7 @@ export const createSong = createAsyncThunk(
       }
 
       const res = await axios.post(
-        "http://localhost:8080/api/songs/upload",
+        "http://localhost:8000/api/songs/create",
         formData,
         {
           headers: {

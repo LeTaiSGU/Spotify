@@ -3,29 +3,39 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchArtists,
   toggleArtistStatus,
-} from "../../../redux/slice/artistSlice"; // Giả sử bạn có action này
-import { Table, Button, Space, Modal, Card } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; // Giả sử bạn có component này
+  selectItemsArtist,
+} from "../../../redux/slice/artistSlice";
+import { Table, Button, Space, Modal, Card, message } from "antd";
+import AdminTable from "../../../components/admin/ui/Table";
 
 const Artist = () => {
   const dispatch = useDispatch();
   const [sortedInfo, setSortedInfo] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchArtists({ pageNo: 0, pageSize: 10 }));
+    setLoading(true);
+    dispatch(fetchArtists({ pageNo: 0, pageSize: 10 }))
+      .unwrap()
+      .then(() => setLoading(false))
+      .catch((err) => {
+        setLoading(false);
+        message.error(
+          "Không thể tải danh sách nghệ sĩ: " + (err.message || "Lỗi")
+        );
+      });
   }, [dispatch]);
 
-  const {
-    content: artists = [],
-    pageNo = 0,
-    pageSize = 10,
-    totalElements = 0,
-  } = useSelector((state) => state.artist.items || {});
+  // Điều chỉnh để xử lý cấu trúc dữ liệu từ API Django
+  const artistsData = useSelector(selectItemsArtist);
 
-  const handleStatusChange = (artistId) => {
-    // Cập nhật trạng thái artist (Active/Inactive)
-    dispatch(toggleArtistStatus(artistId));
-  };
+  // Xử lý cả hai định dạng dữ liệu (phân trang hoặc mảng đơn giản)
+  const artists = Array.isArray(artistsData)
+    ? artistsData
+    : artistsData?.content || [];
+  const pageNo = artistsData?.pageNo || 0;
+  const pageSize = artistsData?.pageSize || 10;
+  const totalElements = artistsData?.totalElements || artists.length;
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [popupData, setPopupData] = useState({ type: "", songs: [] });
@@ -33,10 +43,10 @@ const Artist = () => {
   const columns = [
     {
       title: "ID",
-      dataIndex: "artistId",
-      key: "artistId",
-      sorter: (a, b) => a.artistId - b.artistId,
-      sortOrder: sortedInfo.columnKey === "artistId" ? sortedInfo.order : null,
+      dataIndex: "id",
+      key: "id",
+      sorter: (a, b) => a.id - b.id,
+      sortOrder: sortedInfo.columnKey === "id" ? sortedInfo.order : null,
     },
     {
       title: "Tên nghệ sĩ",
@@ -45,13 +55,17 @@ const Artist = () => {
     },
     {
       title: "Hình ảnh",
-      dataIndex: "img",
-      key: "img",
+      dataIndex: "avatar", // Thay đổi từ img/image thành avatar theo model
+      key: "avatar",
       render: (url) => (
         <img
           src={url}
-          alt="Cover"
+          alt="Avatar"
           style={{ width: 40, height: 40, objectFit: "cover" }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://via.placeholder.com/40";
+          }}
         />
       ),
     },
@@ -62,10 +76,13 @@ const Artist = () => {
     },
     {
       title: "Ngày khởi tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      sortOrder: sortedInfo.columnKey === "createdAt" ? sortedInfo.order : null,
+      dataIndex: "created_at", // Thay đổi từ createdAt thành created_at theo quy ước Django
+      key: "created_at",
+      render: (date) => (date ? new Date(date).toLocaleString() : "N/A"),
+      sorter: (a, b) =>
+        new Date(a.created_at || 0) - new Date(b.created_at || 0),
+      sortOrder:
+        sortedInfo.columnKey === "created_at" ? sortedInfo.order : null,
     },
     {
       title: "Bài hát sở hữu",
@@ -74,12 +91,12 @@ const Artist = () => {
       render: (songs) => (
         <Button
           onClick={() => {
-            setPopupData({ type: "Sở hữu", songs: songs });
+            setPopupData({ type: "Sở hữu", songs: songs || [] });
             setIsModalVisible(true);
           }}
           disabled={!songs || songs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
         >
-          Xem
+          Xem ({songs?.length || 0})
         </Button>
       ),
     },
@@ -90,34 +107,18 @@ const Artist = () => {
       render: (featuredSongs) => (
         <Button
           onClick={() => {
-            setPopupData({ type: "Tham gia", songs: featuredSongs });
+            setPopupData({ type: "Tham gia", songs: featuredSongs || [] });
             setIsModalVisible(true);
           }}
           disabled={!featuredSongs || featuredSongs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
         >
-          Xem
+          Xem ({featuredSongs?.length || 0})
         </Button>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status, record) => (
-        <Space>
-          <Button
-            onClick={() => handleStatusChange(record.artistId)}
-            type={status ? "default" : "primary"}
-            danger={status} // nút màu đỏ nếu đang active
-          >
-            {status ? "Hủy" : "Kích hoạt"}
-          </Button>
-        </Space>
       ),
     },
   ];
 
-  const handleChange = (pagination, sorter) => {
+  const handleChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter);
     dispatch(
       fetchArtists({
@@ -134,7 +135,13 @@ const Artist = () => {
   return (
     <div className="p-4">
       <Space style={{ marginBottom: 16 }}>
-        <Button onClick={clearSort}>Clear</Button>
+        <Button onClick={clearSort}>Xóa bộ lọc</Button>
+        <Button
+          type="primary"
+          onClick={() => dispatch(fetchArtists({ pageNo: 0, pageSize: 10 }))}
+        >
+          Làm mới
+        </Button>
       </Space>
       <Modal
         title={`Danh sách bài hát ${popupData.type}`}
@@ -144,10 +151,11 @@ const Artist = () => {
       >
         <Card>
           <ul>
-            {popupData.songs.length > 0 ? (
+            {popupData.songs && popupData.songs.length > 0 ? (
               popupData.songs.map((song, index) => (
                 <li key={index}>
-                  Bài hát #{song.songId} - {song.songName}
+                  Bài hát #{song.songId || song.id} -{" "}
+                  {song.songName || song.name}
                 </li>
               ))
             ) : (
@@ -159,7 +167,8 @@ const Artist = () => {
       <AdminTable
         columns={columns}
         dataSource={artists}
-        rowKey="artistId"
+        rowKey={(record) => record.artistId || record.id} // Hỗ trợ cả hai dạng ID
+        loading={loading}
         handleChange={handleChange}
         pageNo={pageNo}
         pageSize={pageSize}
