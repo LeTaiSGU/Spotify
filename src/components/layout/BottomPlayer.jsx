@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { togglePlay } from "../../redux/slice/songSlice";
+import { togglePlay, toggleRightbar } from "../../redux/slice/songSlice";
 import "./BottomPlayer.css";
 import {
   FaPlay,
@@ -22,12 +22,19 @@ const timeStringToSeconds = (timeString) => {
 
 const BottomPlayer = () => {
   const dispatch = useDispatch();
+  const [daCapNhatLuotNghe, setDaCapNhatLuotNghe] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(50);
   const [previousVolume, setPreviousVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const audioRef = useRef(null);
+  const isRightbarVisible = useSelector(
+    (state) => state.songs.isRightbarVisible
+  );
+  const handleToggleRightbar = () => {
+    dispatch(toggleRightbar(!isRightbarVisible));
+  };
 
   const { selectedSong, isPlaying } = useSelector((state) => state.songs);
 
@@ -221,6 +228,81 @@ const BottomPlayer = () => {
   //   }
   // };
 
+  //update listening counts
+  // Thêm useEffect mới để theo dõi thời gian nghe
+  useEffect(() => {
+    const capNhatLuotNghe = async () => {
+      if (!audioRef.current || !selectedSong || daCapNhatLuotNghe) return;
+
+      const tongThoiGian = audioRef.current.duration;
+      const thoiGianHienTai = audioRef.current.currentTime;
+
+      if (thoiGianHienTai > tongThoiGian * 0.75) {
+        try {
+          console.log("Đã nghe hơn 75% bài hát");
+          const response = await fetch(
+            `http://localhost:8000/api/songs/playcount/${selectedSong.id}`,
+            {
+              method: "put",
+            }
+          );
+
+          if (response.ok) {
+            setDaCapNhatLuotNghe(true);
+            console.log("Đã cập nhật lượt nghe thành công");
+          }
+        } catch (error) {
+          console.error("Lỗi khi cập nhật lượt nghe:", error);
+        }
+      }
+    };
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("timeupdate", capNhatLuotNghe);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("timeupdate", capNhatLuotNghe);
+      }
+    };
+  }, [selectedSong, daCapNhatLuotNghe]);
+
+  const handleAudioEnd = useCallback(() => {
+    console.log("Audio ended - Resetting state");
+
+    // Reset thời gian về 0
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+    }
+
+    // Sau đó mới cập nhật các state khác
+    setDaCapNhatLuotNghe(false);
+    dispatch(togglePlay(false));
+
+    console.log("Đã reset time và state");
+  }, [dispatch]);
+  // Thêm useEffect để reset trạng thái khi đổi bài
+  useEffect(() => {
+    // Chỉ reset daCapNhatLuotNghe khi thay đổi bài hát
+    if (selectedSong) {
+      setDaCapNhatLuotNghe(false);
+    }
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("ended", handleAudioEnd);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("ended", handleAudioEnd);
+      }
+    };
+  }, [selectedSong, handleAudioEnd]);
+
   const formatTime = (seconds) => {
     if (!seconds) return "00:00:00";
 
@@ -268,7 +350,9 @@ const BottomPlayer = () => {
           <img src={selectedSong.img} alt="Album" className="album-cover" />
           <div className="song-details">
             <span className="song-title">{selectedSong.song_name}</span>
-            <span className="song-artist">{mainArtistInfo.name}</span>
+            <span className="song-artist">
+              {mainArtistInfo?.name || "Loading..."}
+            </span>
           </div>
         </div>
       ) : (
@@ -392,6 +476,43 @@ const BottomPlayer = () => {
             disabled={!selectedSong}
           />
         </div>
+        {selectedSong && (
+          <button
+            className={`control-btn rightbar-toggle ${
+              isRightbarVisible ? "active" : ""
+            }`}
+            onClick={handleToggleRightbar}
+            title={isRightbarVisible ? "Ẩn sidebar" : "Hiện sidebar"}
+          >
+            {isRightbarVisible ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"
+                />
+              </svg>
+            )}
+          </button>
+        )}
         <button className="control-btn maximize-btn" onClick={toggleFullScreen}>
           {isFullScreen ? <Minimize /> : <Maximize />}
         </button>
@@ -402,7 +523,7 @@ const BottomPlayer = () => {
           ref={audioRef}
           src={selectedSong.fileUpload}
           onTimeUpdate={handleTimeUpdate}
-          onEnded={selectedSong}
+          onEnded={handleAudioEnd}
         />
       )}
     </div>
