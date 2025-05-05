@@ -2,7 +2,7 @@ import { React } from "react";
 import { Button, Form, Upload, Input, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useDispatch } from "react-redux";
-import { createArtist } from "../../../redux/slice/artistSlice"; // <-- import đúng action
+import { createArtist } from "../../../redux/slice/artistSlice";
 
 const { TextArea } = Input;
 
@@ -11,6 +11,7 @@ const CreateArtist = () => {
   const dispatch = useDispatch();
 
   const onFinish = (values) => {
+    // Đảm bảo đúng tên trường theo slice
     const artistData = {
       name: values.name,
       description: values.description,
@@ -25,7 +26,9 @@ const CreateArtist = () => {
       })
       .catch((err) => {
         console.error(err);
-        message.error("Thêm nghệ sĩ thất bại! Vui lòng thử lại.");
+        message.error(
+          "Thêm nghệ sĩ thất bại: " + (err.message || "Vui lòng thử lại")
+        );
       });
   };
 
