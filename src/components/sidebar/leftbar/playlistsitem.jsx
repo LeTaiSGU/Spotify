@@ -1,28 +1,28 @@
-// SidebarPlaylists.jsx
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import React from "react";
 import { Heart } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchLibraryDetailsAPI, selectUserLibrary } from "~/redux/slice/userLibrarySlice";
-
+import { useNavigate } from "react-router-dom";
 
 const SidebarPlaylists = ({ isExpanded }) => {
-  const isplayed = useState(true);
   const dispatch = useDispatch();
   const libraryDetails = useSelector(selectUserLibrary);
+  const navigate = useNavigate();
+
+  const navigateToItem = (playlistId, item_type) => {
+    if (item_type === "playlist") {
+      navigate(`/playlist/${playlistId}`);
+    } else if (item_type === "album") {
+      navigate(`/album/${playlistId}`);
+    } else if (item_type === "song") {
+      navigate(`/song/${playlistId}`);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await dispatch(fetchLibraryDetailsAPI());
-      } catch (error) {
-        console.error("Error fetching library details:", error);
-      }
-    };
-
-    fetchData();
-  }
-  , [dispatch]);
+    dispatch(fetchLibraryDetailsAPI());
+  }, [dispatch]);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -31,6 +31,7 @@ const SidebarPlaylists = ({ isExpanded }) => {
           <div
             key={item.id}
             className="flex items-center gap-3 p-2 mx-2 rounded-md hover:bg-gray-700 cursor-pointer"
+            onClick={() => navigateToItem(item.id,item.item_type)} // Thêm onClick handler
           >
             <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">
               {item.isLiked ? (
@@ -68,6 +69,7 @@ const SidebarPlaylists = ({ isExpanded }) => {
             <div
               key={item.id}
               className="grid grid-cols-[1fr_120px_100px] items-center gap-2 p-2 mx-2 rounded-md hover:bg-gray-700 cursor-pointer"
+              onClick={() => navigateToItem(item.id)} // Thêm onClick handler cho view mở rộng
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="relative w-12 h-12 flex-shrink-0 rounded overflow-hidden">
