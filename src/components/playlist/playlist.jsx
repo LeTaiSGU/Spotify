@@ -6,24 +6,24 @@ import { Avatar, Popover } from 'antd';
 import { PlusCircleOutlined, CheckCircleFilled, EllipsisOutlined } from '@ant-design/icons';
 
 import {
-  clearQueue,
-  addToQueue,
   setSelectedSong,
   toggleRightbar,
   togglePlay,
 } from "../../redux/slice/songSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 
 
 const Playlist = ({ type }) => {
-  const [playingSongId, setPlayingSongId] = useState(1);
   const { id } = useParams()
   // const [playlist, setPlaylist] = useState(null);
   const [liked, setLiked] = useState(false);
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const selectedSong = useSelector((state) => state.songs.selectedSong);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
 
 
@@ -55,28 +55,15 @@ const Playlist = ({ type }) => {
     fetchSongs();
   }, [type, id]);
 
-
-
-
-  const handlePlay = (e, song) => {
-    console.log("Play button clicked for song:", song);
-
-    // Xóa queue cũ
-    dispatch(clearQueue());
-
-    // Thêm bài hát mới vào queue
-    dispatch(
-      addToQueue({
-        ...song,
-        file_upload: song.file_upload,
-      })
-    );
-
-    // Set bài hát được chọn và hiện rightbar
+  const handlePlay = (song) => {
     dispatch(setSelectedSong(song));
-    dispatch(toggleRightbar(true));
     dispatch(togglePlay(true));
-  };
+    dispatch(toggleRightbar(true));
+  }
+
+
+
+
 
 
   const content = (
@@ -128,26 +115,18 @@ const Playlist = ({ type }) => {
             <tr
               key={song.id}
               className="group hover:bg-gradient-to-r hover:from-[#2d2a31] hover:to-transparent cursor-pointer text-gray-300 text-sm font-normal border-b border-gray-700 transition"
-              onDoubleClick={() => setPlayingSongId(song.id)}
+              onDoubleClick={() => handlePlay(song)}
             >
-              <td className="py-3 w-10 text-center">
+              <td className="py-3 w-10 text-center" onClick={() => handlePlay(song)}>
                 <div className="flex items-center justify-center">
-                  {playingSongId === song.id ? (
+                  {selectedSong?.id === song.id ? (
                     // Nếu bài hát đang phát, hiển thị biểu tượng Play màu xanh
                     <Play className="w-4 h-4 text-[#1ed760]" />
                   ) : (
                     // Nếu không phải bài đang phát, hiển thị số thứ tự hoặc biểu tượng Play khi hover
                     <>
                       <span className="group-hover:hidden">{index + 1}</span>
-                      <div
-                        className="hidden group-hover:block"
-                        onClick={(e) => {
-                          e.stopPropagation(); // Ngăn sự kiện onDoubleClick lan ra
-                          handlePlay(song);
-                        }}
-                      >
-                        <Play className="w-4 h-4 text-gray-500 hover:text-white" />
-                      </div>
+                      <Play className="w-4 h-4 text-gray-500 hidden group-hover:block" />
                     </>
                   )}
                 </div>
@@ -161,11 +140,12 @@ const Playlist = ({ type }) => {
                   />
                   <div>
                     <h1
-                      className={`font-semibold truncate block ${playingSongId === song.id
+                      className={`font-semibold truncate block ${selectedSong?.id === song.id
                         ? "text-[#1ed760] hover:underline"
                         : "group-hover:text-white hover:underline"
                         }`}
                       title={song.title} // Hiển thị tooltip khi hover
+                      onClick={() => {navigate(`/song/${song.id}`)}}
                     >
                       {song.song_name}
                     </h1>

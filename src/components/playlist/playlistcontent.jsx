@@ -26,7 +26,8 @@ function PlaylistContent({ type }) {
       toast.success("Xóa playlist thành công")
       await dispatch(fetchLibraryDetailsAPI());
       navigate("/")
-    } catch (error) {
+    } catch (e) {
+      console.error("Xóa playlist thất bại", e)
       toast.error("Xóa playlist thất bại")
     }
   }
@@ -45,7 +46,8 @@ function PlaylistContent({ type }) {
               <FaMinusCircle size={18} className="mr-3 text-gray-400 group-hover:text-red-400" />
               <span>Xóa</span>
             </li>
-            <li className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group">
+            <li 
+            className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group">
               <IoPencil size={18} className="mr-3 text-gray-400 group-hover:text-blue-400" />
               <span>Sửa thông tin</span>
             </li>
@@ -68,9 +70,11 @@ function PlaylistContent({ type }) {
           <FaRandom size={25} className="hover:text-white text-gray-300"></FaRandom>
 
           {/* <Ellipsis className="scale-110 text-gray-400 hover:text-white cursor-pointer" /> */}
+          { type === "playlist"  &&
           <Popover placement='right' content={content} trigger="click">
             <EllipsisOutlined className="text-white text-4xl cursor-pointer hover:text-gray-400" />
           </Popover>
+          }
 
         </div>
         <Playlist type={type}/>

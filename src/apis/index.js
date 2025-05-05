@@ -37,6 +37,11 @@ export const getSongBylistId = async (playlistId) => {
   return response.data
 }
 
+export const addSongToPlaylist = async (playlistId, songId) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/api/playlist_songs/${playlistId}/add/${ songId }`)
+  return response.data
+}
+
 // songs 
 export const getSongById = async (songId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/songs/${songId}`)
@@ -54,4 +59,6 @@ export const getAlbumById = async (albumId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/albums/${albumId}`)
   return response.data
 }
+
+
 
