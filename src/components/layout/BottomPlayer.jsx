@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { togglePlay } from "../../redux/slice/songSlice";
 import "./BottomPlayer.css";
 import {
   FaPlay,
@@ -10,96 +12,75 @@ import {
   FaVolumeUp,
   FaVolumeMute,
 } from "react-icons/fa";
-import { Maximize, Minimize } from "lucide-react"; // Sử dụng cả Maximize và Minimize
+import { Maximize, Minimize } from "lucide-react";
+
+const timeStringToSeconds = (timeString) => {
+  if (!timeString) return 0;
+  const [hours, minutes, seconds] = timeString.split(":").map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
+};
 
 const BottomPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const dispatch = useDispatch();
+  const [daCapNhatLuotNghe, setDaCapNhatLuotNghe] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(50);
   const [previousVolume, setPreviousVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
-  const [songData, setSongData] = useState(null);
-  const [repeatMode, setRepeatMode] = useState(0); // 0: tắt, 1: lặp bài hiện tại, 2: lặp playlist
-  const [isRandom, setIsRandom] = useState(false); // Trạng thái ngẫu nhiên
-  const [isFullScreen, setIsFullScreen] = useState(false); // Trạng thái toàn màn hình
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const audioRef = useRef(null);
 
-  // Hàm giả lập chọn bài hát (sử dụng dữ liệu giả lập)
-  const selectSong = async () => {
-    try {
-      const mockData = {
-        title: "Devil In A New Dress",
-        artist: "Kanye West, Rick Ross",
-        albumCover:
-          "https://i.scdn.co/image/ab67616d0000b273d2a7d2231a8b3d9a9b27a5f",
-        duration: 244,
-        audioUrl:
-          "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-      };
-      setSongData(mockData);
-    } catch (error) {
-      console.error("Error setting mock song data:", error);
-      alert("Không thể tải bài hát. Vui lòng thử lại sau.");
-    }
-  };
+  const { selectedSong, isPlaying } = useSelector((state) => state.songs);
 
-  // Xử lý chuyển đổi toàn màn hình
-  const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement
-        .requestFullscreen()
-        .then(() => {
-          setIsFullScreen(true);
-        })
-        .catch((err) => {
-          console.error("Lỗi khi vào chế độ toàn màn hình:", err);
-        });
-    } else {
-      document
-        .exitFullscreen()
-        .then(() => {
-          setIsFullScreen(false);
-        })
-        .catch((err) => {
-          console.error("Lỗi khi thoát chế độ toàn màn hình:", err);
-        });
-    }
-  };
-
-  // Cập nhật trạng thái toàn màn hình khi thay đổi
   useEffect(() => {
     const handleFullScreenChange = () => {
       setIsFullScreen(!!document.fullscreenElement);
     };
-
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
   }, []);
 
-  // Xử lý khi nhấn nút play/pause
-  const togglePlayPause = () => {
-    if (!songData) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+  useEffect(() => {
+    if (selectedSong && audioRef.current) {
+      // Chỉ update source khi có bài hát mới
+      if (audioRef.current.src !== selectedSong.file_upload) {
+        audioRef.current.src = selectedSong.file_upload;
+        // Không tự động phát khi chỉ thay đổi source
+      }
+
+      // Chỉ phát/dừng khi isPlaying thay đổi
+      if (isPlaying) {
+        audioRef.current
+          .play()
+          .catch((error) => console.error("Lỗi khi phát:", error));
+      } else {
+        audioRef.current.pause();
+      }
     }
-    setIsPlaying(!isPlaying);
+  }, [selectedSong, isPlaying]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume / 100;
+    }
+  }, [volume]);
+
+  const togglePlayPause = () => {
+    if (!selectedSong) return;
+    dispatch(togglePlay(!isPlaying));
   };
 
-  // Xử lý tua thời gian
   const handleTimeChange = (e) => {
-    if (!songData) return;
     const newTime = e.target.value;
     setCurrentTime(newTime);
-    audioRef.current.currentTime = newTime;
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
   };
 
-  // Xử lý thay đổi âm lượng
   const handleVolumeChange = (e) => {
-    if (!songData) return;
     const newVolume = e.target.value;
     setVolume(newVolume);
     setPreviousVolume(newVolume);
@@ -109,71 +90,264 @@ const BottomPlayer = () => {
     setIsMuted(false);
   };
 
-  // Xử lý bật/tắt âm thanh
   const toggleMute = () => {
-    if (!songData) return;
     if (isMuted) {
       setVolume(previousVolume);
-      if (audioRef.current) {
-        audioRef.current.volume = previousVolume / 100;
-      }
+      if (audioRef.current) audioRef.current.volume = previousVolume / 100;
     } else {
       setPreviousVolume(volume);
       setVolume(0);
-      if (audioRef.current) {
-        audioRef.current.volume = 0;
-      }
+      if (audioRef.current) audioRef.current.volume = 0;
     }
     setIsMuted(!isMuted);
   };
 
-  // Xử lý nút Repeat
-  const toggleRepeat = () => {
-    if (!songData) return;
-    setRepeatMode((prevMode) => (prevMode + 1) % 3);
-  };
-
-  // Xử lý nút Random
-  const toggleRandom = () => {
-    if (!songData) return;
-    setIsRandom((prev) => !prev);
-  };
-
-  // Cập nhật thời gian hiện tại khi bài hát đang chạy
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
     }
   };
 
-  // Định dạng thời gian (giây -> mm:ss)
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+  // const toggleRepeat = () => {
+  //   // Nếu bật chế độ lặp lại, tắt chế độ ngẫu nhiên
+  //   if (isRandom) {
+  //     dispatch(toggleRandom());
+  //   }
+  //   const nextMode = (repeatMode + 1) % 3;
+  //   dispatch(setRepeatMode(nextMode));
+  // };
+
+  // const handleToggleRandom = () => {
+  //   if (!currentSong) return;
+  //   // Nếu bật chế độ ngẫu nhiên, tắt chế độ lặp lại
+  //   if (repeatMode > 0) {
+  //     dispatch(setRepeatMode(0));
+  //   }
+  //   dispatch(toggleRandom());
+  // };
+
+  // const handleNextSong = () => {
+  //   if (!currentSong || queue.length === 0) return;
+
+  //   const currentIndex = queue.findIndex(
+  //     (s) => s.songId === currentSong.songId
+  //   );
+
+  //   // Nếu đang ở bài cuối cùng
+  //   if (currentIndex === queue.length - 1) {
+  //     // Chỉ cho phép phát lại từ đầu nếu repeatMode === 2 (lặp lại playlist/album)
+  //     if (repeatMode === 2) {
+  //       dispatch(playNextSong());
+  //     }
+  //     return;
+  //   }
+
+  //   dispatch(playNextSong());
+  // };
+
+  // const handlePreviousSong = () => {
+  //   if (!currentSong || queue.length === 0) return;
+
+  //   const currentIndex = queue.findIndex(
+  //     (s) => s.songId === currentSong.songId
+  //   );
+
+  //   // Nếu đang ở bài đầu tiên
+  //   if (currentIndex === 0) {
+  //     // Chỉ cho phép phát bài cuối nếu repeatMode === 2 (lặp lại playlist/album)
+  //     if (repeatMode === 2) {
+  //       dispatch(playPreviousSong());
+  //     }
+  //     return;
+  //   }
+
+  //   dispatch(playPreviousSong());
+  // };
+
+  // const handleSongEnded = async () => {
+  //   if (repeatMode === 1) {
+  //     audioRef.current.currentTime = 0;
+  //     audioRef.current.play();
+  //     return;
+  //   }
+
+  //   const currentIndex = queue.findIndex(
+  //     (s) => s?.songId === currentSong?.songId
+  //   );
+
+  //   // Nếu đang phát playlist và bật random
+  //   if (queue.length > 1 && isRandom) {
+  //     dispatch(playNextSong()); // Sẽ random trong queue hiện tại
+  //     return;
+  //   }
+
+  //   // Nếu là bài cuối hoặc chỉ có 1 bài trong queue (single song)
+  //   if (currentIndex === queue.length - 1 || queue.length === 1) {
+  //     if (repeatMode === 2) {
+  //       dispatch(playNextSong());
+  //     } else {
+  //       try {
+  //         // Fetch random song mới
+  //         const excludeSongId = currentSong?.songId;
+  //         const result = await dispatch(
+  //           fetchRandomSong(excludeSongId)
+  //         ).unwrap();
+
+  //         if (result) {
+  //           // Đè queue cũ và phát ngay
+  //           dispatch(clearQueue());
+  //           dispatch(setQueue([result]));
+  //           dispatch(setCurrentSong(result));
+  //           dispatch(togglePlay(true));
+
+  //           // Cập nhật audio
+  //           if (audioRef.current) {
+  //             audioRef.current.src = result.fileUpload;
+  //             audioRef.current.load();
+  //             audioRef.current
+  //               .play()
+  //               .catch((error) =>
+  //                 console.error("Error playing new random song:", error)
+  //               );
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching random song:", error);
+  //         dispatch(togglePlay(false));
+  //       }
+  //     }
+  //   } else {
+  //     // Còn bài tiếp theo trong queue
+  //     dispatch(playNextSong());
+  //   }
+  // };
+
+  //update listening counts
+  // Thêm useEffect mới để theo dõi thời gian nghe
+  useEffect(() => {
+    const capNhatLuotNghe = async () => {
+      if (!audioRef.current || !selectedSong || daCapNhatLuotNghe) return;
+
+      const tongThoiGian = audioRef.current.duration;
+      const thoiGianHienTai = audioRef.current.currentTime;
+
+      if (thoiGianHienTai > tongThoiGian * 0.75) {
+        try {
+          console.log("Đã nghe hơn 75% bài hát");
+          const response = await fetch(
+            `http://localhost:8000/api/songs/playcount/${selectedSong.id}`,
+            {
+              method: "put",
+            }
+          );
+
+          if (response.ok) {
+            setDaCapNhatLuotNghe(true);
+            console.log("Đã cập nhật lượt nghe thành công");
+          }
+        } catch (error) {
+          console.error("Lỗi khi cập nhật lượt nghe:", error);
+        }
+      }
+    };
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("timeupdate", capNhatLuotNghe);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("timeupdate", capNhatLuotNghe);
+      }
+    };
+  }, [selectedSong, daCapNhatLuotNghe]);
+
+  const handleAudioEnd = useCallback(() => {
+    console.log("Audio ended - Resetting state");
+
+    // Reset thời gian về 0
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      setCurrentTime(0);
+    }
+
+    // Sau đó mới cập nhật các state khác
+    setDaCapNhatLuotNghe(false);
+    dispatch(togglePlay(false));
+
+    console.log("Đã reset time và state");
+  }, [dispatch]);
+  // Thêm useEffect để reset trạng thái khi đổi bài
+  useEffect(() => {
+    // Chỉ reset daCapNhatLuotNghe khi thay đổi bài hát
+    if (selectedSong) {
+      setDaCapNhatLuotNghe(false);
+    }
+
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.addEventListener("ended", handleAudioEnd);
+    }
+
+    return () => {
+      if (audioElement) {
+        audioElement.removeEventListener("ended", handleAudioEnd);
+      }
+    };
+  }, [selectedSong, handleAudioEnd]);
+
+  const formatTime = (seconds) => {
+    if (!seconds) return "00:00:00";
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    const pad = (num) => String(num).padStart(2, "0");
+
+    return `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`;
+  };
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(console.error);
+    } else {
+      document.exitFullscreen().catch(console.error);
+    }
   };
 
+  //artist owner
+  const [mainArtistInfo, setMainArtistInfo] = useState(null);
+
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
-    }
-  }, [volume]);
+    const fetchMainArtist = async () => {
+      if (selectedSong?.artist_owner) {
+        try {
+          const response = await fetch(
+            `http://localhost:8000/api/artists/${selectedSong.artist_owner}`
+          );
+          const data = await response.json();
+          setMainArtistInfo(data);
+        } catch (error) {
+          console.error("Error fetching main artist:", error);
+        }
+      }
+    };
+
+    fetchMainArtist();
+  }, [selectedSong?.artist_owner]);
 
   return (
     <div className="bottom-player">
-      {/* Phần thông tin bài nhạc */}
-      {songData ? (
+      {selectedSong ? (
         <div className="song-info">
-          <img
-            src={songData.albumCover}
-            alt="Album cover"
-            className="album-cover"
-          />
+          <img src={selectedSong.img} alt="Album" className="album-cover" />
           <div className="song-details">
-            <span className="song-title">{songData.title}</span>
-            <span className="song-artist">{songData.artist}</span>
+            <span className="song-title">{selectedSong.song_name}</span>
+            <span className="song-artist">
+              {mainArtistInfo?.name || "Loading..."}
+            </span>
           </div>
-          <div className="check-icon">✔</div>
         </div>
       ) : (
         <div className="song-placeholder text-gray-400">
@@ -181,65 +355,88 @@ const BottomPlayer = () => {
         </div>
       )}
 
-      {/* Phần điều khiển trung tâm */}
       <div className="controls">
-        {/* Các nút điều khiển */}
         <div className="control-buttons">
           <button
-            className={`control-btn ${isRandom ? "active" : ""}`}
-            onClick={toggleRandom}
-            disabled={!songData}
+          // className={`control-btn ${isRandom ? "active" : ""}`}
+          // onClick={handleToggleRandom}
+          // disabled={!currentSong}
+          // title={isRandom ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
           >
             <FaRandom />
           </button>
-          <button className="control-btn" disabled={!songData}>
+          <button
+          // className="control-btn"
+          // onClick={handlePreviousSong}
+          // disabled={
+          //   !currentSong ||
+          //   queue.length === 0 ||
+          //   (queue.findIndex((s) => s.songId === currentSong.songId) === 0 &&
+          //     repeatMode !== 2)
+          // }
+          >
             <FaStepBackward />
           </button>
           <button
             className="play-pause-btn"
             onClick={togglePlayPause}
-            disabled={!songData}
+            disabled={!selectedSong}
           >
             {isPlaying ? <FaPause /> : <FaPlay />}
           </button>
-          <button className="control-btn" disabled={!songData}>
+          <button
+          // className="control-btn"
+          // onClick={handleNextSong}
+          // disabled={
+          //   !currentSong ||
+          //   queue.length === 0 ||
+          //   (queue.findIndex((s) => s.songId === currentSong.songId) ===
+          //     queue.length - 1 &&
+          //     repeatMode !== 2)
+          // }
+          >
             <FaStepForward />
           </button>
           <button
-            className={`control-btn ${repeatMode > 0 ? "active" : ""}`}
-            onClick={toggleRepeat}
-            disabled={!songData}
+          // className={`control-btn ${repeatMode > 0 ? "active" : ""}`}
+          // onClick={toggleRepeat}
+          // disabled={!currentSong}
+          // title={
+          //   repeatMode === 0
+          //     ? "Bật lặp lại"
+          //     : repeatMode === 1
+          //     ? "Lặp lại một bài"
+          //     : "Lặp lại playlist"
+          // }
           >
             <FaRedo />
-            {repeatMode === 1 && <span className="repeat-indicator">1</span>}
-          </button>
-          {/* Nút Select Song không disabled */}
-          <button className="control-btn select-song-btn" onClick={selectSong}>
-            Select Song
+            {/* {repeatMode === 1 && <span className="repeat-indicator">1</span>} */}
           </button>
         </div>
 
         {/* Thanh thời gian */}
         <div className="progress-bar">
-          {songData ? (
+          {selectedSong ? (
             <>
               <span className="current-time">{formatTime(currentTime)}</span>
               <input
                 type="range"
                 min="0"
-                max={songData.duration}
+                max={timeStringToSeconds(selectedSong.duration)}
                 value={currentTime}
                 onChange={handleTimeChange}
                 className="progress-slider"
-                disabled={!songData}
+                disabled={!selectedSong}
               />
               <span className="remaining-time">
-                -{formatTime(songData.duration - currentTime)}
+                {formatTime(
+                  timeStringToSeconds(selectedSong.duration) - currentTime
+                )}
               </span>
             </>
           ) : (
             <>
-              <span className="current-time">0:00</span>
+              <span className="current-time">00:00:00</span>
               <input
                 type="range"
                 min="0"
@@ -248,23 +445,20 @@ const BottomPlayer = () => {
                 className="progress-slider"
                 disabled
               />
-              <span className="remaining-time">0:00</span>
+              <span className="remaining-time">00:00:00</span>
             </>
           )}
         </div>
       </div>
 
-      {/* Phần điều khiển bên phải (âm lượng, v.v.) */}
       <div className="extra-controls">
         <button
           className="control-btn"
           onClick={toggleMute}
-          disabled={!songData}
+          disabled={!selectedSong}
         >
           {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
         </button>
-
-        {/* Thanh âm lượng */}
         <div className="volume-control">
           <input
             type="range"
@@ -273,21 +467,20 @@ const BottomPlayer = () => {
             value={volume}
             onChange={handleVolumeChange}
             className="volume-slider"
-            disabled={!songData}
+            disabled={!selectedSong}
           />
         </div>
-        {/* Nút Maximize/Minimize với chức năng toàn màn hình */}
         <button className="control-btn maximize-btn" onClick={toggleFullScreen}>
           {isFullScreen ? <Minimize /> : <Maximize />}
         </button>
       </div>
 
-      {/* Audio element ẩn để phát nhạc */}
-      {songData && (
+      {selectedSong && (
         <audio
           ref={audioRef}
-          src={songData.audioUrl}
+          src={selectedSong.fileUpload}
           onTimeUpdate={handleTimeUpdate}
+          onEnded={handleAudioEnd}
         />
       )}
     </div>
