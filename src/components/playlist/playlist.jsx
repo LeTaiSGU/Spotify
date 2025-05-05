@@ -94,14 +94,16 @@ const Playlist = () => {
                 />
                 <div>
                   <h1
-                    className={`font-semibold truncate ${
+                    className={`font-semibold truncate block ${
                       playingSongId === song.id
                         ? "text-[#1ed760] hover:underline"
                         : "group-hover:text-white hover:underline"
                     }`}
+                    title={song.title} // Hiển thị tooltip khi hover
                   >
                     {song.song_name}
                   </h1>
+
                   <p className="text-[#9a9a9b] text-sm truncate hover:underline hover:text-white">
                     {song.artist1}
                   </p>
