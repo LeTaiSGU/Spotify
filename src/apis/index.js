@@ -43,8 +43,15 @@ export const getSongById = async (songId) => {
   return response.data
 }
 
+export const getSongsByAlbumId = async (albumId) => {
+  const response = await fetch(`/api/album/${albumId}/songs`);
+  return await response.json();
+};
+
+
 // albums
 export const getAlbumById = async (albumId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/albums/${albumId}`)
   return response.data
 }
+

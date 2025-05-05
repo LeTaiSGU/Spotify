@@ -101,6 +101,8 @@ const MusicSession = () => {
   );
   const recommendedRef = useRef(null);
 
+  console.log("songs:", songs); 
+
   useEffect(() => {
     dispatch(fetchTopSongs());
   }, [dispatch]);
