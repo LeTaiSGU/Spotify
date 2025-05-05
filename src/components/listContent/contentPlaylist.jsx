@@ -134,9 +134,10 @@ const MusicSession = () => {
   };
 
   return (
-    <div className="p-5 bg-stone-900 rounded-xl h-full text-white">
+    <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
-      <div className="relative w-full overflow-hidden">
+      <div className="relative">
+
         {/* Nút trái */}
         <button
           onClick={() => scroll(recommendedRef, "left")}
@@ -147,8 +148,7 @@ const MusicSession = () => {
 
         <div
           ref={recommendedRef}
-          className="flex gap-4 overflow-x-scroll whitespace-nowrap scrollbar-hide px-12"
-          style={{ scrollBehavior: "smooth" }}
+          className="w-full flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
         >
           {loading ? (
             <p>Loading...</p>
