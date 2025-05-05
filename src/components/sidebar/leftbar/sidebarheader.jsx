@@ -41,7 +41,7 @@ const SidebarHeader = ({ onToggle, isExpanded }) => {
           <Plus size={16} />
           <span className="text-sm font-semibold">Tạo</span>
         </button>
-        <button
+        {/* <button
           onClick={onToggle}
           className="p-2 rounded-full hover:bg-gray-700 transition-transform duration-200"
         >
@@ -51,7 +51,7 @@ const SidebarHeader = ({ onToggle, isExpanded }) => {
               isExpanded ? "rotate-180" : ""
             } transition-transform duration-300`}
           />
-        </button>
+        </button> */}
       </div>
     </div>
   );

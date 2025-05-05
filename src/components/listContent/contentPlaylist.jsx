@@ -99,6 +99,8 @@ const MusicSession = () => {
   const { songs, loading } = useSelector((state) => state.songs);
   const recommendedRef = useRef(null);
 
+  console.log("songs:", songs); 
+
   useEffect(() => {
     dispatch(fetchTopSongs());
   }, [dispatch]);
@@ -106,10 +108,23 @@ const MusicSession = () => {
   // Thêm effect để reset selectedSong khi showPlaylistContent thay đổi
 
   const scroll = (ref, direction) => {
+    console.log("Scroll direction:", direction);
+    console.log("Ref current:", ref.current); // Thêm log để kiểm tra ref
+    console.log("Current scroll position:", ref.current?.scrollLeft); // Kiểm tra vị trí scroll hiện tại
+
     if (ref.current) {
       const scrollAmount = 300;
-      ref.current.scrollLeft +=
-        direction === "left" ? -scrollAmount : scrollAmount;
+      const newScrollPosition =
+        direction === "left"
+          ? ref.current.scrollLeft - scrollAmount
+          : ref.current.scrollLeft + scrollAmount;
+
+      console.log("New scroll position:", newScrollPosition);
+
+      ref.current.scrollTo({
+        left: newScrollPosition,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -122,6 +137,7 @@ const MusicSession = () => {
     <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
       <div className="relative">
+
         {/* Nút trái */}
         <button
           onClick={() => scroll(recommendedRef, "left")}

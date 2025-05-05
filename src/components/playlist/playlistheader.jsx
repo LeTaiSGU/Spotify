@@ -4,7 +4,7 @@ import avatar from "../../assets/avatar.png";
 import { ImagePlus } from "lucide-react";
 import EditPlaylistModal from "../sidebar/editPlaylist";
 import PlaylistEditModal from "../sidebar/editPlaylist";
-import { getPlaylist } from "~/apis";
+import { getPlaylist, getAlbumById, getSongById } from "~/apis";
 import { useParams } from "react-router-dom";
 
 // Sửa định nghĩa component Avatar
@@ -45,84 +45,123 @@ const Avatar = ({ playlist, onRefresh }) => {
 };
 
 const PlaylistHeader = ({ type }) => {
-  const { playlistId } = useParams();
-  const [playlist, setPlaylist] = useState(null);
+  const { id } = useParams();
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchPlaylist = async () => {
+  const fetchData = async () => {
     try {
-      setLoading(true); 
-      const data = await getPlaylist(playlistId);
-      setPlaylist(data);
+      let result;
+      if (type === "playlist") {
+        result = await getPlaylist(id); // expected: name, description, cover_image, user, songs
+      } else if (type === "album") {
+        result = await getAlbumById(id); // expected: title, avatar, description, release_date, artist
+      } else if (type === "song") {
+        result = await getSongById(id); // expected: song_name, img, description, artist_owner, duration
+      }
+      setData(result);
     } catch (error) {
-      console.error("Error fetching playlist:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPlaylist();
-  }, [playlistId]);
+    fetchData();
+  }, [type, id]);
 
-  // Xác định kích thước chữ dựa trên độ dài tên playlist thực tế
-  let titleSizeClass;
-  const charCount = playlist?.name?.length || 0;
-  
-  if (charCount <= 15) {
-    titleSizeClass = "text-7xl";
-  } else if (charCount <= 35) {
-    titleSizeClass = "text-5xl";
-  } else {
-    titleSizeClass = "text-2xl";
-  }
+  const name =
+    type === "playlist" ? data?.name :
+    type === "album" ? data?.title :
+    type === "song" ? data?.song_name : "";
+
+  const cover =
+    type === "playlist" ? data?.cover_image :
+    type === "album" ? data?.avatar :
+    type === "song" ? data?.img : "";
+
+  const description = data?.description || "";
+
+  const charCount = name?.length || 0;
+  const titleSizeClass =
+    charCount <= 15 ? "text-7xl" :
+    charCount <= 35 ? "text-5xl" : "text-2xl";
 
   return (
     <div className="flex flex-row w-full text-white">
-      {/* Hiển thị loading state hoặc content dựa vào trạng thái loading */}
       {loading ? (
         <div className="flex items-center justify-center w-full p-10">
-          <p className="text-gray-400">Đang tải thông tin playlist...</p>
+          <p className="text-gray-400">Đang tải thông tin...</p>
         </div>
       ) : (
         <>
-          {/* Chỉ hiển thị nếu playlist đã được load */}
-          {playlist ? (
+          {data ? (
             <>
-              {/* Sửa cách truyền props */}
-              <Avatar playlist={playlist} onRefresh={fetchPlaylist} />
-              <div className="flex flex-col justify-end my-6">
-                <h1 className="text-sm font-semibold my-2">Playlist</h1>
-                <h1 className={`font-bold mb-2 ${titleSizeClass}`}>{playlist.name}</h1>
+              {/* Avatar chỉ có thể chỉnh sửa nếu là playlist */}
+              {type === "playlist" ? (
+                <Avatar playlist={data} onRefresh={fetchData} />
+              ) : (
+                <div className="mr-6 relative">
+                  <img
+                    src={cover || "https://via.placeholder.com/150"}
+                    alt="Cover"
+                    className="w-48 h-48 object-cover shadow-lg m-5 rounded-sm"
+                  />
+                </div>
+              )}
 
-                {playlist.description && (
+              <div className="flex flex-col justify-end my-6">
+                <h1 className="text-sm font-semibold my-2 capitalize">{type}</h1>
+                <h1 className={`font-bold mb-2 ${titleSizeClass}`}>{name}</h1>
+
+                {description && (
                   <div className="relative group max-w-lg">
-                    <p className="mb-2 text-gray-300 truncate text-xs">{playlist.description}</p>
-    
+                    <p className="mb-2 text-gray-300 truncate text-xs">{description}</p>
                     <div className="absolute hidden group-hover:block bottom-full mb-2 w-max max-w-md bg-gray-700 text-white text-xs p-2 rounded-lg shadow-lg z-10">
-                      {playlist.description}
+                      {description}
                     </div>
                   </div>
                 )}
 
                 <span className="flex flex-row text-sm font-semibold justify-start items-center">
                   <img
-                    src={playlist?.owner?.image || avatar}
+                    src={
+                      type === "playlist" ? (data?.owner?.image || avatar) :
+                      type === "album" ? (data?.artist?.avatar || avatar) :
+                      data?.artist_owner?.avatar || avatar
+                    }
                     alt="avatar"
                     className="w-8 h-8 object-cover shadow-lg me-2 rounded-3xl"
                   />
                   <span className="font-bold hover:cursor-pointer hover:underline">
-                    {playlist?.owner?.name || "User"}
+                    {
+                      type === "playlist" ? (data?.owner?.name || "User") :
+                      type === "album" ? (data?.artist?.name || "Artist") :
+                      data?.artist_owner?.name || "Artist"
+                    }
                   </span>
-                  <span className="ms-2 text-gray-300">
-                    {playlist?.songs?.length || 0} bài hát, {playlist.duration || "0 phút"}
-                  </span>
+                  {type === "playlist" && (
+                    <span className="ms-2 text-gray-300">
+                      {data?.songs?.length || 0} bài hát, {data.duration || "0 phút"}
+                    </span>
+                  )}
+                  {type === "song" && (
+                    <span className="ms-2 text-gray-300">
+                      {data?.duration || "0:00"}
+                    </span>
+                  )}
+                  {type === "album" && (
+                    <span className="ms-2 text-gray-300">
+                      {data?.release_date || ""}
+                    </span>
+                  )}
                 </span>
               </div>
             </>
           ) : (
             <div className="flex items-center justify-center w-full p-10">
-              <p className="text-gray-400">Không tìm thấy playlist</p>
+              <p className="text-gray-400">Không tìm thấy {type}</p>
             </div>
           )}
         </>
