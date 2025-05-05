@@ -37,6 +37,9 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<ContentPlaylist />} />
           <Route path="playlist/:playlistId" element={<PlaylistContent type="playlist" />} />
+          <Route path="album/:albumId" element={<PlaylistContent type="album" />} />
+          <Route path="song/:songId" element={<PlaylistContent type="song" />} />
+
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
           <Route path="user" element={<UserProfile />} />

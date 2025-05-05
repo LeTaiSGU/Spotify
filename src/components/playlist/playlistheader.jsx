@@ -44,14 +44,14 @@ const Avatar = ({ playlist, onRefresh }) => {
   );
 };
 
-const PlaylistHeader = () => {
+const PlaylistHeader = ({ type }) => {
   const { playlistId } = useParams();
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchPlaylist = async () => {
     try {
-      setLoading(true); // Bật loading khi refresh
+      setLoading(true); 
       const data = await getPlaylist(playlistId);
       setPlaylist(data);
     } catch (error) {

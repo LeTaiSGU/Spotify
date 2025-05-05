@@ -36,3 +36,15 @@ export const getSongBylistId = async (playlistId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/playlist_songs/${playlistId}`)
   return response.data
 }
+
+// songs 
+export const getSongById = async (songId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/songs/${songId}`)
+  return response.data
+}
+
+// albums
+export const getAlbumById = async (albumId) => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/albums/${albumId}`)
+  return response.data
+}
