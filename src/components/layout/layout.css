@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #121212;
+  background-color: black;
 }
 
 .top-bar {
@@ -18,8 +18,8 @@
 .main-container {
   display: flex;
   flex: 1;
-  overflow: hidden;
-  padding-top: 60px; /* Đẩy nội dung xuống để tránh bị che */
+  width: 100%;
+  padding-top: 60px;
 }
 
 .main-content {
