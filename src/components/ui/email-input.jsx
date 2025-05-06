@@ -25,6 +25,7 @@ const EmailField = ({ email, setEmail, setIsEmailValid }) => {
         type="email"
         value={email}
         error={emailError}
+        placeholder={"Nhập địa chỉ email của bạn"}
         onChange={(e) => setEmail(e.target.value.trim())}
       />
       {emailError && <ErrorMessage message={emailError} />}

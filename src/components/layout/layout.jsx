@@ -15,7 +15,7 @@ const Layout = () => {
         <div className="main-content">
           <Outlet />
         </div>
-        <Rightbar />
+        {/* <Rightbar /> */}
       </div>
       <BottomPlayer />
     </div>
