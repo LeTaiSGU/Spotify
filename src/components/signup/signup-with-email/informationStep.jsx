@@ -1,114 +1,91 @@
-import { useState, useEffect, useCallback } from "react";
-import InputField from "../../ui/field-input";
+import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { registerUser } from "~/redux/slice/authSlice";
 import ErrorMessage from "../../ui/error-message";
+import BirthdateSelect from "../../ui/signup-birthday-select";
+import GenderSelect from "../../ui/signu-gender-radiobox";
+import InputField from "../../ui/field-input";
 
 const InformationStep = ({ nextStep, prevStep, userData, updateUserData }) => {
   const [formData, setFormData] = useState({
     name: userData.name || "",
-    day: userData.birthdate ? new Date(userData.birthdate).getDate() : "",
-    month: userData.birthdate
-      ? new Date(userData.birthdate).getMonth() + 1
-      : "",
-    year: userData.birthdate ? new Date(userData.birthdate).getFullYear() : "",
+    day: userData.dob ? new Date(userData.dob).getDate() : "",
+    month: userData.dob ? new Date(userData.dob).getMonth() + 1 : "",
+    year: userData.dob ? new Date(userData.dob).getFullYear() : "",
     gender: userData.gender || "",
   });
 
   const [errors, setErrors] = useState({});
   const [isValid, setIsValid] = useState(false);
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
-  // Tạo các option cho dropdown tháng
-  const months = [
-    { value: 1, label: "Tháng 1" },
-    { value: 2, label: "Tháng 2" },
-    { value: 3, label: "Tháng 3" },
-    { value: 4, label: "Tháng 4" },
-    { value: 5, label: "Tháng 5" },
-    { value: 6, label: "Tháng 6" },
-    { value: 7, label: "Tháng 7" },
-    { value: 8, label: "Tháng 8" },
-    { value: 9, label: "Tháng 9" },
-    { value: 10, label: "Tháng 10" },
-    { value: 11, label: "Tháng 11" },
-    { value: 12, label: "Tháng 12" },
-  ];
-
-  // Tạo các option cho dropdown ngày
-  const getDaysInMonth = (month, year) => {
-    return new Date(year, month, 0).getDate();
-  };
-
-  const years = useCallback(() => {
-    const currentYear = new Date().getFullYear();
-    return Array.from({ length: 100 }, (_, i) => currentYear - i);
-  }, []);
-
-  const days = useCallback(() => {
-    const daysCount =
-      formData.year && formData.month
-        ? getDaysInMonth(formData.month, formData.year)
-        : 31;
-    return Array.from({ length: daysCount }, (_, i) => i + 1);
-  }, [formData.month, formData.year]);
-
-  // Kiểm tra form hợp lệ
   useEffect(() => {
     const newErrors = {};
+    const required =
+      formData.name &&
+      formData.day &&
+      formData.month &&
+      formData.year &&
+      formData.gender;
 
-    if (!formData.name) {
+    if (formData.name && formData.name.trim() === "") {
       newErrors.name = "Vui lòng nhập tên của bạn";
     }
 
-    if (!formData.day || !formData.month || !formData.year) {
+    if (
+      (formData.day || formData.month || formData.year) &&
+      (!formData.day || !formData.month || !formData.year)
+    ) {
       newErrors.birthdate = "Vui lòng chọn ngày sinh đầy đủ";
-    } else {
-      const birthDate = new Date(
-        formData.year,
-        formData.month - 1,
-        formData.day
-      );
-      const minBirthDate = new Date();
-      minBirthDate.setFullYear(minBirthDate.getFullYear() - 13); // Ngày tối thiểu để đủ 13 tuổi
-
-      if (birthDate > minBirthDate) {
-        newErrors.birthdate = "Bạn phải đủ 13 tuổi để đăng ký";
-      }
+    } else if (formData.day && formData.month && formData.year) {
+      const birth = new Date(formData.year, formData.month - 1, formData.day);
+      const min = new Date();
+      min.setFullYear(min.getFullYear() - 13);
+      if (birth > min) newErrors.birthdate = "Bạn phải đủ 13 tuổi để đăng ký";
     }
 
-    if (!formData.gender) {
-      newErrors.gender = "Vui lòng chọn giới tính";
-    }
+    if (!formData.gender) newErrors.gender = "Vui lòng chọn giới tính";
 
     setErrors(newErrors);
-    setIsValid(Object.keys(newErrors).length === 0);
+    setIsValid(Object.keys(newErrors).length === 0 && required);
   }, [formData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!isValid) return;
 
-    // Tạo chuỗi ngày tháng từ các trường riêng lẻ
-    const birthdate = new Date(
-      formData.year,
-      formData.month - 1,
-      formData.day
-    ).toISOString();
+    const dob = new Date(formData.year, formData.month - 1, formData.day)
+      .toISOString()
+      .slice(0, 10);
 
     updateUserData({
       name: formData.name,
-      birthdate,
+      dob,
       gender: formData.gender,
     });
 
-    nextStep();
+    const fullUserData = {
+      ...userData,
+      name: formData.name,
+      dob,
+      gender: formData.gender,
+    };
+    dispatch(registerUser(fullUserData))
+      .unwrap()
+      .then(() => {
+        toast.success("Đăng ký thành công!");
+        nextStep(); // Sang FinalStep
+      })
+      .catch(() => {
+        toast.error(error || "Đăng ký không thành công!");
+      });
   };
 
   return (
@@ -116,7 +93,6 @@ const InformationStep = ({ nextStep, prevStep, userData, updateUserData }) => {
       <h2 className="text-xl font-bold text-white mb-4">
         Cho chúng tôi biết về bạn
       </h2>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Họ tên */}
         <div className="space-y-1">
@@ -130,133 +106,17 @@ const InformationStep = ({ nextStep, prevStep, userData, updateUserData }) => {
           />
           {errors.name && <ErrorMessage message={errors.name} />}
         </div>
-
-        {/* Ngày sinh */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Ngày sinh
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <select
-                name="day"
-                value={formData.day}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-[#121212] text-white border ${
-                  errors.birthdate ? "border-red-500" : "border-gray-600"
-                } focus:outline-none focus:ring-2 focus:ring-green-500`}
-              >
-                <option value="">Ngày</option>
-                {days().map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <select
-                name="month"
-                value={formData.month}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-[#121212] text-white border ${
-                  errors.birthdate ? "border-red-500" : "border-gray-600"
-                } focus:outline-none focus:ring-2 focus:ring-green-500`}
-              >
-                <option value="">Tháng</option>
-                {months.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <select
-                name="year"
-                value={formData.year}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-[#121212] text-white border ${
-                  errors.birthdate ? "border-red-500" : "border-gray-600"
-                } focus:outline-none focus:ring-2 focus:ring-green-500`}
-              >
-                <option value="">Năm</option>
-                {years().map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {errors.birthdate && (
-            <p className="mt-2 text-sm text-red-500">{errors.birthdate}</p>
-          )}
-        </div>
-
-        {/* Giới tính */}
-        <div>
-          <label className="block text-sm font-medium text-white mb-2">
-            Giới tính
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            <label
-              className={`flex items-center justify-center px-4 py-3 rounded-md border ${
-                formData.gender === "male"
-                  ? "border-green-500 bg-[#1A3D2C]"
-                  : "border-gray-600 bg-[#121212]"
-              } cursor-pointer`}
-            >
-              <input
-                type="radio"
-                name="gender"
-                value="male"
-                checked={formData.gender === "male"}
-                onChange={handleChange}
-                className="sr-only"
-              />
-              <span className="text-white">Nam</span>
-            </label>
-            <label
-              className={`flex items-center justify-center px-4 py-3 rounded-md border ${
-                formData.gender === "female"
-                  ? "border-green-500 bg-[#1A3D2C]"
-                  : "border-gray-600 bg-[#121212]"
-              } cursor-pointer`}
-            >
-              <input
-                type="radio"
-                name="gender"
-                value="female"
-                checked={formData.gender === "female"}
-                onChange={handleChange}
-                className="sr-only"
-              />
-              <span className="text-white">Nữ</span>
-            </label>
-            <label
-              className={`flex items-center justify-center px-4 py-3 rounded-md border ${
-                formData.gender === "other"
-                  ? "border-green-500 bg-[#1A3D2C]"
-                  : "border-gray-600 bg-[#121212]"
-              } cursor-pointer`}
-            >
-              <input
-                type="radio"
-                name="gender"
-                value="other"
-                checked={formData.gender === "other"}
-                onChange={handleChange}
-                className="sr-only"
-              />
-              <span className="text-white">Khác</span>
-            </label>
-          </div>
-          {errors.gender && (
-            <p className="mt-2 text-sm text-red-500">{errors.gender}</p>
-          )}
-        </div>
-
+        <BirthdateSelect
+          formData={formData}
+          onChange={handleChange}
+          errors={errors}
+        />
+        {errors.birthdate && <ErrorMessage message={errors.birthdate} />}
+        <GenderSelect
+          value={formData.gender}
+          onChange={handleChange}
+          error={errors.gender}
+        />
         <div className="flex space-x-4 pt-2">
           <button
             type="button"
@@ -267,15 +127,15 @@ const InformationStep = ({ nextStep, prevStep, userData, updateUserData }) => {
           </button>
           <button
             type="submit"
-            disabled={!isValid}
+            disabled={!isValid || loading}
             className={`w-1/2 py-3 rounded-full font-semibold 
               ${
-                isValid
+                isValid && !loading
                   ? "bg-green-500 hover:bg-green-400 text-black"
                   : "bg-gray-600 text-gray-300 cursor-not-allowed"
               }`}
           >
-            Tiếp theo
+            {loading ? "Đang đăng ký..." : "Hoàn tất đăng ký"}
           </button>
         </div>
       </form>
