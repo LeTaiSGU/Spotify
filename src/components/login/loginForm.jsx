@@ -4,6 +4,7 @@ import PasswordField from "../ui/password-input";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "~/redux/slice/authSlice";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +21,7 @@ const LoginForm = () => {
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then(() => {
-        alert("Đăng nhập thành công!");
+        toast.success("Đăng nhập thành công!");
         navigate("/");
       })
       .catch(() => {
