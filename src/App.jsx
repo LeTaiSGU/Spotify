@@ -24,7 +24,7 @@ import CreateArtist from "./pages/admin/artist/CreateArtist";
 import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
-
+import SearchResults from "./pages/search/SearchResults";
 import Payment from "./components/payment/Payment";
 
 function App() {
@@ -33,10 +33,18 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<ContentPlaylist />} />
-
-          <Route path="playlist/:id" element={<PlaylistContent type="playlist" />} />
-          <Route path="album/:id" element={<PlaylistContent type="album" />} />
-          <Route path="song/:id" element={<PlaylistContent type="song" />} />
+          <Route
+            path="playlist/:playlistId"
+            element={<PlaylistContent type="playlist" />}
+          />
+          <Route
+            path="album/:albumId"
+            element={<PlaylistContent type="album" />}
+          />
+          <Route
+            path="song/:songId"
+            element={<PlaylistContent type="song" />}
+          />
 
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
@@ -44,6 +52,7 @@ function App() {
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
+          <Route path="search" element={<SearchResults />} />
         </Route>
 
         <Route path="login" element={<LoginPage />} />
