@@ -13,8 +13,7 @@ const Layout = () => {
   const isRightbarVisible = useSelector(
     (state) => state.songs.isRightbarVisible
   );
-
-  const [showChat, setShowChat] = useState(false); // Mặc định chưa mở ChatBox
+  const [showChat, setShowChat] = useState(false);
 
   return (
     <div className="flex flex-col h-screen bg-black text-white">
@@ -37,7 +36,7 @@ const Layout = () => {
         ) : (
           <button
             onClick={() => setShowChat(true)}
-            className="bg-[#0084ff] text-white w-12 h-12 rounded-full shadow-lg hover:bg-blue-600 transition"
+            className="bg-[#1DB954] text-white w-12 h-12 rounded-full shadow-lg hover:bg-blue-600 transition"
             title="Mở chat"
           >
             💬
