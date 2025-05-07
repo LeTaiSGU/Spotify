@@ -53,10 +53,25 @@ export const refreshAccessToken = createAsyncThunk(
         { withCredentials: true }
       );
       //   localStorage.setItem("access_token", res.data.access);
-      document.cookie = `access_token=${res.data.access}; path=/; max-age=3600; secure; samesite=strict`;
+      document.cookie = `access_token=${res.data.access}; path=/; max-age=10000; secure; samesite=strict`;
       return res.data.access;
     } catch (err) {
       return rejectWithValue("Refresh token hết hạn hoặc không hợp lệ");
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      await fetch(`${API_ROOT}/api/users/logout/`, {
+        method: "POST",
+        credentials: "include",
+      });
+      return true;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || "Đăng xuất thất bại");
     }
   }
 );

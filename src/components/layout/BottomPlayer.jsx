@@ -367,7 +367,7 @@ const BottomPlayer = () => {
           <div className="song-details">
             <span className="song-title">{selectedSong.song_name}</span>
             <span className="song-artist">
-              {mainArtistInfo?.name || "Loading..."}
+              {selectedSong?.artist_owner?.name || "Loading..."}
             </span>
           </div>
         </div>

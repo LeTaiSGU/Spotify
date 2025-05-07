@@ -27,20 +27,32 @@ import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 
 import Payment from "./components/payment/Payment";
 
+import { useSelector } from "react-redux";
+
 function App() {
+
+  
+const PrivateRoute = ({ children }) => {
+  const user = useSelector((state) => state.auth.user);
+
+  return user ? children : <Navigate to="/login" />;
+};
+
+
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<ContentPlaylist />} />
 
-          <Route path="playlist/:id" element={<PlaylistContent type="playlist" />} />
+          <Route path="playlist/:id" element={<PrivateRoute><PlaylistContent type="playlist" /></PrivateRoute>} />
           <Route path="album/:id" element={<PlaylistContent type="album" />} />
           <Route path="song/:id" element={<PlaylistContent type="song" />} />
 
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
-          <Route path="user" element={<UserProfile />} />
+          <Route path="user" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />

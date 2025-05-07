@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import { addMonths } from 'date-fns';
+import { toast } from 'react-toastify';
 // Hàm lấy CSRF token từ cookie
 function getCookie(name) {
   let cookieValue = null;
@@ -47,7 +48,7 @@ const SpotifyPayment = () => {
       if (payUrl) {
         window.location.href = payUrl; //  Chuyển hướng người dùng
       } else {
-        alert("Không thể lấy link thanh toán từ server.");
+        toast.error("Không thể lấy link thanh toán từ server.");
       }
     } catch (error) {
       console.error("Lỗi thanh toán:", error);

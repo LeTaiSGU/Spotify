@@ -88,9 +88,7 @@ const SidebarPlaylists = () => {
                 {item.name}
               </span>
               <div className="flex items-center text-xs text-zinc-400">
-                <span className="truncate">{item.type}</span>
-                <span className="mx-1">•</span>
-                <span className="truncate">{item.creator}</span>
+                <span className="truncate">{item.item_type}</span>
               </div>
             </div>
           </div>

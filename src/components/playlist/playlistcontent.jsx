@@ -93,20 +93,28 @@ function PlaylistContent({ type }) {
   };
 
   const handleShufflePlay = () => {
-    if (!songQueue || songQueue.length === 0) {
-      console.error("Hàng đợi bài hát trống");
+    if (!Array.isArray(songs) || songs.length === 0) {
+      console.error("Danh sách bài hát trống hoặc không hợp lệ");
       return;
     }
-
+  
+    // Tạo một hàng đợi tạm thời từ danh sách bài hát
+    const tempQueue = [...songs];
+  
     // Trộn danh sách bài hát
-    const shuffledQueue = [...songQueue];
-    for (let i = shuffledQueue.length - 1; i > 0; i--) {
+    for (let i = tempQueue.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledQueue[i], shuffledQueue[j]] = [shuffledQueue[j], shuffledQueue[i]];
+      [tempQueue[i], tempQueue[j]] = [tempQueue[j], tempQueue[i]];
     }
-
+  
+    // Nạp danh sách bài hát đã trộn vào Redux queue
+    dispatch(clearQueue()); // Xóa queue cũ
+    tempQueue.forEach((song) => {
+      dispatch(addToQueue(song)); // Thêm từng bài hát vào queue
+    });
+  
     // Phát bài hát đầu tiên trong danh sách đã trộn
-    dispatch(setSelectedSong(shuffledQueue[0]));
+    dispatch(setSelectedSong(tempQueue[0]));
     dispatch(togglePlay(true));
     dispatch(toggleRightbar(true));
   };

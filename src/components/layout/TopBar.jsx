@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Search } from "lucide-react";
 import "./TopBar.css";
-import avatar from "../../assets/avatar.png";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "~/redux/slice/authSlice";
 
 // Left Icon Group Component
 const LeftIconGroup = () => {
@@ -79,28 +80,51 @@ const CenterSection = () => {
 
 // Right Icon Group Component (Profile Icon + Menu)
 const RightIconGroup = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth); // Lấy thông tin user từ Redux
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleLogout = () => {
+    dispatch(logout()); // Đăng xuất
+    navigate("/login"); // Điều hướng đến trang đăng nhập
+  };
+
+  const handleLogin = () => {
+    navigate("/login"); // Điều hướng đến trang đăng nhập
+  };
+
   return (
     <div className="right-icons">
-      <button className="profile-icon" onClick={toggleMenu}>
-        <img src={avatar} alt="Profile" className="avatar" />
-      </button>
-      {isMenuOpen && (
-        <div className="menu">
-          <div className="menu-item" >Account</div>
-          <div className="menu-item">Profile</div>
-          <div className="menu-item">Log out</div>
-        </div>
+      {user ? (
+        // Hiển thị avatar và menu nếu đã đăng nhập
+        <>
+          <button className="profile-icon" onClick={toggleMenu}>
+            <img src={user.avatar} alt="Profile" className="avatar" />
+          </button>
+          {isMenuOpen && (
+            <div className="menu">
+              <div className="menu-item">Account</div>
+              <div className="menu-item" onClick={() => {navigate('/user'),setIsMenuOpen(false)}}>Profile</div>
+              <div className="menu-item" onClick={handleLogout}>
+                Log out
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        // Hiển thị nút "Đăng nhập" nếu chưa đăng nhập
+        <button className="login-button" onClick={handleLogin}>
+          Đăng nhập
+        </button>
       )}
     </div>
   );
 };
-
 // Main TopBar Component
 const TopBar = () => {
   return (

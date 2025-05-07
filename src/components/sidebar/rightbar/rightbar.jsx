@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { message } from "antd";
 import { saveAs } from "file-saver";
-import ReactPlayer from "react-player";
 import Header from "./header";
 import { X, Download, TvMinimalPlay } from "lucide-react";
 import MarqueeSpan from "./marqueSpan.jsx";
@@ -227,7 +226,7 @@ const Rightbar = () => {
           {/* Added flex-1 and min-w-0 */}
           <MarqueeSpan>{selectedSong.song_name}</MarqueeSpan>
           <h2 className="text-sm text-gray-400 truncate">
-            {mainArtistInfo?.name || "Loading..."}
+            {selectedSong?.artist_owner?.name || "Loading..."}
           </h2>
         </div>
         <div className="flex flex-row gap-2 flex-shrink-0">

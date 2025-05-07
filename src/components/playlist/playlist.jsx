@@ -16,13 +16,13 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AddToPlaylistModal from "~/components/Modal/AddToPlaylistModal";
+import { toast } from "react-toastify";
 
 
 
 const Playlist = ({ type }) => {
   const { id } = useParams()
   // const [playlist, setPlaylist] = useState(null);
-  const [liked, setLiked] = useState(false);
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const selectedSong = useSelector((state) => state.songs.selectedSong);
@@ -53,10 +53,10 @@ const Playlist = ({ type }) => {
       // Đóng modal
       setIsModalVisible(false);
 
-      alert("Thêm bài hát vào danh sách phát thành công!");
+      toast.success("Thêm bài hát vào danh sách phát thành công!");
     } catch (error) {
       console.error("Lỗi khi thêm bài hát vào danh sách phát:", error);
-      alert("Thêm bài hát thất bại!");
+      toast.error("Thêm bài hát thất bại!");
     }
   };
 
@@ -98,10 +98,12 @@ const Playlist = ({ type }) => {
     try {
       console.log("Xóa bài hát khỏi playlist:", playlistId, songId);
       await removeSongFromPlaylist(playlistId, songId);
-      alert("Xóa bài hát khỏi danh sách phát thành công!");
+      toast.success("Xóa bài hát khỏi danh sách phát thành công!");
+
+      fetchSongs();
     } catch (error) {
       console.error("Lỗi khi xóa bài hát khỏi danh sách phát:", error);
-      alert("Xóa bài hát thất bại!");
+      toast.error("Xóa bài hát thất bại!");
     }
   };
 
@@ -115,13 +117,6 @@ const Playlist = ({ type }) => {
           onClick={() => handleOpenModal(songId)} // Truyền songId vào hàm
         >
           Thêm vào danh sách phát
-        </li>
-        <li
-          className="px-4 py-2 hover:bg-gray-700 cursor-pointer flex items-center gap-2 rounded"
-          onClick={() => setLiked(!liked)}
-        >
-          {liked && <FaCheckCircle className="text-green-500" />}
-          {liked ? "Xóa khỏi Bài hát yêu thích" : "Thêm vào Bài hát yêu thích"}
         </li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách chờ</li>
         {type === "playlist" && <li

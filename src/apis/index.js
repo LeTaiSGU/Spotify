@@ -15,7 +15,12 @@ export const getPlaylist = async (playlistId) => {
 }
 
 export const getPlaylistsById = async () => {
-  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/playlists/user/1/`)
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/playlists/user`)
+  return response.data
+}
+
+export const getPublicPlaylists = async () => {
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/playlists/?is_public=true`)
   return response.data
 }
 
@@ -49,6 +54,11 @@ export const addSongToPlaylist = async (playlistId, songId) => {
 
 export const removeSongFromPlaylist = async (playlistId, songId) => {
   const response = await authorizedAxiosInstance.delete(`${API_ROOT}/api/playlist_songs/${playlistId}/remove/${ songId }/`)
+  return response.data
+}
+
+export const addSongToFavorite = async (songId) => {
+  const response = await authorizedAxiosInstance.post(`${API_ROOT}/api/playlists/favorite/add/${songId}/`)
   return response.data
 }
 
