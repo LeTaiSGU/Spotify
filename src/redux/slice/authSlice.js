@@ -14,13 +14,28 @@ export const loginUser = createAsyncThunk(
       );
       // Nếu backend trả về access token trong body
       if (res.data.access) {
-        // localStorage.setItem("access_token", res.data.access);
         document.cookie = `access_token=${res.data.access}; path=/; max-age=3600; secure; samesite=strict`;
       }
       localStorage.setItem("user", JSON.stringify(res.data.user));
       return { user: res.data.user, access: res.data.access || null };
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || "Đăng nhập thất bại");
+    }
+  }
+);
+
+// Đăng xuất
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      await fetch(`${API_ROOT}/api/users/logout/`, {
+        method: "POST",
+        credentials: "include",
+      });
+      return true;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.error || "Đăng xuất thất bại");
     }
   }
 );
@@ -52,11 +67,12 @@ export const refreshAccessToken = createAsyncThunk(
         {},
         { withCredentials: true }
       );
-      //   localStorage.setItem("access_token", res.data.access);
       document.cookie = `access_token=${res.data.access}; path=/; max-age=3600; secure; samesite=strict`;
       return res.data.access;
     } catch (err) {
-      return rejectWithValue("Refresh token hết hạn hoặc không hợp lệ");
+      return rejectWithValue(
+        err.response?.data?.error || "Refresh token hết hạn hoặc không hợp lệ"
+      );
     }
   }
 );
@@ -73,7 +89,6 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      state.access = null;
       localStorage.removeItem("user");
     },
     setUser: (state, action) => {
@@ -93,6 +108,21 @@ const authSlice = createSlice({
         state.access = action.payload.access;
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Logout
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.access = null;
+        localStorage.removeItem("user");
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
