@@ -96,10 +96,10 @@ const CardSong = ({ song }) => {
 
 const MusicSession = () => {
   const dispatch = useDispatch();
-  const { songs, loading } = useSelector(
-    (state) => state.songs // Changed from state.playlists to state.songs
-  );
+  const { songs, loading } = useSelector((state) => state.songs);
   const recommendedRef = useRef(null);
+
+  console.log("songs:", songs); 
 
   useEffect(() => {
     dispatch(fetchTopSongs());
@@ -108,10 +108,23 @@ const MusicSession = () => {
   // Thêm effect để reset selectedSong khi showPlaylistContent thay đổi
 
   const scroll = (ref, direction) => {
+    console.log("Scroll direction:", direction);
+    console.log("Ref current:", ref.current); // Thêm log để kiểm tra ref
+    console.log("Current scroll position:", ref.current?.scrollLeft); // Kiểm tra vị trí scroll hiện tại
+
     if (ref.current) {
       const scrollAmount = 300;
-      ref.current.scrollLeft +=
-        direction === "left" ? -scrollAmount : scrollAmount;
+      const newScrollPosition =
+        direction === "left"
+          ? ref.current.scrollLeft - scrollAmount
+          : ref.current.scrollLeft + scrollAmount;
+
+      console.log("New scroll position:", newScrollPosition);
+
+      ref.current.scrollTo({
+        left: newScrollPosition,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -121,19 +134,21 @@ const MusicSession = () => {
   };
 
   return (
-    <div className="p-5 bg-stone-900 rounded-xl h-full text-white">
+    <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
       <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
-      <div className="relative w-full">
+      <div className="relative">
+
+        {/* Nút trái */}
         <button
           onClick={() => scroll(recommendedRef, "left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full shadow-lg z-10"
+          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
         >
           <LeftOutlined />
         </button>
 
         <div
           ref={recommendedRef}
-          className="flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
+          className="w-full flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
         >
           {loading ? (
             <p>Loading...</p>
@@ -148,9 +163,10 @@ const MusicSession = () => {
           )}
         </div>
 
+        {/* Nút phải */}
         <button
           onClick={() => scroll(recommendedRef, "right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full shadow-lg z-10"
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
         >
           <RightOutlined />
         </button>

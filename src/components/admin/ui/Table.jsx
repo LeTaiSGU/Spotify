@@ -13,10 +13,10 @@ const AdminTable = ({
   return (
     <Table
       columns={columns}
-      dataSource={dataSource} // Nhận dataSource từ props bên ngoài
-      rowKey={rowKey} // Nhận rowKey từ props bên ngoài
+      dataSource={dataSource}
+      rowKey={rowKey}
       pagination={{
-        current: pageNo + 1,
+        current: pageNo + 1, // Hiển thị trang hiện tại (pageNo + 1)
         pageSize: pageSize,
         total: totalElements,
         showSizeChanger: true,

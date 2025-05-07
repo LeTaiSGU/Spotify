@@ -37,6 +37,11 @@ const items = [
     getItem("Thêm danh sách phát", "playlist/create"),
     getItem("Cập nhật danh sách phát", "playlist/update"),
   ]),
+  getItem("Danh sách thể loại", "genres", <DesktopOutlined />, [
+    getItem("Danh sách thể loạ", "genre"),
+    getItem("Thêm thể loại mới", "playlist/create"),
+    getItem("Cập nhật thể loại", "playlist/update"),
+  ]),
 ];
 
 const pageTitles = {

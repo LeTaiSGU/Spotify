@@ -4,10 +4,9 @@ import SpotifyIcon from "../../components/ui/spotify-icon";
 import EmailStep from "../../components/signup/signup-with-email/emailStep";
 import PasswordStep from "../../components/signup/signup-with-email/passwordStep";
 import InformationStep from "../../components/signup/signup-with-email/informationStep";
-import OTPStep from "../../components/signup/signup-with-email/otpStep";
+import FinalStep from "../../components/signup/signup-with-email/finalStep";
 import SocialLoginButtons from "../../components/ui/social-button";
 import DividerWithText from "../../components/ui/divider-with-text";
-import SignupProgress from "../../components/signup/process-signup";
 
 const SignUpPage = () => {
   const [startedSignup, setStartedSignup] = useState(false);
@@ -21,7 +20,7 @@ const SignUpPage = () => {
     email: "",
     password: "",
     name: "",
-    birthdate: "",
+    dob: "",
     gender: "",
   });
 
@@ -115,13 +114,6 @@ const SignUpPage = () => {
     navigate(`#${newStep}`);
   };
 
-  // Hàm xử lý gửi dữ liệu cuối cùng
-  const handleSubmit = () => {
-    console.log("Biểu mẫu đã được gửi với dữ liệu:", userData);
-    // Thông thường, dữ liệu sẽ được gửi đến backend tại đây
-    navigate("/success"); // Chuyển hướng sau khi đăng ký thành công
-  };
-
   // Hiển thị màn hình nhập email (mặc định của trang đăng ký)
   if (!startedSignup) {
     return (
@@ -161,7 +153,7 @@ const SignUpPage = () => {
 
   return (
     <div className="flex min-h-screen justify-center bg-black p-4">
-      <div className="w-full max-w-md space-y-8 rounded-lg p-6">
+      <div className="w-full max-w-md space-y-8 rounded-lg">
         <SpotifyIcon />
 
         <h1 className="text-center text-4xl font-bold text-white">
@@ -169,6 +161,7 @@ const SignUpPage = () => {
         </h1>
 
         {/* Chỉ báo bước đăng ký với 3 bước */}
+
         <div className="flex justify-center mb-6">
           {[1, 2, 3].map((num) => (
             <div key={num} className="flex items-center">
@@ -189,24 +182,27 @@ const SignUpPage = () => {
             </div>
           ))}
         </div>
-        {/* <SignupProgress step={step} /> */}
-
-        <div className="bg-[#121212] p-3 rounded-md border border-gray-700 mb-4">
-          <div className="flex justify-between items-center">
-            <div className="text-gray-400 text-sm">
-              <span>Email:</span>
-              <span className="ml-2 text-white font-medium">
-                {userData.email}
-              </span>
+        {step < 3 && (
+          <>
+            <div className="bg-[#121212] p-3 rounded-md border border-gray-700 mb-4">
+              <div className="flex justify-between items-center">
+                <div className="text-gray-400 text-sm">
+                  <span>Email:</span>
+                  <span className="ml-2 text-white font-medium">
+                    {userData.email}
+                  </span>
+                </div>
+                <button
+                  onClick={cancelSignup}
+                  className="text-xs text-green-500 hover:text-green-400 hover:underline"
+                >
+                  Thay đổi
+                </button>
+              </div>
             </div>
-            <button
-              onClick={cancelSignup}
-              className="text-xs text-green-500 hover:text-green-400 hover:underline"
-            >
-              Thay đổi
-            </button>
-          </div>
-        </div>
+          </>
+        )}
+
         {/* Nội dung các bước */}
         <div className="mt-4">
           {step === 1 && (
@@ -224,14 +220,7 @@ const SignUpPage = () => {
               updateUserData={updateUserData}
             />
           )}
-          {step === 3 && (
-            <OTPStep
-              prevStep={prevStep}
-              userData={userData}
-              updateUserData={updateUserData}
-              onSubmit={handleSubmit}
-            />
-          )}
+          {step === 3 && <FinalStep prevStep={prevStep} userData={userData} />}
         </div>
       </div>
     </div>
