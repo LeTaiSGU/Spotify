@@ -23,7 +23,7 @@ const CreatePlaylist = () => {
 
   const userOptions = users.map((u) => (
     <Option key={u.id} value={u.id}>
-      {u.username}
+      {u.name}
     </Option>
   ));
 

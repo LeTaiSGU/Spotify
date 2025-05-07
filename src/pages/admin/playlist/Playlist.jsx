@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Space, Card } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; // Giả sử bạn có component này
+import AdminTable from "../../../components/admin/ui/Table"; 
 
 const Playlist = () => {
   const [playlistsAdmin, setPlaylistsAdmin] = useState([]);
