@@ -47,6 +47,11 @@ export const addSongToPlaylist = async (playlistId, songId) => {
   return response.data
 }
 
+export const removeSongFromPlaylist = async (playlistId, songId) => {
+  const response = await authorizedAxiosInstance.delete(`${API_ROOT}/api/playlist_songs/${playlistId}/remove/${ songId }/`)
+  return response.data
+}
+
 // songs 
 export const getSongById = async (songId) => {
   const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/songs/${songId}`)
@@ -54,8 +59,8 @@ export const getSongById = async (songId) => {
 }
 
 export const getSongsByAlbumId = async (albumId) => {
-  const response = await fetch(`/api/album/${albumId}/songs`);
-  return await response.json();
+  const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/songs/album/${albumId}/`);
+  return await response.data;
 };
 
 

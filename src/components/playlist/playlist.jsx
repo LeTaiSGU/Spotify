@@ -1,8 +1,9 @@
 import { Clock, Play } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { getSongBylistId, getSongsByAlbumId, getSongById, getPlaylistsById,
-  addSongToPlaylist
- } from "~/apis";
+import {
+  getSongBylistId, getSongsByAlbumId, getSongById, getPlaylistsById,
+  addSongToPlaylist, removeSongFromPlaylist
+} from "~/apis";
 import { useParams } from "react-router-dom";
 import { Avatar, Popover } from 'antd';
 import { PlusCircleOutlined, CheckCircleFilled, EllipsisOutlined } from '@ant-design/icons';
@@ -34,7 +35,7 @@ const Playlist = ({ type }) => {
 
   const handleOpenModal = async () => {
     try {
-      console.log("Song ID:" ); 
+      console.log("Song ID:");
       const response = await getPlaylistsById();
       setPlaylists(response);
       setIsModalVisible(true);
@@ -71,7 +72,7 @@ const Playlist = ({ type }) => {
         result = await getSongsByAlbumId(id);
       } else if (type === "song") {
         const song = await getSongById(id);
-        result = [song]; // bọc trong mảng để map được
+        result = [song]; 
       }
 
       setSongs(result);
@@ -93,7 +94,16 @@ const Playlist = ({ type }) => {
   }
 
 
-
+  const handleRemoveSongToPlaylist = async (playlistId, songId) => {
+    try {
+      console.log("Xóa bài hát khỏi playlist:", playlistId, songId);
+      await removeSongFromPlaylist(playlistId, songId);
+      alert("Xóa bài hát khỏi danh sách phát thành công!");
+    } catch (error) {
+      console.error("Lỗi khi xóa bài hát khỏi danh sách phát:", error);
+      alert("Xóa bài hát thất bại!");
+    }
+  };
 
 
 
@@ -114,7 +124,10 @@ const Playlist = ({ type }) => {
           {liked ? "Xóa khỏi Bài hát yêu thích" : "Thêm vào Bài hát yêu thích"}
         </li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Thêm vào danh sách chờ</li>
-        {type === "playlist" && <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Xóa khỏi Playlist</li> }
+        {type === "playlist" && <li
+          onClick={() => handleRemoveSongToPlaylist(id, songId)} // Truyền songId vào hàm
+          className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">
+          Xóa khỏi Playlist</li>}
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Chuyển tới nghệ sĩ</li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Chuyển đến album</li>
         <li className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded">Xem thông tin</li>
@@ -199,7 +212,7 @@ const Playlist = ({ type }) => {
                 </div>
               </td>
               <td className="py-3 w-[25%] truncate hover:underline hover:text-white">
-                {song.album}
+                {song.album.title}
               </td>
               {/* <td className="py-3 w-[20%] truncate">{song.dateAdded}</td> */}
               <td className="py-3 w-[15%] text-center relative">
