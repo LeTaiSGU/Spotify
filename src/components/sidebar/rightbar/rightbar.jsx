@@ -132,7 +132,7 @@ const Rightbar = () => {
   // Add download handlers
   async function handleDownloadAudio(url, songName) {
     try {
-      const user = await getUser(1); // hoặc thay 1 bằng userId thực tế nếu có
+      const user = await getUser(1);
 
       console.log("User data:", user); // Kiểm tra dữ liệu người dùng
       if (!user || !user.is_premium) {
@@ -152,7 +152,7 @@ const Rightbar = () => {
         throw new Error("Lỗi khi tải file âm thanh");
       }
 
-      const blob = await response.blob();
+      const blob = await response.blob(); // convert response to binary file
       const fileName = `${songName}.${extension}`;
       saveAs(blob, fileName);
       message.success("Tải nhạc thành công!");

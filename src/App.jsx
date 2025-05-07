@@ -9,6 +9,10 @@ import ContentPlaylist from "~/components/listContent/contentPlaylist";
 import NotFound from "./pages/404/404";
 import AllAvatar from "./pages/UserProfile/AllAvatar";
 import MusicList from "./pages/UserProfile/MoreListSongs";
+
+import Payment from "./components/payment/Payment";
+import PaymentSuccess from "./components/payment/PaymentSuccess";
+
 import AdminLayout from "./components/admin/layoutAdmin";
 
 import Dashboard from "./pages/admin/Dashboard";
@@ -25,7 +29,8 @@ import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 
-import Payment from "./components/payment/Payment";
+
+
 
 import { useSelector } from "react-redux";
 
@@ -56,8 +61,10 @@ const PrivateRoute = ({ children }) => {
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
-        </Route>
+          
 
+        </Route>
+        <Route path="user/payment/success" element={<PaymentSuccess />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
 

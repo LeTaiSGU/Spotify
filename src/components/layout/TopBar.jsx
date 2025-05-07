@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Search } from "lucide-react";
+import React from "react";
 import "./TopBar.css";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "~/redux/slice/authSlice";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Home, Search } from "lucide-react"; // Import các icon từ thư viện lucide-react
 
 // Left Icon Group Component
 const LeftIconGroup = () => {
@@ -125,7 +126,7 @@ const RightIconGroup = () => {
     </div>
   );
 };
-// Main TopBar Component
+
 const TopBar = () => {
   return (
     <div className="top-bar">
