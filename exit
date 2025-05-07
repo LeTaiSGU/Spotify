@@ -1,0 +1,30 @@
+[33mf12f851[m[33m ([m[1;36mHEAD -> [m[1;32mtai[m[33m)[m HEAD@{0}: pull origin main: Merge made by the 'ort' strategy.
+[33m45203d2[m HEAD@{1}: commit: pull main
+[33m746a92b[m[33m ([m[1;31morigin/tai[m[33m)[m HEAD@{2}: commit: push fix cardsong
+[33ma12b7d0[m HEAD@{3}: commit (merge): Merge branch 'Baronee' of https://github.com/LeTaiSGU/Spotify into tai
+[33m0889019[m HEAD@{4}: commit: pull baronee
+[33m3423063[m HEAD@{5}: commit (merge): Merge branch 'main' of https://github.com/LeTaiSGU/Spotify into tai
+[33mf614c4a[m HEAD@{6}: commit: complete video, download video, mp3
+[33m1283c66[m HEAD@{7}: commit: video, download nhac
+[33mc52ae66[m HEAD@{8}: commit: pull
+[33mefc14d3[m HEAD@{9}: commit (merge): song bottom player, cardsong
+[33m0b539a5[m HEAD@{10}: commit: pull res
+[33m588b133[m HEAD@{11}: commit: right bar
+[33m6dfc216[m HEAD@{12}: commit: sua layout
+[33m7b4d099[m HEAD@{13}: reset: moving to HEAD@{2}
+[33m2df6702[m HEAD@{14}: reset: moving to HEAD@{0}
+[33m2df6702[m HEAD@{15}: reset: moving to HEAD@{10}
+[33m7b4d099[m HEAD@{16}: reset: moving to HEAD@{1}
+[33m7b4d099[m HEAD@{17}: reset: moving to HEAD@{0}
+[33m7b4d099[m HEAD@{18}: reset: moving to HEAD@{0}
+[33m7b4d099[m HEAD@{19}: reset: moving to HEAD@{2}
+[33m2df6702[m HEAD@{20}: reset: moving to HEAD@{2}
+[33m7b4d099[m HEAD@{21}: reset: moving to HEAD@{0}
+[33m7b4d099[m HEAD@{22}: reset: moving to HEAD@{2}
+[33m2df6702[m HEAD@{23}: reset: moving to HEAD@{0}
+[33m2df6702[m HEAD@{24}: reset: moving to HEAD@{1}
+[33m7b4d099[m HEAD@{25}: pull origin main: Fast-forward
+[33m2df6702[m HEAD@{26}: commit (merge): Leftbar, playlist-contents 80%
+[33m4ae5541[m HEAD@{27}: commit: pull res
+[33m8f45362[m[33m ([m[1;32mmain[m[33m)[m HEAD@{28}: checkout: moving from main to tai
+[33m8f45362[m[33m ([m[1;32mmain[m[33m)[m HEAD@{29}: clone: from https://github.com/LeTaiSGU/Spotify.git
