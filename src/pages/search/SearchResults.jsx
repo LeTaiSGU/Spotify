@@ -19,7 +19,7 @@ import {
 
 // Component SongRow mới để thay thế SongCard
 
-const SongRow = ({ song }) => {
+export const SongRow = ({ song }) => {
   const [mainArtistInfo, setMainArtistInfo] = React.useState(null);
   const [showPlaylistModal, setShowPlaylistModal] = React.useState(false);
   const [playlists, setPlaylists] = React.useState([]);

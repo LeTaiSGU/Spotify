@@ -10,7 +10,7 @@ import NotFound from "./pages/404/404";
 import AllAvatar from "./pages/UserProfile/AllAvatar";
 import MusicList from "./pages/UserProfile/MoreListSongs";
 import AdminLayout from "./components/admin/layoutAdmin";
-
+import ArtistProfile from "./pages/artist/ArtistProfile";
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -53,6 +53,7 @@ function App() {
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
           <Route path="search" element={<SearchResults />} />
+          <Route path="/artist/:id" element={<ArtistProfile />} />
         </Route>
 
         <Route path="login" element={<LoginPage />} />

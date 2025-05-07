@@ -128,9 +128,28 @@ const CenterSection = () => {
 // Right Icon Group Component (Profile Icon + Menu)
 const RightIconGroup = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate(); // Thêm hook useNavigate
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Thêm các handler xử lý menu
+  const handleProfileClick = () => {
+    navigate("/user"); // Chuyển hướng đến trang /user
+    setIsMenuOpen(false); // Đóng menu sau khi chuyển hướng
+  };
+
+  const handleAccountClick = () => {
+    navigate("/account"); // Nếu có trang account
+    setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    // Xử lý logout ở đây nếu cần
+    // Ví dụ: dispatch(logout());
+    setIsMenuOpen(false);
+    navigate("/login"); // Chuyển về trang login sau khi đăng xuất
   };
 
   return (
@@ -140,9 +159,15 @@ const RightIconGroup = () => {
       </button>
       {isMenuOpen && (
         <div className="menu">
-          <div className="menu-item">Account</div>
-          <div className="menu-item">Profile</div>
-          <div className="menu-item">Log out</div>
+          <div className="menu-item" onClick={handleAccountClick}>
+            Account
+          </div>
+          <div className="menu-item" onClick={handleProfileClick}>
+            Profile
+          </div>
+          <div className="menu-item" onClick={handleLogout}>
+            Log out
+          </div>
         </div>
       )}
     </div>
