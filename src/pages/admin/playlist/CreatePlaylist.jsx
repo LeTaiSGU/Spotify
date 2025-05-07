@@ -1,74 +1,57 @@
-import { React, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 
-import {
-  fetchUsersSelect,
-  selectItemsUserAdmin,
-} from "../../../redux/slice/userAdminSlice";
-import { createPlaylist } from "../../../redux/slice/playlistAdminSlide";
-
-import {
-  selectItemsSongAdmin,
-  fetchSongsSelect,
-} from "../../../redux/slice/songAdminSlice";
-const { TextArea } = Input;
+const { Option } = Select;
 
 const CreatePlaylist = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
-
-  const { content: songs = [] } = useSelector(selectItemsSongAdmin);
-  const { content: users = [] } = useSelector(selectItemsUserAdmin); // lấy từ slice
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    dispatch(fetchUsersSelect());
-    dispatch(fetchSongsSelect());
-  }, [dispatch]);
-
-  const userOptions = Array.isArray(users)
-    ? users.map((user) => ({
-        label: user.userName,
-        value: user.userId,
-      }))
-    : [];
-
-  const songOptions = Array.isArray(songs)
-    ? songs.map((songs) => ({
-        label: songs.songName, // tên bài hát
-        value: songs.songId, // id bài hát
-      }))
-    : [];
-
-  const onFinish = (values) => {
-    console.log(" dưqdwqdwqwdw", values.isPrivate);
-    console.log("values", values);
-    const playlistData = {
-      name: values.name,
-      userId: values.user || null,
-      songs: values.songs,
-      description: values.description,
-      isPrivate: values.isPrivate,
-      coverImage: values.image,
-    };
-
-    dispatch(createPlaylist(playlistData))
-      .unwrap()
-      .then(() => {
-        message.success("Tạo playlist thành công!");
-        form.resetFields();
+    axios
+      .get("http://localhost:8000/api/users/getall/")
+      .then((res) => {
+        setUsers(res.data);
       })
       .catch((err) => {
-        console.error(err);
-        message.error("Tạo playlist thất bại!");
+        console.error("Error fetching users:", err);
+        message.error("Không thể tải danh sách user");
       });
-  };
+  }, []);
 
-  const normFile = (e) => {
-    if (Array.isArray(e)) return e;
-    return e?.fileList;
+  const userOptions = users.map((u) => (
+    <Option key={u.id} value={u.id}>
+      {u.username}
+    </Option>
+  ));
+
+  const onFinish = (values) => {
+    const file = values.image[0].originFileObj;
+    const reader = new FileReader();
+  
+    reader.onloadend = async () => {
+      const base64Image = reader.result;
+  
+      const payload = {
+        name: values.name,
+        user: values.user,
+        is_private: values.isPrivate, // hoặc values.is_private nếu tên là vậy
+        cover_image: base64Image,     // đúng field Django mong đợi
+      };
+      console.log("Payload:", payload); // Kiểm tra payload trước khi gửi
+      try {
+        await axios.post("http://localhost:8000/api/playlists/create/", payload);
+        console.log("Gửi thành công");
+      } catch (error) {
+        console.error("Lỗi gửi dữ liệu:", error.response?.data || error.message);
+      }
+    };
+  
+    reader.readAsDataURL(file); // quan trọng!
   };
+  
 
   return (
     <div className="p-4 flex justify-center items-center">
@@ -85,73 +68,43 @@ const CreatePlaylist = () => {
         <Form.Item
           label="Tên Playlist"
           name="name"
-          required={false}
           rules={[{ required: true, message: "Vui lòng nhập tên playlist" }]}
         >
           <Input placeholder="Nhập tên playlist..." />
         </Form.Item>
 
-        {/* Select nghệ sĩ */}
-        <Form.Item label="User" name="user" required={false}>
+        {/* Select user */}
+        <Form.Item label="User" name="user">
           <Select
-            placeholder="Chọn user cho playlist (không bắt buộc)"
+            placeholder="Chọn user cho playlist"
             showSearch
             optionFilterProp="label"
-            options={userOptions}
             allowClear
-          />
-        </Form.Item>
-
-        {/* Mô tả */}
-        <Form.Item
-          label="Mô tả"
-          name="description"
-          rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
-        >
-          <TextArea rows={3} placeholder="Nhập mô tả cho playlist..." />
-        </Form.Item>
-
-        {/* Danh sách bài hát */}
-        <Form.Item
-          label="Danh sách bài hát"
-          name="songs"
-          required={false}
-          rules={[{ required: true, message: "Chọn ít nhất 1 bài hát" }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn bài hát cho playlist"
-            optionFilterProp="label"
-            options={songOptions}
-            allowClear
-          />
+          >
+            {userOptions}
+          </Select>
         </Form.Item>
 
         {/* Ảnh bìa */}
         <Form.Item
-          label="Ảnh"
+          label="Ảnh bìa"
           name="image"
           valuePropName="fileList"
-          getValueFromEvent={normFile}
-          required={false}
-          rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
+          getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}
+          rules={[{ required: true, message: "Vui lòng chọn ảnh bìa" }]}
         >
-          <Upload
-            listType="picture"
-            accept="image/*"
-            beforeUpload={() => false}
-            maxCount={1}
-            multiple={false}
-          >
+          <Upload beforeUpload={() => false} listType="picture">
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
         </Form.Item>
 
+
+        {/* Checkbox */}
         <Form.Item
           name="isPrivate"
-          label="Private"
+          label="Riêng tư"
           valuePropName="checked"
-          initialValue={false} // <- cái này quan trọng
+          initialValue={false}
         >
           <Checkbox />
         </Form.Item>

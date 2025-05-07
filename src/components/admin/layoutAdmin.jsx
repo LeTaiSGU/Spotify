@@ -37,6 +37,11 @@ const items = [
     getItem("Thêm danh sách phát", "playlist/create"),
     getItem("Cập nhật danh sách phát", "playlist/update"),
   ]),
+  getItem("Quản lí nhạc playlist ", "playlistsongs", <DesktopOutlined />, [
+    getItem("Danh nhạc playlist", "playlistsong"),
+    getItem("Thêm nhạc playlist", "playlistsongs/create"),
+    getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
+  ]),
 ];
 
 const pageTitles = {
@@ -45,6 +50,7 @@ const pageTitles = {
   artist: "Danh sách Nghệ sĩ",
   album: "Danh sách Album",
   playlist: "Danh sách phát",
+  playlistsong: "Danh sách nhạc playlist",
 };
 const MemoizedMenuItem = React.memo(Menu.Item);
 
