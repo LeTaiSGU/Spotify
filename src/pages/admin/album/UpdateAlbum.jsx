@@ -22,6 +22,7 @@ import {
   fetchAlbumById,
   selectItemsAlbum,
   selectAlbum,
+  clearSelectedAlbum,
 } from "../../../redux/slice/albumSlice";
 
 const { TextArea } = Input;
@@ -30,58 +31,76 @@ const UpdateAlbum = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
-  const { content: artist = [] } = useSelector(selectItemsArtist);
-  const { content: albums = [] } = useSelector(selectItemsAlbum); // list album để chọn
+  // Điều chỉnh để phù hợp với cấu trúc dữ liệu từ API Django
+  const artists = useSelector(selectItemsArtist);
+  const albums = useSelector(selectItemsAlbum);
+
+  // Điều chỉnh để sử dụng đúng định dạng response
+  const artistList = Array.isArray(artists) ? artists : artists?.content || [];
+  const albumList = Array.isArray(albums) ? albums : albums?.content || [];
 
   useEffect(() => {
+    // Reset form khi component được mount
+    form.resetFields();
     dispatch(fetchArtistsSelect());
     dispatch(fetchAlbumsSelect());
-  }, [dispatch]);
 
-  const albumDetail = useSelector(selectAlbum); // chi tiết album
+    // Cleanup khi component unmount
+    return () => {
+      dispatch(clearSelectedAlbum());
+      form.resetFields();
+    };
+  }, [dispatch, form]);
+
+  const albumDetail = useSelector(selectAlbum);
 
   useEffect(() => {
     if (albumDetail) {
       form.setFieldsValue({
-        albumId: albumDetail.albumId,
+        id: albumDetail.id,
         title: albumDetail.title,
-        releaseDate: dayjs(albumDetail.releaseDate),
-        artist: albumDetail.artist?.artistId,
-        type: albumDetail.type,
-        image: albumDetail.coverImage
+        releaseDate: albumDetail.release_date
+          ? dayjs(albumDetail.release_date)
+          : null,
+        artist: albumDetail.artist?.id,
+        description: albumDetail.description || "", // Thêm description
+        image: albumDetail.avatar // Sử dụng avatar thay vì cover_image
           ? [
               {
-                uid: "-1", // uid tùy chỉnh, không trùng với bất kỳ file nào mới được upload
-                name: "Ảnh hiện tại", // Tên ảnh có thể tùy chỉnh
-                status: "done", // Trạng thái ảnh đã tải xong
-                url: albumDetail.coverImage, // URL của ảnh từ AWS
-                thumbUrl: albumDetail.coverImage, // Thumbnail ảnh (có thể là URL giống URL chính)
+                uid: "-1",
+                name: "Ảnh hiện tại",
+                status: "done",
+                url: albumDetail.avatar,
+                thumbUrl: albumDetail.avatar,
               },
             ]
           : [],
       });
+    } else {
+      form.resetFields();
     }
   }, [albumDetail, form]);
 
-  const artistOptions = artist.map((artist) => ({
+  const artistOptions = artistList.map((artist) => ({
     label: artist.name,
-    value: artist.artistId,
+    value: artist.id,
   }));
 
-  const albumOptions = albums.map((album) => ({
+  const albumOptions = albumList.map((album) => ({
     label: album.title,
-    value: album.albumId,
+    value: album.id,
   }));
 
   const onSelectAlbum = (value) => {
-    dispatch(fetchAlbumById(value)); // lấy chi tiết album
+    dispatch(fetchAlbumById(value));
   };
 
   const onFinish = (values) => {
     const payload = {
-      albumId: values.albumId,
+      id: values.id,
       title: values.title,
       releaseDate: values.releaseDate.format("YYYY-MM-DD"),
+      description: values.description || "",
       artistId: values.artist,
       type: values.type,
       image: values.image || [],
@@ -92,12 +111,16 @@ const UpdateAlbum = () => {
       .then(() => {
         message.success("Cập nhật album thành công!");
         form.resetFields();
+        dispatch(clearSelectedAlbum());
       })
       .catch((err) => {
         console.error(err);
-        message.error("Cập nhật thất bại!");
+        message.error(
+          "Cập nhật thất bại! " + (err.message || "Vui lòng thử lại.")
+        );
       });
   };
+
   const normFile = (e) => {
     if (Array.isArray(e)) return e;
     return e?.fileList;
@@ -131,10 +154,11 @@ const UpdateAlbum = () => {
         </Form.Item>
 
         {/* albumId không chỉnh sửa */}
-        <Form.Item label="Album ID" name="albumId">
+        <Form.Item label="Album ID" name="id">
           <Input disabled />
         </Form.Item>
-        {/* albumId không chỉnh sửa */}
+
+        {/* Tên album */}
         <Form.Item
           label="Tên Album"
           name="title"
@@ -143,6 +167,7 @@ const UpdateAlbum = () => {
         >
           <Input />
         </Form.Item>
+
         {/* Ngày phát hành */}
         <Form.Item
           label="Ngày phát hành"
@@ -195,7 +220,11 @@ const UpdateAlbum = () => {
           />
         </Form.Item>
 
-        {/* Thể loại */}
+        {/* Mô tả */}
+        <Form.Item label="Mô tả" name="description" required={false}>
+          <TextArea rows={4} placeholder="Nhập mô tả album..." />
+        </Form.Item>
+        {/* Thể loại
         <Form.Item
           label="Thể loại"
           name="type"
@@ -210,7 +239,7 @@ const UpdateAlbum = () => {
             ]}
             allowClear
           />
-        </Form.Item>
+        </Form.Item> */}
 
         {/* Submit */}
         <Form.Item className="flex justify-end">
