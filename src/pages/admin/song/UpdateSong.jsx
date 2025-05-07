@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Button, DatePicker, Form, Upload, Input, Select, message } from "antd";
+import { Button, Form, Upload, Input, Select, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
-import dayjs from "dayjs";
 import {
   fetchArtistsSelect,
   selectItemsArtist,
@@ -18,6 +17,7 @@ import {
   selectSongAdmin,
   selectItemsSongAdmin,
   resetSongSelected,
+  selectSongLoading,
 } from "../../../redux/slice/songAdminSlice";
 
 const { TextArea } = Input;
@@ -26,13 +26,27 @@ const UpdateSong = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
 
-  const { content: artists = [] } = useSelector(selectItemsArtist);
-  const { content: albums = [] } = useSelector(selectItemsAlbum);
-  const { content: songs = [] } = useSelector(selectItemsSongAdmin);
+  // Lấy dữ liệu từ Redux store
+  const artistsData = useSelector(selectItemsArtist);
+  const albumsData = useSelector(selectItemsAlbum);
+  const songsData = useSelector(selectItemsSongAdmin);
+  const songDetail = useSelector(selectSongAdmin);
+  const isLoading = useSelector(selectSongLoading);
+
+  // Xử lý dữ liệu để phù hợp với cả hai định dạng trả về
+  const artists = Array.isArray(artistsData)
+    ? artistsData
+    : artistsData?.content || [];
+
+  const albums = Array.isArray(albumsData)
+    ? albumsData
+    : albumsData?.content || [];
+
+  const songs = Array.isArray(songsData) ? songsData : songsData?.content || [];
 
   const [durationInSeconds, setDurationInSeconds] = useState(null);
   const [formattedDuration, setFormattedDuration] = useState("");
-  //   const [mainArtist, setMainArtist] = useState(null);
+  const [selectedMainArtist, setSelectedMainArtist] = useState(null);
 
   useEffect(() => {
     dispatch(resetSongSelected());
@@ -41,26 +55,28 @@ const UpdateSong = () => {
     dispatch(fetchSongsSelect());
   }, [dispatch]);
 
-  const songDetail = useSelector(selectSongAdmin);
-
   useEffect(() => {
-    if (songDetail) {
-      // Set the initial song data when songDetail is available
-      setDurationInSeconds(songDetail.duration || null); // Use the duration from the API if available
+    if (songDetail && songDetail.id) {
+      // Chuyển đổi duration từ chuỗi sang số giây
+      const durationInSecs = parseTimeStringToSeconds(songDetail.duration);
+      setDurationInSeconds(durationInSecs);
+
+      // Hiển thị duration theo định dạng MM:SS
       setFormattedDuration(
-        songDetail.duration ? formatDuration(songDetail.duration) : ""
-      ); // Format the duration from the API if available
+        durationInSecs ? formatDuration(durationInSecs) : ""
+      );
+
+      setSelectedMainArtist(songDetail.artist_owner);
+
+      console.log("Song duration from DB:", songDetail.duration);
+      console.log("Converted to seconds:", durationInSecs);
 
       form.setFieldsValue({
-        songId: songDetail.songId,
-        songName: songDetail.songName,
-        releaseDate: dayjs(songDetail.releaseDate),
-        artist: songDetail.artistId,
-        album: songDetail.albumId,
-        duration: formatDuration(songDetail.duration),
-        featuredArtists: songDetail.featuredArtists?.map(
-          (artist) => artist.artistId
-        ),
+        songName: songDetail.song_name,
+        description: songDetail.description || "",
+        artistOwnerId: songDetail.artist_owner,
+        albumId: songDetail.album,
+        artists: songDetail.artists || [],
         image: songDetail.img
           ? [
               {
@@ -72,14 +88,14 @@ const UpdateSong = () => {
               },
             ]
           : [],
-        audio: songDetail.fileUpload
+        fileUpload: songDetail.file_upload
           ? [
               {
                 uid: "-1",
-                name: songDetail.songName,
+                name: songDetail.song_name,
                 status: "done",
-                url: songDetail.fileUpload,
-                thumbUrl: songDetail.fileUpload,
+                url: songDetail.file_upload,
+                thumbUrl: songDetail.file_upload,
               },
             ]
           : [],
@@ -87,23 +103,28 @@ const UpdateSong = () => {
     }
   }, [songDetail, form]);
 
+  // Log để debug
+  useEffect(() => {
+    console.log("Songs data from store:", songsData);
+    console.log("Processed songs array:", songs);
+  }, [songsData, songs]);
+
   const artistOptions = artists.map((artist) => ({
     label: artist.name,
-    value: artist.artistId,
+    value: artist.id,
   }));
 
   const albumOptions = albums.map((album) => ({
     label: album.title,
-    value: album.albumId,
+    value: album.id,
   }));
 
   const songOptions = songs.map((song) => ({
-    label: song.songName,
-    value: song.songId,
+    label: song.song_name,
+    value: song.id,
   }));
 
-  const selectedSongId = Form.useWatch("searchSong", form); // Check đã chọn bài hát chưa
-  const selectedMainArtist = Form.useWatch("artist", form); // Check đã chọn artist chính chưa
+  const selectedSongId = Form.useWatch("searchSong", form);
 
   const onSelectSong = (value) => {
     dispatch(fetchSongAdminById(value));
@@ -116,7 +137,7 @@ const UpdateSong = () => {
 
       audio.onloadedmetadata = () => {
         window.URL.revokeObjectURL(audio.src);
-        resolve(Math.floor(audio.duration)); // Thời gian tính bằng giây
+        resolve(Math.floor(audio.duration));
       };
 
       audio.onerror = () => reject("Không thể đọc thời lượng của file.");
@@ -124,10 +145,48 @@ const UpdateSong = () => {
     });
   };
 
+  // Sửa lại function formatDuration để hiển thị đúng dạng HH:MM:SS nếu cần
   const formatDuration = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    if (!seconds) return "0:00";
+
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+
+    // Nếu có giờ, hiển thị cả giờ
+    if (hours > 0) {
+      return `${hours}:${mins.toString().padStart(2, "0")}:${secs
+        .toString()
+        .padStart(2, "0")}`;
+    }
+
+    // Nếu không có giờ, chỉ hiển thị phút và giây
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const parseTimeStringToSeconds = (timeString) => {
+    if (!timeString) return 0;
+
+    // Xử lý chuỗi dạng "HH:MM:SS"
+    if (timeString.includes(":")) {
+      const parts = timeString.split(":");
+
+      if (parts.length === 3) {
+        // Format "HH:MM:SS"
+        const hours = parseInt(parts[0], 10) || 0;
+        const minutes = parseInt(parts[1], 10) || 0;
+        const seconds = parseInt(parts[2], 10) || 0;
+        return hours * 3600 + minutes * 60 + seconds;
+      } else if (parts.length === 2) {
+        // Format "MM:SS"
+        const minutes = parseInt(parts[0], 10) || 0;
+        const seconds = parseInt(parts[1], 10) || 0;
+        return minutes * 60 + seconds;
+      }
+    }
+
+    // Nếu không phải định dạng thời gian, thử chuyển thành số
+    return parseInt(timeString, 10) || 0;
   };
 
   const normFile = (e) => {
@@ -137,21 +196,15 @@ const UpdateSong = () => {
 
   const onFinish = (values) => {
     const songData = {
-      songId: values.songId,
+      id: selectedSongId,
       songName: values.songName,
-      releaseDate: values.releaseDate.format("YYYY-MM-DD"),
-      artistId: values.artist,
-      albumId: values.album,
+      description: values.description || "",
+      albumId: values.albumId,
+      artistOwnerId: values.artistOwnerId,
       duration: durationInSeconds,
-      featuredArtists: values.featuredArtists,
-      image:
-        values.image && values.image[0]?.originFileObj
-          ? values.image[0].originFileObj
-          : null,
-      audio:
-        values.audio && values.audio[0]?.originFileObj
-          ? values.audio[0].originFileObj
-          : null,
+      artists: values.artists || [],
+      image: values.image,
+      fileUpload: values.fileUpload,
     };
 
     dispatch(updateSong(songData))
@@ -161,9 +214,13 @@ const UpdateSong = () => {
         form.setFieldsValue({
           searchSong: null,
         });
-        dispatch(resetSongSelected()); // Reset song selected after update
+        dispatch(resetSongSelected());
       })
-      .catch(() => message.error("Cập nhật thất bại!"));
+      .catch((error) => {
+        message.error(
+          "Cập nhật thất bại: " + (error?.message || "Lỗi không xác định")
+        );
+      });
   };
 
   return (
@@ -192,28 +249,19 @@ const UpdateSong = () => {
           />
         </Form.Item>
 
-        <Form.Item label="ID bài hát" name="songId">
-          <Input placeholder="ID" disabled />
-        </Form.Item>
-
         <Form.Item
           label="Tên bài hát"
           required={false}
           name="songName"
-          rules={[{ required: true }]}
+          rules={[{ required: true, message: "Nhập tên bài hát" }]}
         >
           <Input placeholder="Nhập tên bài hát" disabled={!selectedSongId} />
         </Form.Item>
 
-        <Form.Item
-          label="Ngày phát hành"
-          required={false}
-          name="releaseDate"
-          rules={[{ required: true, message: "Chọn ngày phát hành" }]}
-        >
-          <DatePicker
-            style={{ width: "100%" }}
-            placeholder="Chọn ngày phát hành"
+        <Form.Item label="Mô tả" name="description">
+          <TextArea
+            rows={4}
+            placeholder="Mô tả bài hát (không bắt buộc)"
             disabled={!selectedSongId}
           />
         </Form.Item>
@@ -221,15 +269,16 @@ const UpdateSong = () => {
         <Form.Item
           label="Nghệ sĩ chính"
           required={false}
-          name="artist"
+          name="artistOwnerId"
           rules={[{ required: true, message: "Chọn nghệ sĩ chính" }]}
         >
           <Select
             placeholder="Chọn nghệ sĩ chính"
             options={artistOptions}
             disabled={!selectedSongId}
-            onChange={() => {
-              form.setFieldsValue({ featuredArtists: [] });
+            onChange={(value) => {
+              setSelectedMainArtist(value);
+              form.setFieldsValue({ artists: [] });
             }}
           />
         </Form.Item>
@@ -237,7 +286,7 @@ const UpdateSong = () => {
         <Form.Item
           label="Album"
           required={false}
-          name="album"
+          name="albumId"
           rules={[{ required: true, message: "Chọn album" }]}
         >
           <Select
@@ -247,7 +296,7 @@ const UpdateSong = () => {
           />
         </Form.Item>
 
-        <Form.Item label="Nghệ sĩ tham gia" name="featuredArtists">
+        <Form.Item label="Nghệ sĩ tham gia" name="artists">
           <Select
             mode="multiple"
             placeholder="Chọn nghệ sĩ tham gia (không bắt buộc)"
@@ -261,9 +310,7 @@ const UpdateSong = () => {
 
         <Form.Item
           label="Ảnh bìa"
-          required={false}
           name="image"
-          rules={[{ required: true, message: "Chọn ảnh bìa" }]}
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
@@ -281,9 +328,7 @@ const UpdateSong = () => {
 
         <Form.Item
           label="File nhạc"
-          required={false}
-          name="audio"
-          rules={[{ required: true, message: "Chọn file nhạc" }]}
+          name="fileUpload"
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
@@ -294,10 +339,14 @@ const UpdateSong = () => {
             multiple={false}
             disabled={!selectedSongId}
             beforeUpload={async (file) => {
-              const duration = await getDuration(file);
-              setDurationInSeconds(duration);
-              setFormattedDuration(formatDuration(duration));
-
+              try {
+                const duration = await getDuration(file);
+                setDurationInSeconds(duration);
+                setFormattedDuration(formatDuration(duration));
+              } catch (error) {
+                console.error("Error getting audio duration:", error);
+                message.error("Không thể đọc thời lượng file âm thanh");
+              }
               return false;
             }}
           >
@@ -315,7 +364,12 @@ const UpdateSong = () => {
         </Form.Item>
 
         <Form.Item className="flex justify-end">
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!selectedSongId}
+            loading={isLoading}
+          >
             Cập nhật bài hát
           </Button>
         </Form.Item>
