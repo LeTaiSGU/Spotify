@@ -80,7 +80,7 @@ function ArtistProfile() {
         {/* Phần Bài Hát */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-white">
-            Bài hát phổ biến
+            Bài hát
           </h2>
           <div className="bg-[#121212] rounded-md">
             {songs.length > 0 ? (

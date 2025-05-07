@@ -68,7 +68,7 @@ export const SongRow = ({ song }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/playlists/user/${user.id}/`
+        `http://localhost:8000/api/playlists/user`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch playlists");
