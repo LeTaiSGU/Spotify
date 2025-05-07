@@ -107,7 +107,7 @@ export const toggleSongStatus = createAsyncThunk(
   }
 );
 
-// Nén ảnh trước khi chuyển sang base64
+// Cải tiến hàm nén ảnh để giảm kích thước file
 const compressImage = async (file, options = {}) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -118,8 +118,9 @@ const compressImage = async (file, options = {}) => {
 
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        const MAX_WIDTH = options.maxWidthOrHeight || 800;
-        const MAX_HEIGHT = options.maxWidthOrHeight || 800;
+        // Giảm kích thước xuống
+        const MAX_WIDTH = options.maxWidthOrHeight || 600; // Giảm xuống từ 800
+        const MAX_HEIGHT = options.maxWidthOrHeight || 600; // Giảm xuống từ 800
 
         let width = img.width;
         let height = img.height;
@@ -142,11 +143,12 @@ const compressImage = async (file, options = {}) => {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
+        // Giảm chất lượng xuống 0.6 từ 0.7
         canvas.toBlob(
           (blob) =>
             resolve(new File([blob], file.name, { type: "image/jpeg" })),
           "image/jpeg",
-          0.7
+          0.6 // Giảm chất lượng để giảm kích thước
         );
       };
     };
@@ -163,6 +165,15 @@ const fileToBase64 = async (file) => {
   });
 };
 
+// Thêm hàm này vào file songAdminSlice.js
+const validateFileSize = (file, maxSizeMB) => {
+  const maxSize = maxSizeMB * 1024 * 1024; // chuyển đổi MB thành bytes
+  if (file.size > maxSize) {
+    return false;
+  }
+  return true;
+};
+
 // Tạo mới bài hát
 export const createSong = createAsyncThunk(
   "songAdmin/createSong",
@@ -170,68 +181,76 @@ export const createSong = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // Thêm các trường cơ bản
-      formData.append("song_name", songData.songName);
-      formData.append("album", songData.albumId);
-      formData.append("artist_owner", songData.artistOwnerId);
-      formData.append("description", songData.description || "");
+      // Tạo đối tượng data phù hợp với yêu cầu API
+      const songDataObj = {
+        song_name: songData.songName,
+        album: songData.albumId,
+        artist_owner: songData.artistOwnerId,
+        description: songData.description || "No description",
+        duration: songData.duration
+          ? formatDuration(songData.duration)
+          : "00:00:00",
+        status: true,
+        play_count: 0,
+        artists: songData.artists || [],
+      };
 
       // Thêm genre nếu có
       if (songData.genreId) {
-        formData.append("genre", songData.genreId);
+        songDataObj.genre = songData.genreId;
       }
 
-      // Xử lý duration (thời lượng)
-      if (songData.duration) {
-        formData.append("duration", songData.duration);
-      }
-
-      // Xử lý MV nếu có
+      // Thêm MV nếu có
       if (songData.mv) {
-        formData.append("mv", songData.mv);
+        songDataObj.mv = songData.mv;
       }
+
+      // Chuyển đổi đối tượng thành JSON string
+      formData.append("data", JSON.stringify(songDataObj));
 
       // Xử lý file nhạc
       if (songData.fileUpload?.[0]?.originFileObj) {
         try {
           const file = songData.fileUpload[0].originFileObj;
-          const base64File = await fileToBase64(file);
-          formData.append("file_upload", base64File);
+
+          if (!validateFileSize(file, 10)) {
+            return rejectWithValue("File nhạc quá lớn, tối đa 10MB");
+          }
+
+          // Thêm file trực tiếp với key "file"
+          formData.append("file", file);
         } catch (fileError) {
           console.error("Error processing audio file:", fileError);
-          // Tiếp tục tạo song mà không có file nếu lỗi
+          return rejectWithValue("Không thể xử lý file nhạc");
         }
+      } else {
+        return rejectWithValue("Bài hát cần có file nhạc");
       }
 
       // Xử lý hình ảnh
       if (songData.image?.[0]?.originFileObj) {
         const file = songData.image[0].originFileObj;
+
+        if (!validateFileSize(file, 2)) {
+          return rejectWithValue("Ảnh quá lớn, tối đa 2MB");
+        }
+
         try {
           const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800,
+            maxWidthOrHeight: 600,
             maxSizeMB: 0.5,
           });
 
-          const base64Image = await fileToBase64(compressedImage);
-          formData.append("img", base64Image);
+          // Thêm ảnh với key "img_upload"
+          formData.append("img_upload", compressedImage);
         } catch (imgError) {
           console.error("Error processing image:", imgError);
-          // Tiếp tục tạo song mà không có hình ảnh nếu lỗi
-          formData.append("img", "https://via.placeholder.com/300");
         }
       }
 
-      // Xử lý nghệ sĩ tham gia (featured artists)
-      if (Array.isArray(songData.artists) && songData.artists.length > 0) {
-        // Django REST thường xử lý mảng ID dưới dạng nhiều trường cùng tên
-        songData.artists.forEach((artistId) => {
-          formData.append("artists", artistId);
-        });
-      }
+      console.log("Creating song with data:", songDataObj);
 
-      console.log("Creating song with data:", Object.fromEntries(formData));
-
-      const res = await axios.post(`${API_BASE_URL}/create/`, formData, {
+      const res = await axios.post(`${API_BASE_URL}/create`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -244,7 +263,9 @@ export const createSong = createAsyncThunk(
         "Create song error:",
         error.response?.data || error.message
       );
-      return rejectWithValue(error.response?.data || "Create song failed");
+      return rejectWithValue(
+        error.response?.data?.message || "Thêm bài hát thất bại"
+      );
     }
   }
 );
@@ -256,68 +277,74 @@ export const updateSong = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      // Thêm các trường cơ bản
-      formData.append("song_name", songData.songName);
-      formData.append("album", songData.albumId);
-      formData.append("artist_owner", songData.artistOwnerId);
-      formData.append("description", songData.description || "");
+      // Tạo đối tượng data phù hợp với yêu cầu API
+      const songDataObj = {
+        song_name: songData.songName,
+        album: songData.albumId,
+        artist_owner: songData.artistOwnerId,
+        description: songData.description || "No description",
+        artists: songData.artists || [],
+      };
+
+      // Thêm duration nếu có
+      if (songData.duration) {
+        songDataObj.duration = formatDuration(songData.duration);
+      }
 
       // Thêm genre nếu có
       if (songData.genreId) {
-        formData.append("genre", songData.genreId);
+        songDataObj.genre = songData.genreId;
       }
 
-      // Xử lý duration (thời lượng) nếu có
-      if (songData.duration) {
-        formData.append("duration", songData.duration);
-      }
-
-      // Xử lý MV nếu có
+      // Thêm MV nếu có
       if (songData.mv) {
-        formData.append("mv", songData.mv);
+        songDataObj.mv = songData.mv;
       }
+
+      // Chuyển đổi đối tượng thành JSON string
+      formData.append("data", JSON.stringify(songDataObj));
 
       // Xử lý file nhạc
       if (songData.fileUpload?.[0]?.originFileObj) {
         try {
           const file = songData.fileUpload[0].originFileObj;
-          const base64File = await fileToBase64(file);
-          formData.append("file_upload", base64File);
+
+          if (!validateFileSize(file, 10)) {
+            return rejectWithValue("File nhạc quá lớn, tối đa 10MB");
+          }
+
+          // Thêm file trực tiếp với key "file"
+          formData.append("file", file);
         } catch (fileError) {
           console.error("Error processing audio file:", fileError);
-          // Không cập nhật file nếu xử lý lỗi
         }
       }
 
       // Xử lý hình ảnh
       if (songData.image?.[0]?.originFileObj) {
         const file = songData.image[0].originFileObj;
+
+        if (!validateFileSize(file, 2)) {
+          return rejectWithValue("Ảnh quá lớn, tối đa 2MB");
+        }
+
         try {
           const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800,
+            maxWidthOrHeight: 600,
             maxSizeMB: 0.5,
           });
 
-          const base64Image = await fileToBase64(compressedImage);
-          formData.append("img", base64Image);
+          // Thêm ảnh với key "img_upload"
+          formData.append("img_upload", compressedImage);
         } catch (imgError) {
           console.error("Error processing image:", imgError);
-          // Không cập nhật ảnh nếu xử lý lỗi
         }
       }
 
-      // Xử lý nghệ sĩ tham gia (featured artists)
-      if (Array.isArray(songData.artists) && songData.artists.length > 0) {
-        // Django REST thường xử lý mảng ID dưới dạng nhiều trường cùng tên
-        songData.artists.forEach((artistId) => {
-          formData.append("artists", artistId);
-        });
-      }
+      console.log("Updating song with data:", songDataObj);
 
-      console.log("Updating song with data:", Object.fromEntries(formData));
-
-      const res = await axios.patch(
-        `${API_BASE_URL}/${songData.id}/update/`,
+      const res = await axios.put(
+        `${API_BASE_URL}/update/${songData.id}`,
         formData,
         {
           headers: {
@@ -333,10 +360,27 @@ export const updateSong = createAsyncThunk(
         "Update song error:",
         error.response?.data || error.message
       );
-      return rejectWithValue(error.response?.data || "Update song failed");
+      return rejectWithValue(
+        error.response?.data?.message || "Cập nhật bài hát thất bại"
+      );
     }
   }
 );
+
+// Thêm hàm định dạng thời lượng
+const formatDuration = (seconds) => {
+  if (!seconds) return "00:00:00";
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return [
+    hours.toString().padStart(2, "0"),
+    minutes.toString().padStart(2, "0"),
+    remainingSeconds.toString().padStart(2, "0"),
+  ].join(":");
+};
 
 const songAdminSlice = createSlice({
   name: "songAdmin",

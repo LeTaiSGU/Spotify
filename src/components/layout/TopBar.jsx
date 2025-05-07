@@ -1,10 +1,10 @@
 import React from "react";
 import "./TopBar.css";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "~/redux/slice/authSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Home, Search } from "lucide-react"; // Import các icon từ thư viện lucide-react
+import { searchContent, setSearchLoading } from "../../redux/slice/searchSlice"; // Adjust the import based on your file structure
 
 // Left Icon Group Component
 const LeftIconGroup = () => {
@@ -28,9 +28,11 @@ const LeftIconGroup = () => {
 
 // Center Section Component (Home + Search Bar)
 const CenterSection = () => {
-  const [searchQuery, setSearchQuery] = useState("What do you want to play?");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const goToHome = () => {
     if (location.pathname !== "/") {
@@ -39,18 +41,61 @@ const CenterSection = () => {
   };
 
   const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value || "What do you want to play?");
+    setSearchQuery(e.target.value);
   };
 
   const handleSearchFocus = () => {
-    if (searchQuery === "What do you want to play?") {
-      setSearchQuery("");
-    }
+    setIsFocused(true);
   };
 
   const handleSearchBlur = () => {
-    if (!searchQuery) {
-      setSearchQuery("What do you want to play?");
+    setIsFocused(false);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    console.log("Search submitted with query:", searchQuery);
+
+    if (searchQuery.trim()) {
+      console.log("Search query is valid, dispatching actions");
+      try {
+        // Kiểm tra API có hoạt động không
+        fetch(
+          `http://localhost:8000/api/search/?q=${encodeURIComponent(
+            searchQuery
+          )}`
+        )
+          .then((response) => {
+            console.log("API search test response status:", response.status);
+            if (!response.ok) {
+              console.error(
+                "API không tồn tại hoặc có lỗi:",
+                response.statusText
+              );
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("API search test data:", data);
+          })
+          .catch((err) => {
+            console.error("API search test error:", err);
+          });
+
+        // Lưu từ khóa tìm kiếm để sử dụng ở SearchResults
+        dispatch(setSearchLoading(true));
+        dispatch(searchContent(searchQuery));
+
+        // Điều hướng đến trang kết quả tìm kiếm
+        navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+
+        // Reset thanh tìm kiếm về trống
+        setSearchQuery("");
+      } catch (error) {
+        console.error("Error during search dispatch:", error);
+      }
+    } else {
+      console.log("Search query is empty, not searching");
     }
   };
 
@@ -62,26 +107,26 @@ const CenterSection = () => {
       >
         <Home size={20} />
       </button>
-      <div className="search-container">
+      <form onSubmit={handleSearchSubmit} className="search-container">
         <input
           type="text"
           value={searchQuery}
           onChange={handleSearchChange}
           onFocus={handleSearchFocus}
           onBlur={handleSearchBlur}
+          placeholder={!isFocused || !searchQuery ? "Bạn muốn nghe gì?" : ""}
           className="search-input"
         />
-        <button className="search-icon">
+        <button type="submit" className="search-icon">
           <Search size={16} />
         </button>
-      </div>
+      </form>
     </div>
   );
 };
 
 // Right Icon Group Component (Profile Icon + Menu)
 const RightIconGroup = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.auth); // Lấy thông tin user từ Redux
@@ -90,13 +135,18 @@ const RightIconGroup = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleLogout = () => {
-    dispatch(logout()); // Đăng xuất
-    navigate("/login"); // Điều hướng đến trang đăng nhập
-  };
+
 
   const handleLogin = () => {
     navigate("/login"); // Điều hướng đến trang đăng nhập
+  // Thêm các handler xử lý menu
+  }
+
+  const handleLogout = () => {
+    // Xử lý logout ở đây nếu cần
+    // Ví dụ: dispatch(logout());
+    setIsMenuOpen(false);
+    navigate("/login"); // Chuyển về trang login sau khi đăng xuất
   };
 
   return (

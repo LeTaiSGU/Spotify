@@ -17,7 +17,7 @@ function getItem(label, key, icon, children) {
 
 const items = [
   getItem("Đăng xuất", "logout", <PieChartOutlined />),
-  getItem("Bài hát", "songs", <PieChartOutlined />, [
+  getItem("Bài hát", "songs", <DesktopOutlined />, [
     getItem("Danh sách bài hát", "song"),
     getItem("Thêm bài hát", "song/create"),
     getItem("Cập nhật bài hát", "song/update"),
