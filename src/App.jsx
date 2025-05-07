@@ -14,6 +14,7 @@ import Payment from "./components/payment/Payment";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
 
 import AdminLayout from "./components/admin/layoutAdmin";
+
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -31,14 +32,13 @@ import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 
 
 
-
-
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<ContentPlaylist />} />
+
           <Route path="playlist/:id" element={<PlaylistContent type="playlist" />} />
           <Route path="album/:id" element={<PlaylistContent type="album" />} />
           <Route path="song/:id" element={<PlaylistContent type="song" />} />

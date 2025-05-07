@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import songReducer from "./slice/songSlice.js";
 import { userLibraryReducer } from "./slice/userLibrarySlice";
+import authReducer from "./slice/authSlice";
 
 import songAdminReducer from "./slice/songAdminSlice.js";
 import albumReducer from "./slice/albumSlice.js";
@@ -12,6 +13,7 @@ export const store = configureStore({
   reducer: {
     songs: songReducer,
     userLibrary: userLibraryReducer,
+    auth: authReducer,
     songAdmin: songAdminReducer,
     album: albumReducer,
     artist: artistReducer,

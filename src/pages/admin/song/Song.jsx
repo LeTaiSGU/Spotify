@@ -252,14 +252,9 @@ const Songs = () => {
     },
   ];
 
-  const handleChange = (pagination, filters, sorter) => {
-    setSortedInfo(sorter);
-    dispatch(
-      fetchSongsAdmin({
-        pageNo: pagination.current - 1,
-        pageSize: pagination.pageSize,
-      })
-    );
+  const handleChange = (pagination) => {
+    const { current, pageSize } = pagination;
+    dispatch(fetchSongsAdmin({ pageNo: current - 1, pageSize })); // Gọi fetchSongsAdmin với pageNo = current - 1
   };
 
   const clearSort = () => {
@@ -275,7 +270,7 @@ const Songs = () => {
           onClick={() => {
             setLoading(true);
             Promise.all([
-              dispatch(fetchSongsAdmin({ pageNo: 0, pageSize: 10 })).unwrap(),
+              dispatch(fetchSongsAdmin({ pageNo: 0, pageSize: 8 })).unwrap(),
               dispatch(fetchAlbumsSelect()).unwrap(),
               dispatch(fetchArtistsSelect()).unwrap(),
             ])
@@ -298,7 +293,7 @@ const Songs = () => {
         loading={isLoading || loading}
         handleChange={handleChange}
         pageNo={pageNo}
-        pageSize={pageSize}
+        pageSize={8}
         totalElements={totalElements}
       />
     </div>
