@@ -17,7 +17,7 @@ function getItem(label, key, icon, children) {
 
 const items = [
   getItem("Đăng xuất", "logout", <PieChartOutlined />),
-  getItem("Bài hát", "songs", <PieChartOutlined />, [
+  getItem("Bài hát", "songs", <DesktopOutlined />, [
     getItem("Danh sách bài hát", "song"),
     getItem("Thêm bài hát", "song/create"),
     getItem("Cập nhật bài hát", "song/update"),
@@ -37,6 +37,11 @@ const items = [
     getItem("Thêm danh sách phát", "playlist/create"),
     getItem("Cập nhật danh sách phát", "playlist/update"),
   ]),
+  getItem("Quản lí nhạc playlist ", "playlistsongs", <DesktopOutlined />, [
+    getItem("Danh nhạc playlist", "playlistsong"),
+    getItem("Thêm nhạc playlist", "playlistsongs/create"),
+    getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
+  ]),
   getItem("Danh sách thể loại", "genres", <DesktopOutlined />, [
     getItem("Danh sách thể loạ", "genre"),
     getItem("Thêm thể loại mới", "playlist/create"),
@@ -50,6 +55,7 @@ const pageTitles = {
   artist: "Danh sách Nghệ sĩ",
   album: "Danh sách Album",
   playlist: "Danh sách phát",
+  playlistsong: "Danh sách nhạc playlist",
 };
 const MemoizedMenuItem = React.memo(Menu.Item);
 

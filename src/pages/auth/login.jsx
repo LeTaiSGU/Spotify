@@ -1,6 +1,7 @@
 import SpotifyIcon from "../../components/ui/spotify-icon";
 import LoginForm from "../../components/login/loginForm";
 import SocialLoginButtons from "../../components/ui/social-button";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   return (
@@ -31,7 +32,7 @@ const LoginPage = () => {
         <div className="text-center">
           <button
             onClick={() =>
-              alert("Forgot password functionality not implemented yet.")
+              toast.error("Chức năng quên mật khẩu chưa được triển khai.")
             }
             className="text-sm text-white underline hover:text-[#1DB954] bg-transparent border-none cursor-pointer"
           >

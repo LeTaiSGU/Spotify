@@ -12,6 +12,22 @@
   z-index: 1000;
 }
 
+.login-button {
+  background-color: #1db954;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #1aa34a;
+}
+
 .top-bar-content {
   display: flex;
   align-items: center;

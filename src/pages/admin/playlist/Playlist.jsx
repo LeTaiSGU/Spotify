@@ -1,39 +1,61 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchPlaylistsAdmin,
-  togglePlaylistStatus,
-} from "../../../redux/slice/playlistAdminSlide"; // Giả sử bạn có action này
+import axios from "axios";
 import { Button, Modal, Space, Card } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; // Giả sử bạn có component này
+import AdminTable from "../../../components/admin/ui/Table"; 
 
 const Playlist = () => {
-  const dispatch = useDispatch();
+  const [playlistsAdmin, setPlaylistsAdmin] = useState([]);
   const [sortedInfo, setSortedInfo] = useState({});
+  const [pageNo, setPageNo] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [popupData, setPopupData] = useState({ type: "", songs: [] });
 
+  // Fetch playlists from the API
   useEffect(() => {
-    dispatch(fetchPlaylistsAdmin({ pageNo: 0, pageSize: 10 }));
-  }, [dispatch]);
-
-  const {
-    content: playlistsAdmin = [],
-    pageNo = 0,
-    pageSize = 10,
-    totalElements = 0,
-  } = useSelector((state) => state.playlistAdmin.items || {});
+    const fetchPlaylists = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/playlists/getall/", {
+          params: {
+            page: pageNo,
+            size: pageSize,
+          },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+  
+        // Kiểm tra xem response.data có phải là mảng không
+        if (Array.isArray(response.data)) {
+          setPlaylistsAdmin(response.data);  // Nếu là mảng, gán trực tiếp cho playlistsAdmin
+          setTotalElements(response.data.length);  // Nếu là mảng, tổng số phần tử là độ dài của mảng
+        } else {
+          console.error("API returned unexpected data format:", response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching playlists:", error);
+      }
+    };
+  
+    fetchPlaylists();
+  }, [pageNo, pageSize]);
+  
 
   const handleStatusChange = (playlistId) => {
-    dispatch(togglePlaylistStatus(playlistId));
+    // Dispatch your action to toggle playlist status here
+    console.log(`Toggle status for playlist ID: ${playlistId}`);
   };
 
   const columns = [
     {
       title: "ID",
-      dataIndex: "playlistId", // Cập nhật tên cột
-      key: "playlistId",
-      sorter: (a, b) => a.playlistId - b.playlistId,
+      dataIndex: "id", // Đổi từ 'playlistId' thành 'id'
+      key: "id",
+      sorter: (a, b) => a.id - b.id, // Sắp xếp theo 'id'
       sortOrder:
-        sortedInfo.columnKey === "playlistId" ? sortedInfo.order : null,
+        sortedInfo.columnKey === "id" ? sortedInfo.order : null,
     },
     {
       title: "Tên Playlist",
@@ -45,22 +67,16 @@ const Playlist = () => {
     },
     {
       title: "User sở hữu",
-      dataIndex: ["user", "userName"], // ← hoặc dùng render như bên dưới
-      key: "user",
-      sorter: (a, b) => a.user.userName.localeCompare(b.user.userName),
-      sortOrder: sortedInfo.columnKey === "user" ? sortedInfo.order : null,
-      ellipsis: true,
-    },
-    {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      dataIndex: "username", // Truy cập trực tiếp vào 'username'
+      key: "username",
+      sorter: (a, b) => a.username.localeCompare(b.username), // Sắp xếp theo 'username'
+      sortOrder: sortedInfo.columnKey === "username" ? sortedInfo.order : null,
       ellipsis: true,
     },
     {
       title: "Hình ảnh",
-      dataIndex: "coverImage",
-      key: "coverImage",
+      dataIndex: "cover_image", // Truy cập trực tiếp vào 'cover_image'
+      key: "cover_image",
       render: (url) => (
         <img
           src={url}
@@ -69,53 +85,13 @@ const Playlist = () => {
         />
       ),
     },
-    {
-      title: "Bài hát sở hữu",
-      dataIndex: "songs",
-      key: "songs",
-      render: (songs) => (
-        <Button
-          onClick={() => {
-            setPopupData({ type: "Sở hữu", songs: songs?.songs });
-            setIsModalVisible(true);
-            console.log("songs", songs?.songs);
-          }}
-          disabled={!songs || songs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
-        >
-          Xem
-        </Button>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "isPrivate", // Cập nhật tên cột
-      key: "isPrivate",
-      render: (isPrivate, record) => (
-        <Space>
-          <Button
-            onClick={() => handleStatusChange(record.playlistId)}
-            type={isPrivate ? "default" : "primary"}
-            danger={isPrivate} // nút màu đỏ nếu đang private
-          >
-            {isPrivate ? "Hủy" : "Kích hoạt"}
-          </Button>
-        </Space>
-      ),
-    },
   ];
 
   const handleChange = (pagination, filter, sorter) => {
     setSortedInfo(sorter);
-    dispatch(
-      fetchPlaylistsAdmin({
-        pageNo: pagination.current - 1,
-        pageSize: pagination.pageSize,
-      })
-    );
+    setPageNo(pagination.current - 1);
+    setPageSize(pagination.pageSize);
   };
-
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [popupData, setPopupData] = useState({ type: "", songs: [] });
 
   const clearAll = () => {
     setSortedInfo({});
@@ -150,7 +126,7 @@ const Playlist = () => {
       <AdminTable
         columns={columns}
         dataSource={playlistsAdmin}
-        rowKey="playlistId"
+        rowKey="id" // Dùng 'id' làm key cho mỗi dòng
         handleChange={handleChange}
         pageNo={pageNo}
         pageSize={pageSize}

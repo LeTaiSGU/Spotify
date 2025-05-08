@@ -9,8 +9,12 @@ import ContentPlaylist from "~/components/listContent/contentPlaylist";
 import NotFound from "./pages/404/404";
 import AllAvatar from "./pages/UserProfile/AllAvatar";
 import MusicList from "./pages/UserProfile/MoreListSongs";
-import AdminLayout from "./components/admin/layoutAdmin";
 
+import Payment from "./components/payment/Payment";
+import PaymentSuccess from "./components/payment/PaymentSuccess";
+
+import AdminLayout from "./components/admin/layoutAdmin";
+import ArtistProfile from "./pages/artist/ArtistProfile";
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -25,27 +29,45 @@ import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 
-import Payment from "./components/payment/Payment";
+
+
+
+import { useSelector } from "react-redux";
+import SearchResults from "./pages/search/SearchResults";
 
 function App() {
+
+  
+const PrivateRoute = ({ children }) => {
+  const user = useSelector((state) => state.auth.user);
+
+  return user ? children : <Navigate to="/login" />;
+};
+
+
+
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<ContentPlaylist />} />
 
-          <Route path="playlist/:id" element={<PlaylistContent type="playlist" />} />
+          <Route path="playlist/:id" element={<PrivateRoute><PlaylistContent type="playlist" /></PrivateRoute>} />
           <Route path="album/:id" element={<PlaylistContent type="album" />} />
           <Route path="song/:id" element={<PlaylistContent type="song" />} />
 
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
-          <Route path="user" element={<UserProfile />} />
+          <Route path="user" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
+          
+          <Route path="search" element={<SearchResults />} />
+          <Route path="/artist/:id" element={<ArtistProfile />} />
         </Route>
 
+        <Route path="user/payment/success" element={<PaymentSuccess />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
 
