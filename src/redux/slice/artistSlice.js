@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 const compressImage = async (file, options = {}) => {
   // Đây là một giải pháp đơn giản mà không cần thư viện ngoài
@@ -49,7 +50,7 @@ const compressImage = async (file, options = {}) => {
   });
 };
 // Định nghĩa base URL cho API
-const API_BASE_URL = "http://localhost:8000/api/artists";
+const API_BASE_URL = `${API_ROOT}/api/artists`;
 
 // Fetch tất cả nghệ sĩ
 export const fetchArtists = createAsyncThunk(

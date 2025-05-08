@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 import ProfileHeader from "./ProfileHeader";
 import { SongRow } from "../search/SearchResults"; // Import SongRow từ SearchResults
 import AlbumList from "./AlbumList"; // Sẽ tạo component này sau
+import { API_ROOT } from "~/utils/constants";
 
 function ArtistProfile() {
   const { id } = useParams();
@@ -21,24 +22,20 @@ function ArtistProfile() {
         setLoading(true);
 
         // Fetch artist info
-        const artistResponse = await fetch(
-          `http://localhost:8000/api/artists/${id}`
-        );
+        const artistResponse = await fetch(`${API_ROOT}/api/artists/${id}`);
         if (!artistResponse.ok) throw new Error("Failed to fetch artist");
         const artistData = await artistResponse.json();
         setArtist(artistData);
 
         // Fetch songs by artist
-        const songsResponse = await fetch(
-          `http://localhost:8000/api/songs/artist/${id}`
-        );
+        const songsResponse = await fetch(`${API_ROOT}/api/songs/artist/${id}`);
         if (!songsResponse.ok) throw new Error("Failed to fetch songs");
         const songsData = await songsResponse.json();
         setSongs(songsData);
 
         // Fetch albums by artist
         const albumsResponse = await fetch(
-          `http://localhost:8000/api/albums/artist/${id}`
+          `${API_ROOT}/api/albums/artist/${id}`
         );
         if (!albumsResponse.ok) throw new Error("Failed to fetch albums");
         const albumsData = await albumsResponse.json();

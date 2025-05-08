@@ -1,3 +1,3 @@
-let apiRoot = 'http://localhost:8000'
+let apiRoot = "http://localhost:8000";
 
-export const API_ROOT = apiRoot
+export const API_ROOT = apiRoot;

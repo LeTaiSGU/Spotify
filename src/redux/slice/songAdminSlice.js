@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 // Base URL cho API
-const API_BASE_URL = "http://localhost:8000/api/songs";
+const API_BASE_URL = `${API_ROOT}/api/songs`;
 
 // Fetch danh sách song
 export const fetchSongsAdmin = createAsyncThunk(

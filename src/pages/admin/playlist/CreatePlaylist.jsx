@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 const { Option } = Select;
 
@@ -11,7 +12,7 @@ const CreatePlaylist = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/users/getall/")
+      .get(`${API_ROOT}/api/users/getall/`)
       .then((res) => {
         setUsers(res.data);
       })
@@ -30,28 +31,30 @@ const CreatePlaylist = () => {
   const onFinish = (values) => {
     const file = values.image[0].originFileObj;
     const reader = new FileReader();
-  
+
     reader.onloadend = async () => {
       const base64Image = reader.result;
-  
+
       const payload = {
         name: values.name,
         user: values.user,
         is_private: values.isPrivate, // hoặc values.is_private nếu tên là vậy
-        cover_image: base64Image,     // đúng field Django mong đợi
+        cover_image: base64Image, // đúng field Django mong đợi
       };
       console.log("Payload:", payload); // Kiểm tra payload trước khi gửi
       try {
-        await axios.post("http://localhost:8000/api/playlists/create/", payload);
+        await axios.post(`${API_ROOT}/api/playlists/create/`, payload);
         console.log("Gửi thành công");
       } catch (error) {
-        console.error("Lỗi gửi dữ liệu:", error.response?.data || error.message);
+        console.error(
+          "Lỗi gửi dữ liệu:",
+          error.response?.data || error.message
+        );
       }
     };
-  
+
     reader.readAsDataURL(file); // quan trọng!
   };
-  
 
   return (
     <div className="p-4 flex justify-center items-center">
@@ -90,14 +93,13 @@ const CreatePlaylist = () => {
           label="Ảnh bìa"
           name="image"
           valuePropName="fileList"
-          getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}
+          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
           rules={[{ required: true, message: "Vui lòng chọn ảnh bìa" }]}
         >
           <Upload beforeUpload={() => false} listType="picture">
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
         </Form.Item>
-
 
         {/* Checkbox */}
         <Form.Item
