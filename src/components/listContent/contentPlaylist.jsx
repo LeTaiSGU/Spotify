@@ -11,28 +11,10 @@ import {
 } from "../../redux/slice/songSlice";
 import "../../style/contentPlaylist.css";
 import PublicPlaylists from "./publicPlaylists";
+import { useNavigate } from "react-router-dom";
 
 const CardSong = ({ song }) => {
-  // Lấy dữ liệu artitst
-  const [mainArtistInfo, setMainArtistInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchMainArtist = async () => {
-      if (song?.artist_owner) {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/api/artists/${song.artist_owner}`
-          );
-          const data = await response.json();
-          setMainArtistInfo(data);
-        } catch (error) {
-          console.error("Error fetching main artist:", error);
-        }
-      }
-    };
-
-    fetchMainArtist();
-  }, [song?.artist_owner]);
+  const navigate = useNavigate();
   // Lấy dữ liệu song từ Redux store
   const dispatch = useDispatch();
 
@@ -60,10 +42,16 @@ const CardSong = ({ song }) => {
     dispatch(setSelectedSong(song));
   };
 
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
+    navigate(`/song/${song?.id}`);
+  };
+
   return (
     <div
       className="w-[200px] bg-[#121212] rounded-lg shadow-sm flex-shrink-0 p-2 relative group hover:bg-[#1f1f1f]"
       onClick={handleCardClick} // Thêm onClick để xử lý khi click vào card
+      onDoubleClick={handleDoubleClick}
     >
       <div className="relative">
         <img
@@ -171,7 +159,6 @@ const MusicSession = () => {
       </div>
 
       <PublicPlaylists />
-
     </div>
   );
 };

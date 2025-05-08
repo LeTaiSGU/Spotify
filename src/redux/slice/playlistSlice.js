@@ -41,7 +41,10 @@ export const createNewPlaylist = createAsyncThunk(
     try {
       const response = await axios.post(
         `${API_ROOT}/api/playlists/`,
-        playlistData
+        playlistData,
+        {
+          withCredentials: true, // Gửi cookie cùng với yêu cầu
+        }
       );
       return response.data;
     } catch (error) {
