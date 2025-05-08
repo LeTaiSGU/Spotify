@@ -10,6 +10,7 @@ import { togglePlay } from "../../../redux/slice/songSlice";
 
 const BoxArtist = ({ artist, isMainArtist }) => {
   if (!artist) return null;
+  // console.log(artist);
 
   return (
     <div className="flex flex-row items-center justify-between rounded-xl p-2 text-white">
@@ -44,10 +45,10 @@ const ArtistSection = ({ song }) => {
 
       {/* Hiển thị danh sách nghệ sĩ phụ */}
       {Array.isArray(song.artists) &&
-        song.artists.map((artistId, index) => (
+        song.artists.map((artist, index) => (
           <BoxArtist
-            key={`artist-${artistId}-${index}`}
-            artistId={artistId}
+            key={`artist-${artist}-${index}`}
+            artist={artist}
             isMainArtist={false}
           />
         ))}

@@ -1,0 +1,40 @@
+.dark-modal .ant-modal-content {
+  background-color: #282828 !important;
+  color: white !important;
+}
+
+.dark-modal .ant-modal-header {
+  background-color: #282828 !important;
+  border-bottom: 1px solid #404040 !important;
+}
+
+.dark-modal .ant-modal-title {
+  color: white !important;
+}
+
+.dark-modal .ant-modal-close {
+  color: white !important;
+}
+
+.dark-modal .ant-modal-close:hover {
+  color: #1db954 !important;
+}
+
+/* Custom scrollbar for the playlist container */
+.max-h-96::-webkit-scrollbar {
+  width: 8px;
+}
+
+.max-h-96::-webkit-scrollbar-track {
+  background: #404040;
+  border-radius: 4px;
+}
+
+.max-h-96::-webkit-scrollbar-thumb {
+  background: #686868;
+  border-radius: 4px;
+}
+
+.max-h-96::-webkit-scrollbar-thumb:hover {
+  background: #808080;
+}
