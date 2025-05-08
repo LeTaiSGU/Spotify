@@ -13,26 +13,6 @@ import "../../style/contentPlaylist.css";
 import PublicPlaylists from "./publicPlaylists";
 
 const CardSong = ({ song }) => {
-  // Lấy dữ liệu artitst
-  const [mainArtistInfo, setMainArtistInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchMainArtist = async () => {
-      if (song?.artist_owner) {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/api/artists/${song.artist_owner}`
-          );
-          const data = await response.json();
-          setMainArtistInfo(data);
-        } catch (error) {
-          console.error("Error fetching main artist:", error);
-        }
-      }
-    };
-
-    fetchMainArtist();
-  }, [song?.artist_owner]);
   // Lấy dữ liệu song từ Redux store
   const dispatch = useDispatch();
 
@@ -171,7 +151,6 @@ const MusicSession = () => {
       </div>
 
       <PublicPlaylists />
-
     </div>
   );
 };

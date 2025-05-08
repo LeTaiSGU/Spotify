@@ -1,6 +1,11 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
+import { addHistoryListen } from "../../api/historylistenApi";
 import { useSelector, useDispatch } from "react-redux";
-import { togglePlay, toggleRightbar, setSelectedSong } from "../../redux/slice/songSlice";
+import {
+  togglePlay,
+  toggleRightbar,
+  setSelectedSong,
+} from "../../redux/slice/songSlice";
 import "./BottomPlayer.css";
 import {
   FaPlay,
@@ -34,12 +39,14 @@ const BottomPlayer = () => {
   const isRightbarVisible = useSelector(
     (state) => state.songs.isRightbarVisible
   );
+  const userId = useSelector((state) => state.auth.user.id);
   const handleToggleRightbar = () => {
     dispatch(toggleRightbar(!isRightbarVisible));
   };
 
-
-  const { selectedSong, isPlaying, songQueue } = useSelector((state) => state.songs);
+  const { selectedSong, isPlaying, songQueue } = useSelector(
+    (state) => state.songs
+  );
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -99,7 +106,6 @@ const BottomPlayer = () => {
     setIsMuted(false);
   };
 
-
   const toggleMute = () => {
     if (isMuted) {
       setVolume(previousVolume);
@@ -145,14 +151,15 @@ const BottomPlayer = () => {
     return shuffled;
   };
 
-
   const handleNextSong = () => {
     if (!songQueue || songQueue.length === 0) {
       console.error("Hàng đợi bài hát trống");
       return;
     }
 
-    const currentIndex = songQueue.findIndex((song) => song.id === selectedSong?.id);
+    const currentIndex = songQueue.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
 
     if (currentIndex === -1) {
       console.error("Bài hát hiện tại không có trong hàng đợi");
@@ -194,7 +201,9 @@ const BottomPlayer = () => {
       return;
     }
 
-    const currentIndex = songQueue.findIndex((song) => song.id === selectedSong?.id);
+    const currentIndex = songQueue.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
 
     if (currentIndex === -1) {
       console.error("Bài hát hiện tại không có trong hàng đợi");
@@ -241,10 +250,13 @@ const BottomPlayer = () => {
               method: "put",
             }
           );
-
+          const historyListening = await addHistoryListen(
+            userId,
+            selectedSong.id
+          );
           if (response.ok) {
             setDaCapNhatLuotNghe(true);
-            console.log("Đã cập nhật lượt nghe thành công");
+            console.log("Cập nhật lượt nghe và lịch sử nghe nhạc thành công");
           }
         } catch (error) {
           console.error("Lỗi khi cập nhật lượt nghe:", error);
@@ -266,7 +278,9 @@ const BottomPlayer = () => {
 
   const handleAudioEnd = useCallback(() => {
     console.log("Audio ended - Resetting state");
-    const currentIndex = songQueue?.findIndex((song) => song.id === selectedSong?.id);
+    const currentIndex = songQueue?.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
     const nextSong = songQueue[currentIndex + 1];
     console.log("Current song:", selectedSong);
     console.log("Song queue:", songQueue);
@@ -291,8 +305,6 @@ const BottomPlayer = () => {
     } else {
       dispatch(togglePlay(false)); // Dừng phát nếu không còn bài hát
     }
-
-
 
     // Sau đó mới cập nhật các state khác
     setDaCapNhatLuotNghe(false);
@@ -343,10 +355,10 @@ const BottomPlayer = () => {
 
   useEffect(() => {
     const fetchMainArtist = async () => {
-      if (selectedSong?.artist_owner) {
+      if (selectedSong?.artist_owner.id) {
         try {
           const response = await fetch(
-            `http://localhost:8000/api/artists/${selectedSong.artist_owner}`
+            `http://localhost:8000/api/artists/${selectedSong.artist_owner.id}`
           );
           const data = await response.json();
           setMainArtistInfo(data);
@@ -389,12 +401,12 @@ const BottomPlayer = () => {
           <button
             className="control-btn"
             onClick={handlePreviousSong}
-          // disabled={
-          //   !currentSong ||
-          //   queue.length === 0 ||
-          //   (queue.findIndex((s) => s.songId === currentSong.songId) === 0 &&
-          //     repeatMode !== 2)
-          // }
+            // disabled={
+            //   !currentSong ||
+            //   queue.length === 0 ||
+            //   (queue.findIndex((s) => s.songId === currentSong.songId) === 0 &&
+            //     repeatMode !== 2)
+            // }
           >
             <FaStepBackward />
           </button>
@@ -408,13 +420,13 @@ const BottomPlayer = () => {
           <button
             className="control-btn"
             onClick={handleNextSong}
-          // disabled={
-          //   !currentSong ||
-          //   queue.length === 0 ||
-          //   (queue.findIndex((s) => s.songId === currentSong.songId) ===
-          //     queue.length - 1 &&
-          //     repeatMode !== 2)
-          // }
+            // disabled={
+            //   !currentSong ||
+            //   queue.length === 0 ||
+            //   (queue.findIndex((s) => s.songId === currentSong.songId) ===
+            //     queue.length - 1 &&
+            //     repeatMode !== 2)
+            // }
           >
             <FaStepForward />
           </button>
@@ -496,8 +508,9 @@ const BottomPlayer = () => {
         </div>
         {selectedSong && (
           <button
-            className={`control-btn rightbar-toggle ${isRightbarVisible ? "active" : ""
-              }`}
+            className={`control-btn rightbar-toggle ${
+              isRightbarVisible ? "active" : ""
+            }`}
             onClick={handleToggleRightbar}
             title={isRightbarVisible ? "Ẩn sidebar" : "Hiện sidebar"}
           >
