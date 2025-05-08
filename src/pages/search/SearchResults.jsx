@@ -120,7 +120,9 @@ export const SongRow = ({ song }) => {
       console.log("Response status:", response.status);
 
       if (response.ok) {
-        alert(`Đã thêm bài hát "${song.song_name}" vào playlist!`);
+        toast.success(
+          `Đã thêm bài hát "${song.song_name}" vào playlist!`
+        );
         setShowPlaylistModal(false);
         return true; // Trả về true để .then() hoạt động
       } else {
@@ -128,17 +130,19 @@ export const SongRow = ({ song }) => {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          alert(
+          toast.error(
             `Lỗi: ${errorData.detail || "Không thể thêm bài hát vào playlist"}`
           );
         } else {
-          alert(`Lỗi: ${response.status} ${response.statusText}`);
+          toast.error(
+            `Lỗi: ${response.status} ${response.statusText}`
+          );
         }
         return false;
       }
     } catch (error) {
       console.error("Error adding song to playlist:", error);
-      alert("Đã xảy ra lỗi khi thêm bài hát vào playlist");
+      toast.error("Đã xảy ra lỗi khi thêm bài hát vào playlist");
       return false;
     }
   };
@@ -259,7 +263,7 @@ export const SongRow = ({ song }) => {
               {song.song_name}
             </h3>
             <p className="text-gray-400 text-sm">
-              {mainArtistInfo ? mainArtistInfo.name : "Unknown Artist"}
+              {song.artist_owner ? song.artist_owner.name : "Unknown Artist"}
             </p>
           </div>
 

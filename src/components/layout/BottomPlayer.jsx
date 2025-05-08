@@ -41,7 +41,7 @@ const BottomPlayer = () => {
   const isRightbarVisible = useSelector(
     (state) => state.songs.isRightbarVisible
   );
-  const userId = useSelector((state) => state.auth.user.id);
+  const userId = useSelector((state) => state.auth?.user?.id);
   const handleToggleRightbar = () => {
     dispatch(toggleRightbar(!isRightbarVisible));
   };
@@ -49,7 +49,7 @@ const BottomPlayer = () => {
   const { selectedSong, isPlaying, songQueue } = useSelector(
     (state) => state.songs
   );
-  const Currentuser = useSelector((state) => state.auth.user);
+  const Currentuser = useSelector((state) => state.auth?.user);
   const isPremium = Currentuser?.is_premium;
 
   const [songCounter, setSongCounter] = useState(0);
