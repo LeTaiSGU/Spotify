@@ -19,6 +19,8 @@ import SearchResults from "./pages/search/SearchResults";
 
 import Payment from "./components/payment/Payment";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
+
+
 import ArtistProfile from "./pages/artist/ArtistProfile";
 import AccountInfo from "./pages/AccountInfo/AccountInfo";
 import ChangePass from "./pages/AccountInfo/ChangePass";
@@ -38,6 +40,9 @@ import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 import "~/utils/axiosWithAutoRefesh";
 import EditProfileForm from "./pages/AccountInfo/EditProfileForm";
 
+import PLS from "./pages/admin/playlistsongs/PLS";
+import CPLS from "./pages/admin/playlistsongs/CPLS";
+import UPLS from "./pages/admin/playlistsongs/UPLS";
 const PrivateRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
   const [isChecking, setIsChecking] = useState(true);
@@ -152,6 +157,10 @@ function App() {
           />
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
+          <Route path="user" element={<UserProfile />} />
+          <Route path="user/more-artists" element={<AllAvatar />} />
+          <Route path="user/more-songs" element={<MusicList />} />
+          <Route path="user/payment" element={<Payment />} />
           <Route
             path="user"
             element={
@@ -218,6 +227,13 @@ function App() {
           <Route path="album/create" element={<CreateAlbum />} />
           <Route path="album/update" element={<UpdateAlbum />} />
           <Route path="playlist" element={<Playlist />} />
+          <Route path="playlist/create" element={<CreatePlaylist />} />
+          <Route path="playlist/update" element={<UpdatePlaylist />} />
+          <Route path="playlistsong" element={<PLS />} />
+          <Route path="playlistsongs/create" element={<CPLS />} />
+          <Route path="playlistsongs/update" element={<UPLS />} />
+
+          {/* <Route path="users" element={<Users />} /> */}
           {/* <Route path="playlist/create" element={<CreatePlaylist />} /> */}
           {/* <Route path="playlist/update" element={<UpdatePlaylist />} /> */}
         </Route>

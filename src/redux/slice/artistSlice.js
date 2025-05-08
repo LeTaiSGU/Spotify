@@ -119,69 +119,39 @@ export const fetchArtistsSelect = createAsyncThunk(
   }
 );
 
-// Tạo mới một nghệ sĩ
-// Tạo mới một nghệ sĩ
+// Create artist
 export const createArtist = createAsyncThunk(
   "artist/createArtist",
-  async (artistData, { rejectWithValue }) => {
+  async (values, thunkAPI) => {
+    const formData = new FormData();
+    
+    // Append các trường thông tin khác vào formData
+    formData.append("name", values.name);
+    formData.append("bio", values.bio); // Nếu có bio
+    formData.append("genre", values.genre); // Ví dụ thêm genre
+
+    // Nếu có ảnh thì append vào FormData
+    if (values.image?.[0]?.originFileObj) {
+      formData.append("img_upload", values.image[0].originFileObj);
+    }
+
     try {
-      // Tạo FormData phù hợp với model Django
-      const formData = new FormData();
-
-      // Đúng tên trường theo model Django
-      formData.append("name", artistData.name);
-      formData.append("description", artistData.description);
-
-      // Xử lý ảnh - nén kích thước trước khi chuyển sang base64
-      if (artistData.image?.[0]?.originFileObj) {
-        const file = artistData.image[0].originFileObj;
-
-        // Nén ảnh trước khi chuyển thành base64
-        try {
-          const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800, // Giới hạn kích thước ảnh
-            maxSizeMB: 0.5, // Giới hạn kích thước file
-          });
-
-          const reader = new FileReader();
-          const base64Promise = new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(compressedImage);
-          });
-
-          const base64String = await base64Promise;
-          formData.append("avatar", base64String);
-        } catch (compressionError) {
-          console.error("Image compression failed:", compressionError);
-
-          // Fallback: Không nén, gửi URL thay vì base64
-          formData.append("avatar", "https://via.placeholder.com/300");
-        }
-      }
-
-      // POST /api/artists/create/
+      // Gửi request POST
       const res = await axios.post(`${API_BASE_URL}/create/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-
-      return res.data.result || res.data;
+      return res.data; // Dữ liệu trả về sau khi tạo thành công
     } catch (error) {
-      console.error(
-        "Create artist error:",
-        error.response?.data || error.message
-      );
-      return rejectWithValue(
-        error.response?.data?.message ||
-          error.response?.data ||
-          "Create artist failed"
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || "Create failed"
       );
     }
   }
 );
+
 
 // Cập nhật thông tin nghệ sĩ
 export const updateArtist = createAsyncThunk(
