@@ -53,7 +53,9 @@ function AvatarBar() {
         )}
       </div>
       <div className='flex flex-row flex-nowrap overflow-hidden gap-4 place-content-start'>
-        {
+        {artists.length === 0 ? ( // Kiểm tra nếu danh sách nghệ sĩ trống
+          <p className="text-lg text-gray-400">Bạn chưa có nghệ sĩ yêu thích, hãy nghe nhiều hơn nhé!</p>
+        ) : (
           visibleItems.map((item, index) => (
             index < 4 && (
               <div
@@ -61,6 +63,7 @@ function AvatarBar() {
                 className='flex flex-col hover:bg-gray-700 p-4 rounded-lg relative'
                 onMouseLeave={() => setHoveredIndex(null)}
                 onMouseEnter={() => setHoveredIndex(index)}
+                onClick={() => { navigate(`/artist/${item.id}`) }} // Chuyển hướng đến trang nghệ sĩ
               >
                 <Avatar src={item.avatar} size={150} />
                 <p className='text-start text-xl font-medium mt-3 text-white'>{item.name}</p>
@@ -80,7 +83,7 @@ function AvatarBar() {
               </div>
             )
           ))
-        }
+        )}
       </div>
     </div>
   );

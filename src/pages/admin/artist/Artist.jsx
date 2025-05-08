@@ -84,38 +84,38 @@ const Artist = () => {
       sortOrder:
         sortedInfo.columnKey === "created_at" ? sortedInfo.order : null,
     },
-    {
-      title: "Bài hát sở hữu",
-      dataIndex: "songs",
-      key: "songs",
-      render: (songs) => (
-        <Button
-          onClick={() => {
-            setPopupData({ type: "Sở hữu", songs: songs || [] });
-            setIsModalVisible(true);
-          }}
-          disabled={!songs || songs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
-        >
-          Xem ({songs?.length || 0})
-        </Button>
-      ),
-    },
-    {
-      title: "Bài hát tham gia",
-      dataIndex: "featuredSongs",
-      key: "featuredSongs",
-      render: (featuredSongs) => (
-        <Button
-          onClick={() => {
-            setPopupData({ type: "Tham gia", songs: featuredSongs || [] });
-            setIsModalVisible(true);
-          }}
-          disabled={!featuredSongs || featuredSongs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
-        >
-          Xem ({featuredSongs?.length || 0})
-        </Button>
-      ),
-    },
+    // {
+    //   title: "Bài hát sở hữu",
+    //   dataIndex: "songs",
+    //   key: "songs",
+    //   render: (songs) => (
+    //     <Button
+    //       onClick={() => {
+    //         setPopupData({ type: "Sở hữu", songs: songs || [] });
+    //         setIsModalVisible(true);
+    //       }}
+    //       disabled={!songs || songs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
+    //     >
+    //       Xem ({songs?.length || 0})
+    //     </Button>
+    //   ),
+    // },
+    // {
+    //   title: "Bài hát tham gia",
+    //   dataIndex: "featuredSongs",
+    //   key: "featuredSongs",
+    //   render: (featuredSongs) => (
+    //     <Button
+    //       onClick={() => {
+    //         setPopupData({ type: "Tham gia", songs: featuredSongs || [] });
+    //         setIsModalVisible(true);
+    //       }}
+    //       disabled={!featuredSongs || featuredSongs.length === 0} // Kiểm tra nếu mảng rỗng hoặc undefined
+    //     >
+    //       Xem ({featuredSongs?.length || 0})
+    //     </Button>
+    //   ),
+    // },
   ];
 
   const handleChange = (pagination, filters, sorter) => {

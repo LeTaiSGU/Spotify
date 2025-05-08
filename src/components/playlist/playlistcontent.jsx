@@ -42,6 +42,13 @@ function PlaylistContent({ type }) {
         let result = [];
         if (type === "playlist") {
           const playlistData = await getPlaylist(id);
+
+          if (playlistData.is_private && playlistData.user !== user?.id) {
+            toast.error("Bạn không có quyền truy cập playlist này!");
+            navigate("/"); // Điều hướng về trang chủ
+            return;
+          }
+
           setPlaylist(playlistData);
           result = await getSongBylistId(id);
         }
@@ -63,7 +70,7 @@ function PlaylistContent({ type }) {
     };
 
     fetchSongs();
-  }, [id, type]);
+  }, [id, type, user, navigate]);
 
 
 
