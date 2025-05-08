@@ -16,10 +16,17 @@ const persistConfig = {
   key: "root", // Key để lưu trữ trong localStorage
   storage, // Sử dụng localStorage
 };
+
+const authPersistConfig = {
+  key: "auth",
+  storage,
+  whitelist: ["user"], // Chỉ lưu `user`, không lưu token nếu bạn có (nhưng đã dùng cookie thì không cần token ở đây)
+};
+
 const rootReducer = combineReducers({
   songs: songReducer,
   userLibrary: userLibraryReducer,
-  auth: authReducer,
+  auth: persistReducer(authPersistConfig, authReducer),
   songAdmin: songAdminReducer,
   album: albumReducer,
   artist: artistReducer,
@@ -37,3 +44,4 @@ export const store = configureStore({
     }),
 });
 export const persistor = persistStore(store);
+persistor.purge(); // Gọi lần đầu để xóa dữ liệu cũ

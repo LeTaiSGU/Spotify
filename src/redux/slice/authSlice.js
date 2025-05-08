@@ -1,8 +1,53 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_ROOT } from "~/utils/constants";
+import authorizedAxiosInstance from "~/utils/authorizeAxios";
+import { RESET_APP } from "../store";
 
-// Đăng nhập
+// Gọi /me/ để lấy lại user từ cookie
+export const fetchCurrentUser = createAsyncThunk(
+  "auth/fetchCurrentUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authorizedAxiosInstance.get(
+        `${API_ROOT}/api/users/me/`,
+        {},
+        { withCredentials: true }
+      );
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 401) {
+        // Truyền thẳng lỗi 401 lên để interceptor xử lý
+        throw error;
+      }
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Trong authSlice.js
+export const refreshAccessToken = createAsyncThunk(
+  "auth/refreshToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      // Thêm API_ROOT vào URL
+      const response = await axios.post(
+        `${API_ROOT}/api/users/token/refresh/`,
+        {},
+        {
+          withCredentials: true, // Để gửi cookies
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.error || "Failed to refresh token"
+      );
+    }
+  }
+);
+
+// Login
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
@@ -12,35 +57,32 @@ export const loginUser = createAsyncThunk(
         { email, password },
         { withCredentials: true }
       );
-      // Nếu backend trả về access token trong body
-      if (res.data.access) {
-        document.cookie = `access_token=${res.data.access}; path=/; max-age=3600; secure; samesite=strict`;
-      }
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      return { user: res.data.user, access: res.data.access || null };
+      return { user: res.data.user };
     } catch (err) {
       return rejectWithValue(err.response?.data?.error || "Đăng nhập thất bại");
     }
   }
 );
 
-// Đăng xuất
+// Logout
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      await fetch(`${API_ROOT}/api/users/logout/`, {
-        method: "POST",
-        credentials: "include",
-      });
+      await axios.post(
+        `${API_ROOT}/api/users/logout/`,
+        {},
+        { withCredentials: true }
+      );
+      localStorage.clear();
       return true;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Đăng xuất thất bại");
+      return rejectWithValue("Đăng xuất thất bại");
     }
   }
 );
 
-// Đăng ký
+// Register
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
   async (userData, { rejectWithValue }) => {
@@ -52,33 +94,13 @@ export const registerUser = createAsyncThunk(
       );
       return res.data.user;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Đăng ký thất bại");
-    }
-  }
-);
-
-// Refresh access token
-export const refreshAccessToken = createAsyncThunk(
-  "auth/refreshAccessToken",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await axios.post(
-        `${API_ROOT}/api/users/token/refresh/`,
-        {},
-        { withCredentials: true }
-      );
-      document.cookie = `access_token=${res.data.access}; path=/; max-age=3600; secure; samesite=strict`;
-      return res.data.access;
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.error || "Refresh token hết hạn hoặc không hợp lệ"
-      );
+      return rejectWithValue("Đăng ký thất bại");
     }
   }
 );
 
 const initialState = {
-  user: JSON.parse(localStorage.getItem("user")) || null,
+  user: null,
   loading: false,
   error: null,
 };
@@ -89,7 +111,6 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      localStorage.removeItem("user");
     },
     setUser: (state, action) => {
       state.user = action.payload;
@@ -105,42 +126,52 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.access = action.payload.access;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+
       // Logout
-      .addCase(logoutUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(logoutUser.fulfilled, (state) => {
-        state.loading = false;
         state.user = null;
-        state.access = null;
-        localStorage.removeItem("user");
       })
-      .addCase(logoutUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+
       // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload;
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Refresh
-      .addCase(refreshAccessToken.fulfilled, (state, action) => {
-        state.access = action.payload;
+
+      // Fetch current user
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchCurrentUser.rejected, (state) => {
+        state.loading = false;
+        state.user = null; // Token hết hạn thì clear user
+      })
+
+      // Refresh access token
+      .addCase(refreshAccessToken.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(refreshAccessToken.rejected, (state) => {
+        state.loading = false;
+        state.user = null; // Refresh token thất bại thì clear user
       });
   },
 });

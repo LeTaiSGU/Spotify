@@ -1,11 +1,8 @@
 import axios from "axios";
 // import { toast } from 'react-toastify'
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
+// Không cần hàm getCookie() nữa vì sẽ không đọc cookie
+// function getCookie(name) {...}
 
 let authorizedAxiosInstance = axios.create({
   withCredentials: true, // BẮT BUỘC để gửi cookie refresh token
@@ -13,18 +10,14 @@ let authorizedAxiosInstance = axios.create({
 
 authorizedAxiosInstance.defaults.timeout = 1000 * 60 * 10;
 
-// Cấu hình interceptors
-// can thiệp vào các req
+// Cấu hình interceptors đơn giản hơn
 authorizedAxiosInstance.interceptors.request.use(
   (config) => {
-    const token = getCookie("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // Không cần thêm Authorization header thủ công
+    // Browser sẽ tự động gửi cookies với mỗi request
     return config;
   },
   function (error) {
-    // Do something with request error
     return Promise.reject(error);
   }
 );
