@@ -99,21 +99,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-export const logoutUser = createAsyncThunk(
-  "auth/logoutUser",
-  async (_, { rejectWithValue }) => {
-    try {
-      await fetch(`${API_ROOT}/api/users/logout/`, {
-        method: "POST",
-        credentials: "include",
-      });
-      return true;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.error || "Đăng xuất thất bại");
-    }
-  }
-);
-
 const initialState = {
   user: null,
   loading: false,
