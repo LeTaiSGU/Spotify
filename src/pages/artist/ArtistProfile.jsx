@@ -11,6 +11,7 @@ function ArtistProfile() {
   const [songs, setSongs] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedSongs, setExpandedSongs] = useState(false);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -54,6 +55,14 @@ function ArtistProfile() {
     }
   }, [id]);
 
+  // Hiển thị số bài hát dựa trên trạng thái mở rộng
+  const displayedSongs = expandedSongs ? songs.slice(0, 10) : songs.slice(0, 2);
+
+  // Hàm xử lý khi click vào nút xem thêm
+  const handleToggleSongs = () => {
+    setExpandedSongs(!expandedSongs);
+  };
+
   if (loading) {
     return (
       <div className="w-full p-8 flex items-center justify-center">
@@ -79,12 +88,24 @@ function ArtistProfile() {
       <div className="p-6 bg-gradient-to-b from-gray-900 to-stone-900">
         {/* Phần Bài Hát */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-white">
-            Bài hát
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-white">Bài hát</h2>
           <div className="bg-[#121212] rounded-md">
-            {songs.length > 0 ? (
-              songs.map((song) => <SongRow key={song.id} song={song} />)
+            {displayedSongs.length > 0 ? (
+              <>
+                {displayedSongs.map((song) => (
+                  <SongRow key={song.id} song={song} />
+                ))}
+                {songs.length > 2 && (
+                  <div className="py-3 px-4 text-center">
+                    <button
+                      onClick={handleToggleSongs}
+                      className="text-white hover:text-green-500 font-medium"
+                    >
+                      {expandedSongs ? "Thu gọn" : "Xem thêm"}
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-gray-400 p-4 text-center">
                 Không có bài hát nào
