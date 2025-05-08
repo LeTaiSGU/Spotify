@@ -97,7 +97,6 @@ const EditProfileForm = () => {
 
       // Hiển thị thông báo thành công
       toast.success("Thông tin đã được cập nhật thành công!");
-      navigate("/account");
     } catch (error) {
       // Hiển thị thông báo lỗi
       toast.error("Đã xảy ra lỗi khi cập nhật thông tin.");
