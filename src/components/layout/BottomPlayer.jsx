@@ -6,6 +6,7 @@ import {
   toggleRightbar,
   setSelectedSong,
 } from "../../redux/slice/songSlice";
+
 import "./BottomPlayer.css";
 import {
   FaPlay,
@@ -18,6 +19,7 @@ import {
   FaVolumeMute,
 } from "react-icons/fa";
 import { Maximize, Minimize } from "lucide-react";
+import adsMusic from "../../assets/ads-music.mp3";
 
 const timeStringToSeconds = (timeString) => {
   if (!timeString) return 0;
@@ -47,6 +49,10 @@ const BottomPlayer = () => {
   const { selectedSong, isPlaying, songQueue } = useSelector(
     (state) => state.songs
   );
+  const Currentuser = useSelector((state) => state.auth.user);
+  const isPremium = Currentuser?.is_premium;
+
+  const [songCounter, setSongCounter] = useState(0);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -89,6 +95,7 @@ const BottomPlayer = () => {
   };
 
   const handleTimeChange = (e) => {
+    if (selectedSong?.isAd) return; // Không cho phép tua nếu là quảng cáo
     const newTime = e.target.value;
     setCurrentTime(newTime);
     if (audioRef.current) {
@@ -189,8 +196,38 @@ const BottomPlayer = () => {
       return;
     }
 
-    // Phát bài hát tiếp theo
     const nextSong = songQueue[nextIndex];
+
+    setSongCounter((prev) => prev + 1);
+
+    if (!isPremium && songCounter + 1 === 2) {
+      const ad = {
+        song_name: "Quảng cáo",
+        duration: "00:00:30",
+        img: "https://via.placeholder.com/150",
+        file_upload: adsMusic,
+        description: "Đây là quảng cáo",
+        mv: "none",
+        play_count: 0,
+        status: true,
+        isAd: true,
+      };
+
+      // Lưu bài hát tiếp theo để phát sau quảng cáo
+      dispatch(setSelectedSong(ad)); // Phát quảng cáo
+      dispatch(togglePlay(true));
+      setSongCounter(0); // Reset bộ đếm
+
+      // Sau khi quảng cáo kết thúc, phát bài hát tiếp theo
+      audioRef.current.onended = () => {
+        dispatch(setSelectedSong(nextSong));
+        dispatch(togglePlay(true));
+      };
+
+      return;
+    }
+
+    // Phát bài hát tiếp theo
     dispatch(setSelectedSong(nextSong));
     dispatch(togglePlay(true));
   };
@@ -282,10 +319,6 @@ const BottomPlayer = () => {
       (song) => song.id === selectedSong?.id
     );
     const nextSong = songQueue[currentIndex + 1];
-    console.log("Current song:", selectedSong);
-    console.log("Song queue:", songQueue);
-    console.log("Next song:", nextSong);
-    console.log("currentIndex:", currentIndex);
 
     // if (isRepeat && audioRef.current) {
     //   audioRef.current.currentTime = 0;
@@ -462,7 +495,7 @@ const BottomPlayer = () => {
                 value={currentTime}
                 onChange={handleTimeChange}
                 className="progress-slider"
-                disabled={!selectedSong}
+                disabled={selectedSong.isAd} // Vô hiệu hóa nếu là quảng cáo
               />
               <span className="remaining-time">
                 {formatTime(
@@ -551,7 +584,7 @@ const BottomPlayer = () => {
       {selectedSong && (
         <audio
           ref={audioRef}
-          src={selectedSong.fileUpload}
+          src={selectedSong?.fileUpload}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleNextSong}
         />

@@ -11,8 +11,10 @@ import {
 } from "../../redux/slice/songSlice";
 import "../../style/contentPlaylist.css";
 import PublicPlaylists from "./publicPlaylists";
+import { useNavigate } from "react-router-dom";
 
 const CardSong = ({ song }) => {
+  const navigate = useNavigate();
   // Lấy dữ liệu song từ Redux store
   const dispatch = useDispatch();
 
@@ -40,10 +42,16 @@ const CardSong = ({ song }) => {
     dispatch(setSelectedSong(song));
   };
 
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
+    navigate(`/song/${song?.id}`);
+  };
+
   return (
     <div
       className="w-[200px] bg-[#121212] rounded-lg shadow-sm flex-shrink-0 p-2 relative group hover:bg-[#1f1f1f]"
       onClick={handleCardClick} // Thêm onClick để xử lý khi click vào card
+      onDoubleClick={handleDoubleClick}
     >
       <div className="relative">
         <img
