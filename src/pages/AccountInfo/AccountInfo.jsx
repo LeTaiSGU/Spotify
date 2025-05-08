@@ -24,7 +24,7 @@ function AccountInfo() {
     {
       icon: <CreditCardOutlined className="text-lg" />,
       text: "Quản lý gói đăng ký",
-      path: "/account/subscriptions",
+      path: "/user/payment",
     },
   ];
 

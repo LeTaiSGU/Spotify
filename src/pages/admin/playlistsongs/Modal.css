@@ -1,0 +1,24 @@
+/* Đặt màu nền của Modal thành trắng */
+.custom-modal .ant-modal-content {
+    background-color: white !important; /* Đảm bảo màu nền là trắng */
+  }
+  
+  /* Đặt màu nền của header modal thành trắng */
+  .custom-modal .ant-modal-header {
+    background-color: white !important; /* Đảm bảo màu nền của header là trắng */
+    border-bottom: 1px solid #e8e8e8 !important; /* Tùy chọn: sửa lại đường viền của header */
+  }
+  
+  /* Đặt màu nền của body modal thành trắng */
+  .custom-modal .ant-modal-body {
+    background-color: white !important; /* Đảm bảo màu nền của body là trắng */
+  }
+  
+  /* Đảm bảo modal có màu nền trắng và không có màu tối */
+  .custom-modal .ant-modal {
+    background-color: white !important;
+  }
+  .custom-modal .ant-modal-header .ant-modal-title {
+    color: #000000 !important;
+    background-color: white !important; /* Màu chữ đen */
+  }

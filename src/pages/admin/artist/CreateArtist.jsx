@@ -1,35 +1,45 @@
-import { React } from "react";
-import { Button, Form, Upload, Input, message } from "antd";
+import React from "react";
+import { Button, Form, Upload, Input } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useDispatch } from "react-redux";
-import { createArtist } from "../../../redux/slice/artistSlice";
+import axios from "axios";
 
 const { TextArea } = Input;
 
 const CreateArtist = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
 
-  const onFinish = (values) => {
-    // Đảm bảo đúng tên trường theo slice
-    const artistData = {
+  const onFinish = async (values) => {
+    const formData = new FormData();
+
+    // Lấy dữ liệu từ form
+    const data = {
       name: values.name,
-      description: values.description,
-      image: values.image,
+      bio: values.description, // Đổi tên 'description' thành 'bio' nếu backend dùng 'bio'
     };
 
-    dispatch(createArtist(artistData))
-      .unwrap()
-      .then(() => {
-        message.success("Thêm nghệ sĩ thành công!");
-        form.resetFields();
-      })
-      .catch((err) => {
-        console.error(err);
-        message.error(
-          "Thêm nghệ sĩ thất bại: " + (err.message || "Vui lòng thử lại")
-        );
+    formData.append("data", JSON.stringify(data));
+
+    // Đính kèm ảnh
+    if (values.image?.[0]?.originFileObj) {
+      formData.append("img_upload", values.image[0].originFileObj);
+    }
+
+    // Debug FormData
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    try {
+      const response = await axios.post("http://localhost:8000/api/artists/create/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
+      console.log("Tạo nghệ sĩ thành công:", response.data);
+    } catch (error) {
+      console.error("Tạo nghệ sĩ thất bại:", error.response?.data || error.message);
+    }
   };
 
   const normFile = (e) => {
@@ -53,7 +63,6 @@ const CreateArtist = () => {
         {/* Tên nghệ sĩ */}
         <Form.Item
           label="Tên nghệ sĩ"
-          required={false}
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập tên nghệ sĩ" }]}
         >
@@ -63,7 +72,6 @@ const CreateArtist = () => {
         {/* Mô tả */}
         <Form.Item
           label="Mô tả"
-          required={false}
           name="description"
           rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
         >
@@ -73,7 +81,6 @@ const CreateArtist = () => {
         {/* Upload ảnh */}
         <Form.Item
           label="Ảnh đại diện"
-          required={false}
           name="image"
           valuePropName="fileList"
           getValueFromEvent={normFile}

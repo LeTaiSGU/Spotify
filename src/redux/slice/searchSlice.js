@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 console.log("searchSlice.js loaded");
 
@@ -13,7 +14,7 @@ export const searchContent = createAsyncThunk(
 
       // Gọi API tìm kiếm tất cả trong một request
       const response = await axios.get(
-        `http://localhost:8000/api/search/?q=${encodeURIComponent(query)}`
+        `${API_ROOT}/api/search/?q=${encodeURIComponent(query)}`
       );
       console.log("Search API response:", response.data);
 
