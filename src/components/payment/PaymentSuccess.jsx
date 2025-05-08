@@ -53,7 +53,7 @@ const PaymentSuccess = () => {
       })
       .then(() => {
         console.log("✅ Lưu thanh toán thành công");
-        isPosted.current = true; // ✅ Đánh dấu đã gửi
+        isPosted.current = true; 
       })
       .catch((err) => {
         console.error("❌ Lỗi lưu thanh toán:", err);

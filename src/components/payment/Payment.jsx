@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import axios from 'axios';
 import { addMonths } from 'date-fns';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+
 // Hàm lấy CSRF token từ cookie
 function getCookie(name) {
   let cookieValue = null;
@@ -19,7 +21,10 @@ function getCookie(name) {
 }
 
 const SpotifyPayment = () => {
+  const userId = useSelector((state)=>state.auth.user.id); // Lấy ID người dùng từ Redux store
+    
   useEffect(() => {
+
     // Gửi request GET để Django trả về CSRF cookie
     axios.get("http://localhost:8000/api/payments/csrf/", { withCredentials: true });
   }, []);
@@ -31,10 +36,10 @@ const SpotifyPayment = () => {
       formData.append("amount", 99000); // Số tiền thanh toán
       formData.append("orderInfo", "Thanh toán đơn hàng");
   
-    // Dữ liệu cứng
-      formData.append("userId", 1); // ID user cứng
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      formData.append("payDate", today); // Ngày thanh toán hiện tại
+   
+      formData.append("userId", userId); 
+      const today = new Date().toISOString().split('T')[0]; 
+      formData.append("payDate", today); 
       const response = await axios.post("http://localhost:8000/api/payments/momo/", formData, {
         
         headers: {
@@ -46,7 +51,7 @@ const SpotifyPayment = () => {
 
       const payUrl = response.data.payUrl;
       if (payUrl) {
-        window.location.href = payUrl; //  Chuyển hướng người dùng
+        window.location.href = payUrl;
       } else {
         toast.error("Không thể lấy link thanh toán từ server.");
       }
