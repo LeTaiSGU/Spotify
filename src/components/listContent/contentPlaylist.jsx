@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import {
@@ -95,10 +95,6 @@ const MusicSession = () => {
   // Thêm effect để reset selectedSong khi showPlaylistContent thay đổi
 
   const scroll = (ref, direction) => {
-    console.log("Scroll direction:", direction);
-    console.log("Ref current:", ref.current); // Thêm log để kiểm tra ref
-    console.log("Current scroll position:", ref.current?.scrollLeft); // Kiểm tra vị trí scroll hiện tại
-
     if (ref.current) {
       const scrollAmount = 300;
       const newScrollPosition =
@@ -106,7 +102,7 @@ const MusicSession = () => {
           ? ref.current.scrollLeft - scrollAmount
           : ref.current.scrollLeft + scrollAmount;
 
-      console.log("New scroll position:", newScrollPosition);
+      // console.log("New scroll position:", newScrollPosition);
 
       ref.current.scrollTo({
         left: newScrollPosition,
