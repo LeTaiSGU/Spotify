@@ -184,8 +184,8 @@ export const createSong = createAsyncThunk(
       // Tạo đối tượng data phù hợp với yêu cầu API
       const songDataObj = {
         song_name: songData.songName,
-        album: songData.albumId,
-        artist_owner: songData.artistOwnerId,
+        album_id: songData.albumId,
+        artist_id: songData.artistOwnerId,
         description: songData.description || "No description",
         duration: songData.duration
           ? formatDuration(songData.duration)

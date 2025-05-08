@@ -16,6 +16,9 @@ import {
   createNewPlaylist,
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
+import { getPlaylistsById } from "~/apis"
+import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
+
 
 // Component SongRow mới để thay thế SongCard
 
@@ -26,7 +29,7 @@ export const SongRow = ({ song }) => {
   const [loading, setLoading] = React.useState(false);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const user = useSelector((state) => state.auth?.user || { id: 1 });
+  // const user = useSelector((state) => state.auth?.user || { id: 1 });
 
   React.useEffect(() => {
     const fetchMainArtist = async () => {
@@ -67,14 +70,7 @@ export const SongRow = ({ song }) => {
   const fetchPlaylists = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/playlists/user`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch playlists");
-      }
-
-      const data = await response.json();
+      const data = await getPlaylistsById();
       console.log("User playlists:", data);
       setPlaylists(data);
     } catch (error) {
@@ -167,6 +163,7 @@ export const SongRow = ({ song }) => {
           addSongToPlaylist(newPlaylist.id).then(() => {
             // Sau khi thêm bài hát thành công, cập nhật lại danh sách playlist
             fetchPlaylists();
+            dispatch(fetchLibraryDetailsAPI());
           });
         } else {
           // Nếu không có id playlist, vẫn cập nhật danh sách

@@ -15,11 +15,11 @@ import AdminLayout from "./components/admin/layoutAdmin";
 import { useDispatch } from "react-redux";
 import { fetchCurrentUser } from "./redux/slice/authSlice";
 import { useEffect } from "react";
+import SearchResults from "./pages/search/SearchResults";
 
 import Payment from "./components/payment/Payment";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
 
-import AdminLayout from "./components/admin/layoutAdmin";
 import ArtistProfile from "./pages/artist/ArtistProfile";
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
@@ -34,7 +34,6 @@ import CreateArtist from "./pages/admin/artist/CreateArtist";
 import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
-import Payment from "./components/payment/Payment";
 import "~/utils/axiosWithAutoRefesh";
 
 const PrivateRoute = ({ children }) => {
@@ -75,15 +74,16 @@ const ProtectedAdminRoute = ({ children }) => {
     }
   }, [user, dispatch]);
 
+
   // Kiểm tra user tồn tại và có quyền admin
-  if (user === null || user === undefined) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (user === null || user === undefined) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
   // Kiểm tra quyền admin
-  if (!user.is_admin) {
-    return <Navigate to="/" replace />;
-  }
+  // if (!user?.is_admin) {
+  //   return <Navigate to="/" replace />;
+  // }
 
   return children;
 };
@@ -152,8 +152,8 @@ function App() {
           <Route path="album/create" element={<CreateAlbum />} />
           <Route path="album/update" element={<UpdateAlbum />} />
           <Route path="playlist" element={<Playlist />} />
-          <Route path="playlist/create" element={<CreatePlaylist />} />
-          <Route path="playlist/update" element={<UpdatePlaylist />} />
+          {/* <Route path="playlist/create" element={<CreatePlaylist />} /> */}
+          {/* <Route path="playlist/update" element={<UpdatePlaylist />} /> */}
         </Route>
 
         <Route path="*" element={<NotFound />} />
