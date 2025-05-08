@@ -85,7 +85,16 @@ const ChangePass = () => {
         old_password: formData.currentPassword,
         new_password: formData.newPassword,
       });
+
+      // Hiển thị thông báo thành công
       toast.success("Đổi mật khẩu thành công!");
+
+      // Xóa dữ liệu trong các trường input
+      setFormData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
       if (error.response && error.response.data) {
         const errorMessage = error.response.data.error;
