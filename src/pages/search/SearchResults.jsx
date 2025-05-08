@@ -17,6 +17,8 @@ import {
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
 import { getPlaylistsById } from "~/apis"
+import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
+
 
 // Component SongRow mới để thay thế SongCard
 
@@ -161,6 +163,7 @@ export const SongRow = ({ song }) => {
           addSongToPlaylist(newPlaylist.id).then(() => {
             // Sau khi thêm bài hát thành công, cập nhật lại danh sách playlist
             fetchPlaylists();
+            dispatch(fetchLibraryDetailsAPI());
           });
         } else {
           // Nếu không có id playlist, vẫn cập nhật danh sách

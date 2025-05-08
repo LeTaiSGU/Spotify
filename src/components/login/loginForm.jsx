@@ -21,7 +21,7 @@ const LoginForm = () => {
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then((userData) => {
-        alert("Đăng nhập thành công!");
+        toast.success("Đăng nhập thành công!")
 
         // Kiểm tra nếu là admin thì chuyển đến trang admin
         if (userData && userData.is_admin) {
