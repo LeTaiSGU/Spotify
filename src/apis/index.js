@@ -102,9 +102,18 @@ export const getAlbumById = async (albumId) => {
   return response.data;
 };
 
-export const refreshToken = async () => {
+export const changePassword = async (userId, data) => {
   const response = await authorizedAxiosInstance.post(
-    `${API_ROOT}/api/users/token/refresh/`
+    `${API_ROOT}/api/users/${userId}/change-password/`,
+    data
+  );
+  return response.data;
+};
+
+export const updateUser = async (userId, data) => {
+  const response = await authorizedAxiosInstance.put(
+    `${API_ROOT}/api/users/${userId}/`,
+    data
   );
   return response.data;
 };

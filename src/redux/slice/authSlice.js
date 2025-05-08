@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizeAxios";
-import { RESET_APP } from "../store";
 
 // Gọi /me/ để lấy lại user từ cookie
 export const fetchCurrentUser = createAsyncThunk(
