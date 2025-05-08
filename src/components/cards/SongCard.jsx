@@ -84,7 +84,7 @@ const SongCard = ({ song }) => {
         {song.song_name}
       </h3>
       <p className="mt-1 text-xs font-normal text-gray-400 truncate">
-        {mainArtistInfo ? mainArtistInfo.name : "Unknown Artist"}
+        {song.artist_owner ? song.artist_owner.name : "Unknown Artist"}
       </p>
     </div>
   );
