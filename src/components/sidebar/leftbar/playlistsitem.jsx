@@ -4,12 +4,6 @@ import { Heart } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchLibraryDetailsAPI, selectUserLibrary } from "~/redux/slice/userLibrarySlice";
 import { useNavigate } from "react-router-dom";
-import { getSongBylistId } from "~/apis";
-
-import {
-  clearQueue,
-  addToQueue,
-} from "~/redux/slice/songSlice";
 
 const SidebarPlaylists = () => {
   const dispatch = useDispatch();
@@ -32,27 +26,36 @@ const SidebarPlaylists = () => {
   }, [dispatch]);
 
 
+  // const handleClick = async (id, type) => {
+  //   try {
+  //     console.log("ID:", id);
+  //     // Lấy danh sách bài hát từ API
+  //     navigateToItem(id,type)
+  //     const songs = await getSongBylistId(id);
+  //     // Xóa queue cũ
+  //     dispatch(clearQueue());
+  
+  //     // Thêm danh sách bài hát mới vào queue
+  //     songs.forEach((song) => {
+  //       dispatch(
+  //         addToQueue({
+  //           ...song,
+  //           file_upload: song.file_upload,
+  //         })
+  //       );
+  //     });
+
+  
+  //     console.log("Danh sách bài hát đã được thêm vào queue:", songs);
+  //   } catch (error) {
+  //     console.error("Lỗi khi xử lý playlist:", error);
+  //   }
+  // };
+
   const handleClick = async (id, type) => {
     try {
       console.log("ID:", id);
-      // Lấy danh sách bài hát từ API
-      navigateToItem(id,type)
-      const songs = await getSongBylistId(id);
-      // Xóa queue cũ
-      dispatch(clearQueue());
-  
-      // Thêm danh sách bài hát mới vào queue
-      songs.forEach((song) => {
-        dispatch(
-          addToQueue({
-            ...song,
-            file_upload: song.file_upload,
-          })
-        );
-      });
-
-  
-      console.log("Danh sách bài hát đã được thêm vào queue:", songs);
+      navigateToItem(id, type); // Chỉ điều hướng đến playlist/album/song
     } catch (error) {
       console.error("Lỗi khi xử lý playlist:", error);
     }
@@ -85,9 +88,7 @@ const SidebarPlaylists = () => {
                 {item.name}
               </span>
               <div className="flex items-center text-xs text-zinc-400">
-                <span className="truncate">{item.type}</span>
-                <span className="mx-1">•</span>
-                <span className="truncate">{item.creator}</span>
+                <span className="truncate">{item.item_type}</span>
               </div>
             </div>
           </div>

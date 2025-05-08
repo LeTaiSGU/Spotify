@@ -2,49 +2,22 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // Fetch all playlists
+const API_BASE_URL = "http://localhost:8000/api/playlists/getall";
 export const fetchPlaylistsAdmin = createAsyncThunk(
   "playlistAdmin/fetchPlaylistsAdmin",
   async ({ pageNo, pageSize } = {}, thunkAPI) => {
     try {
-      const res = await axios.get(
-        `http://localhost:8080/api/playlists/page?pageNo=${pageNo}&pageSize=${pageSize}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const res = await axios.get(`${API_BASE_URL}/`, {
+        params: {
+          page: pageNo,
+          size: pageSize,
+        },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       const result = res.data.result;
-
-      // Gọi API lấy danh sách bài hát từng playlist
-      const playlistsWithSongs = await Promise.all(
-        result.content.map(async (playlist) => {
-          try {
-            const songsRes = await axios.get(
-              `http://localhost:8080/api/playlists/song/${playlist.playlistId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
-
-            return {
-              ...playlist,
-              songs: songsRes.data.result, // <-- gắn thêm danh sách bài hát
-            };
-          } catch (err) {
-            console.error(
-              "Failed to fetch songs for playlist",
-              playlist.playlistId,
-              err
-            );
-            return { ...playlist, songs: [] }; // fallback nếu lỗi
-          }
-        })
-      );
-
       return {
         ...result,
         content: playlistsWithSongs,
@@ -63,7 +36,7 @@ export const fetchPlaylistAdminById = createAsyncThunk(
   async (playlistId, thunkAPI) => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/playlists/${playlistId}`,
+        `http://localhost:8000/api/playlists/${playlistId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -75,7 +48,7 @@ export const fetchPlaylistAdminById = createAsyncThunk(
 
       try {
         const songsRes = await axios.get(
-          `http://localhost:8080/api/playlists/song/${playlist.playlistId}`,
+          `http://localhost:8000/api/playlists/`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,

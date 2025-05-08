@@ -1,15 +1,5 @@
 import { useEffect, React, useState } from "react";
-
-import {
-  InputNumber,
-  Button,
-  DatePicker,
-  Form,
-  Upload,
-  Input,
-  Select,
-  message,
-} from "antd";
+import { Button, DatePicker, Form, Upload, Input, Select, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,57 +14,78 @@ import {
   selectItemsAlbum,
 } from "../../../redux/slice/albumSlice";
 
-import { createSong } from "../../../redux/slice/songAdminSlice"; // Tạo action này nhé
+import {
+  createSong,
+  selectSongLoading,
+} from "../../../redux/slice/songAdminSlice";
 
 const { TextArea } = Input;
 
 const CreateSong = () => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
-  const { content: artists = [] } = useSelector(selectItemsArtist);
-  const { content: albums = [] } = useSelector(selectItemsAlbum);
+
+  // Lấy dữ liệu từ Redux store
+  const artistsData = useSelector(selectItemsArtist);
+  const albumsData = useSelector(selectItemsAlbum);
+  const isLoading = useSelector(selectSongLoading);
+
+  // Xử lý dữ liệu để phù hợp với cả hai định dạng trả về
+  // (mảng trực tiếp hoặc đối tượng có thuộc tính content)
+  const artists = Array.isArray(artistsData)
+    ? artistsData
+    : artistsData?.content || [];
+
+  const albums = Array.isArray(albumsData)
+    ? albumsData
+    : albumsData?.content || [];
 
   useEffect(() => {
     dispatch(fetchArtistsSelect());
     dispatch(fetchAlbumsSelect());
   }, [dispatch]);
 
-  const artistOptions = Array.isArray(artists)
-    ? artists.map((artist) => ({
-        label: artist.name,
-        value: artist.artistId,
-      }))
-    : [];
+  const artistOptions = artists.map((artist) => ({
+    label: artist.name,
+    value: artist.id,
+  }));
 
-  const albumOptions = Array.isArray(albums)
-    ? albums.map((album) => ({
-        label: album.title,
-        value: album.albumId,
-      }))
-    : [];
+  const albumOptions = albums.map((album) => ({
+    label: album.title,
+    value: album.id,
+  }));
+
   const [durationInSeconds, setDurationInSeconds] = useState(null);
+  const [mainArtist, setMainArtist] = useState(null);
+  const [formattedDuration, setFormattedDuration] = useState("");
 
   const onFinish = (values) => {
     const songData = {
       songName: values.songName,
-      releaseDate: values.releaseDate.format("YYYY-MM-DD"),
-      artistId: values.artist,
+      description: values.description || "",
       albumId: values.album,
+      artistOwnerId: values.artist,
       duration: durationInSeconds,
       image: values.image,
-      audio: values.audio,
-      featuredArtists: values.featuredArtists,
+      fileUpload: values.audio,
+      artists: values.featuredArtists || [],
+      // Add any additional fields needed by your API
     };
-    // Kiểm tra dữ liệu trước khi gửi đi
+
     dispatch(createSong(songData))
       .unwrap()
       .then(() => {
         message.success("Thêm bài hát thành công!");
         form.resetFields();
+        setFormattedDuration("");
+        setDurationInSeconds(null);
+        setMainArtist(null);
       })
       .catch((err) => {
         console.error(err);
-        message.error("Thêm bài hát thất bại!");
+        message.error(
+          "Thêm bài hát thất bại: " + (err?.message || "Lỗi không xác định")
+        );
       });
   };
 
@@ -82,7 +93,7 @@ const CreateSong = () => {
     if (Array.isArray(e)) return e;
     return e?.fileList;
   };
-  // Đặt ở ngoài component để xài lại được
+
   const getDuration = (file) => {
     return new Promise((resolve, reject) => {
       const audio = document.createElement("audio");
@@ -90,7 +101,7 @@ const CreateSong = () => {
 
       audio.onloadedmetadata = () => {
         window.URL.revokeObjectURL(audio.src);
-        resolve(Math.floor(audio.duration)); // tính theo giây, làm tròn
+        resolve(Math.floor(audio.duration));
       };
 
       audio.onerror = () => {
@@ -101,9 +112,6 @@ const CreateSong = () => {
     });
   };
 
-  const [mainArtist, setMainArtist] = useState(null);
-
-  const [formattedDuration, setFormattedDuration] = useState("");
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -131,23 +139,12 @@ const CreateSong = () => {
           <Input placeholder="Nhập tên bài hát..." />
         </Form.Item>
 
-        {/* Ngày phát hành */}
-        <Form.Item
-          label="Ngày phát hành"
-          required={false}
-          name="releaseDate"
-          rules={[{ required: true, message: "Chọn ngày phát hành" }]}
-        >
-          <DatePicker
-            style={{ width: "100%" }}
-            placeholder="Chọn ngày phát hành"
-            disabledDate={(current) =>
-              current && current > dayjs().endOf("day")
-            }
-          />
+        {/* Mô tả */}
+        <Form.Item label="Mô tả" name="description">
+          <TextArea rows={4} placeholder="Mô tả bài hát (không bắt buộc)" />
         </Form.Item>
 
-        {/* Nghệ sĩ */}
+        {/* Nghệ sĩ chính */}
         <Form.Item
           label="Nghệ sĩ chính"
           required={false}
@@ -162,7 +159,7 @@ const CreateSong = () => {
             allowClear
             onChange={(value) => {
               setMainArtist(value);
-              form.setFieldsValue({ featuredArtists: [] }); // reset
+              form.setFieldsValue({ featuredArtists: [] });
             }}
           />
         </Form.Item>
@@ -189,10 +186,10 @@ const CreateSong = () => {
             placeholder="Chọn nghệ sĩ tham gia"
             optionFilterProp="label"
             options={artistOptions.filter(
-              (artist) => artist.value !== mainArtist // ← lọc bỏ người đã chọn ở trên
+              (artist) => artist.value !== mainArtist
             )}
             allowClear
-            disabled={!mainArtist} // ← disable nếu chưa chọn artist chính
+            disabled={!mainArtist}
           />
         </Form.Item>
 
@@ -222,7 +219,7 @@ const CreateSong = () => {
           required={false}
           name="audio"
           valuePropName="fileList"
-          getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+          getValueFromEvent={normFile}
           rules={[
             { required: true, message: "Vui lòng chọn file nhạc (.mp3)" },
           ]}
@@ -234,18 +231,21 @@ const CreateSong = () => {
             maxCount={1}
             multiple={false}
             beforeUpload={async (file) => {
-              const duration = await getDuration(file);
-              form.setFieldsValue({ duration }); // để truyền lên khi submit
-              setDurationInSeconds(duration); // ← lưu giá trị duration (giây)
-              setFormattedDuration(formatDuration(duration)); // ← để hiển thị string đẹp
-
-              return false; // không upload ngay
+              try {
+                const duration = await getDuration(file);
+                setDurationInSeconds(duration);
+                setFormattedDuration(formatDuration(duration));
+              } catch (error) {
+                console.error("Error getting audio duration:", error);
+                message.error("Không thể đọc thời lượng file âm thanh");
+              }
+              return false;
             }}
           >
             <Button icon={<UploadOutlined />}>Chọn nhạc (.mp3)</Button>
           </Upload>
         </Form.Item>
-        {/* Mô tả */}
+
         <Form.Item label="Thời lượng">
           <Input
             style={{ width: 60, textAlign: "center" }}
@@ -254,9 +254,10 @@ const CreateSong = () => {
             disabled
           />
         </Form.Item>
+
         {/* Nút submit */}
         <Form.Item className="flex justify-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isLoading}>
             Lưu bài hát
           </Button>
         </Form.Item>

@@ -10,6 +10,7 @@ import {
   togglePlay,
 } from "../../redux/slice/songSlice";
 import "../../style/contentPlaylist.css";
+import PublicPlaylists from "./publicPlaylists";
 
 const CardSong = ({ song }) => {
   // Lấy dữ liệu artitst
@@ -88,7 +89,7 @@ const CardSong = ({ song }) => {
         {song.song_name}
       </h3>
       <p className="mt-1 text-xs font-normal text-gray-400 truncate">
-        {mainArtistInfo ? mainArtistInfo.name : "Unknown Artist"}
+        {song.artist_owner ? song.artist_owner.name : "Unknown Artist"}
       </p>
     </div>
   );
@@ -168,6 +169,9 @@ const MusicSession = () => {
           <RightOutlined />
         </button>
       </div>
+
+      <PublicPlaylists />
+
     </div>
   );
 };

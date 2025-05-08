@@ -16,6 +16,11 @@ import { useDispatch } from "react-redux";
 import { fetchCurrentUser } from "./redux/slice/authSlice";
 import { useEffect } from "react";
 
+import Payment from "./components/payment/Payment";
+import PaymentSuccess from "./components/payment/PaymentSuccess";
+
+import AdminLayout from "./components/admin/layoutAdmin";
+import ArtistProfile from "./pages/artist/ArtistProfile";
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -107,6 +112,8 @@ function App() {
           <Route path="album/:id" element={<PlaylistContent type="album" />} />
           <Route path="song/:id" element={<PlaylistContent type="song" />} />
 
+          {/* <PlaylistContent type="song" />
+          <PlaylistContent type="album" /> */}
           <Route
             path="user"
             element={
@@ -118,8 +125,12 @@ function App() {
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
+
+          <Route path="search" element={<SearchResults />} />
+          <Route path="/artist/:id" element={<ArtistProfile />} />
         </Route>
 
+        <Route path="user/payment/success" element={<PaymentSuccess />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
 
