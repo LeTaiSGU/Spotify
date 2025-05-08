@@ -34,7 +34,6 @@ const rootReducer = combineReducers({
   playlistAdmin: playlistAdminSlide,
   userAdmin: userAdminReducer,
   search: searchReducer,
-
 });
 // Tạo persist reducer
 const persistedReducer = persistReducer(persistConfig, rootReducer);

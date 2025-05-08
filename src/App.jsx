@@ -19,8 +19,9 @@ import SearchResults from "./pages/search/SearchResults";
 
 import Payment from "./components/payment/Payment";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
-
 import ArtistProfile from "./pages/artist/ArtistProfile";
+import AccountInfo from "./pages/AccountInfo/AccountInfo";
+import ChangePass from "./pages/AccountInfo/ChangePass";
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -35,6 +36,7 @@ import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 import "~/utils/axiosWithAutoRefesh";
+import EditProfileForm from "./pages/AccountInfo/EditProfileForm";
 
 const PrivateRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
@@ -67,23 +69,35 @@ const PrivateRoute = ({ children }) => {
 const ProtectedAdminRoute = ({ children }) => {
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     if (user === null || user === undefined) {
-      dispatch(fetchCurrentUser());
+      dispatch(fetchCurrentUser()).finally(() => {
+        setIsChecking(false);
+      });
+    } else {
+      setIsChecking(false);
     }
   }, [user, dispatch]);
 
+  console.log("Admin route check - User:", user); // Debug user object
+
+  if (isChecking) {
+    return <div>Đang kiểm tra quyền admin...</div>;
+  }
 
   // Kiểm tra user tồn tại và có quyền admin
-  // if (user === null || user === undefined) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  if (user === null || user === undefined) {
+    console.log("Redirecting to login: User is null/undefined");
+    return <Navigate to="/login" replace />;
+  }
 
   // Kiểm tra quyền admin
-  // if (!user?.is_admin) {
-  //   return <Navigate to="/" replace />;
-  // }
+  if (!user.is_admin) {
+    console.log("Redirecting to home: User is not admin", user.is_admin);
+    return <Navigate to="/" replace />;
+  }
 
   return children;
 };
@@ -112,6 +126,30 @@ function App() {
           <Route path="album/:id" element={<PlaylistContent type="album" />} />
           <Route path="song/:id" element={<PlaylistContent type="song" />} />
 
+          <Route
+            path="account"
+            element={
+              <PrivateRoute>
+                <AccountInfo />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="account/edit"
+            element={
+              <PrivateRoute>
+                <EditProfileForm />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="account/change-password"
+            element={
+              <PrivateRoute>
+                <ChangePass />
+              </PrivateRoute>
+            }
+          />
           {/* <PlaylistContent type="song" />
           <PlaylistContent type="album" /> */}
           <Route
@@ -122,15 +160,43 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="user/more-artists" element={<AllAvatar />} />
-          <Route path="user/more-songs" element={<MusicList />} />
-          <Route path="user/payment" element={<Payment />} />
+          <Route
+            path="user/more-artists"
+            element={
+              <PrivateRoute>
+                <AllAvatar />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="user/more-songs"
+            element={
+              <PrivateRoute>
+                <MusicList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="user/payment"
+            element={
+              <PrivateRoute>
+                <Payment />
+              </PrivateRoute>
+            }
+          />
 
           <Route path="search" element={<SearchResults />} />
           <Route path="/artist/:id" element={<ArtistProfile />} />
         </Route>
 
-        <Route path="user/payment/success" element={<PaymentSuccess />} />
+        <Route
+          path="user/payment/success"
+          element={
+            <PrivateRoute>
+              <PaymentSuccess />
+            </PrivateRoute>
+          }
+        />
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
 
