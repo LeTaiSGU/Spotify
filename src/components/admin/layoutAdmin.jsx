@@ -42,12 +42,7 @@ const items = [
     getItem("Danh nhạc playlist", "playlistsong"),
     getItem("Thêm nhạc playlist", "playlistsongs/create"),
     getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
-  ]),
-  getItem("Danh sách thể loại", "genres", <DesktopOutlined />, [
-    getItem("Danh sách thể loạ", "genre"),
-    getItem("Thêm thể loại mới", "playlist/create"),
-    getItem("Cập nhật thể loại", "playlist/update"),
-  ]),
+  ])
 ];
 
 const pageTitles = {
