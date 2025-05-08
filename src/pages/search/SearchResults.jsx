@@ -16,6 +16,7 @@ import {
   createNewPlaylist,
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
+import { getPlaylistsById } from "~/apis"
 
 // Component SongRow mới để thay thế SongCard
 
@@ -26,7 +27,7 @@ export const SongRow = ({ song }) => {
   const [loading, setLoading] = React.useState(false);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const user = useSelector((state) => state.auth?.user || { id: 1 });
+  // const user = useSelector((state) => state.auth?.user || { id: 1 });
 
   React.useEffect(() => {
     const fetchMainArtist = async () => {
@@ -67,14 +68,7 @@ export const SongRow = ({ song }) => {
   const fetchPlaylists = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/playlists/user`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch playlists");
-      }
-
-      const data = await response.json();
+      const data = await getPlaylistsById();
       console.log("User playlists:", data);
       setPlaylists(data);
     } catch (error) {
