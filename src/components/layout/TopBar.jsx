@@ -12,7 +12,6 @@ const LeftIconGroup = () => {
 
   const handleSpotifyClick = () => {
     navigate("/");
-    window.location.reload();
   };
 
   return (

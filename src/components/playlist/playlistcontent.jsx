@@ -23,7 +23,8 @@ import {
 } from "../../redux/slice/songSlice";
 
 import { useEffect, useState } from "react";
-import { getSongBylistId, getSongsByAlbumId, getSongById } from "~/apis";
+import { getSongBylistId, getSongsByAlbumId, getSongById, getPlaylist, updatePlaylist } from "~/apis";
+
 
 
 function PlaylistContent({ type }) {
@@ -32,12 +33,16 @@ function PlaylistContent({ type }) {
   const dispatch = useDispatch();
   const songQueue = useSelector((state) => state.songs.songQueue);
   const [songs, setSongs] = useState([]);
+  const user = useSelector((state) => state.auth.user);
+  const [playlist, setPlaylist] = useState(null);
 
   useEffect(() => {
     const fetchSongs = async () => {
       try {
         let result = [];
         if (type === "playlist") {
+          const playlistData = await getPlaylist(id);
+          setPlaylist(playlistData);
           result = await getSongBylistId(id);
         }
         else if (type === "album") {
@@ -92,27 +97,61 @@ function PlaylistContent({ type }) {
     dispatch(toggleRightbar(true));
   };
 
+
+
+  const handleTogglePrivacy = async () => {
+    if (playlist?.user !== user?.id) {
+      toast.error("Bạn không có quyền thay đổi quyền riêng tư của playlist này!");
+      return;
+    }
+
+    try {
+
+      const data = new FormData();
+
+      // Thêm data dưới dạng JSON string
+      const playlistData = {
+        is_private: !playlist.is_private
+      };
+      data.append('data', JSON.stringify(playlistData));
+
+
+      const updatedPlaylist = await updatePlaylist(playlist.id, data);
+
+      setPlaylist(updatedPlaylist); // Cập nhật trạng thái playlist trong state
+      toast.success(
+        `Playlist đã được chuyển sang ${updatedPlaylist.is_private ? "cá nhân" : "công khai"
+        }!`
+      );
+    } catch (error) {
+      console.error("Lỗi khi thay đổi quyền riêng tư:", error);
+      toast.error("Thay đổi quyền riêng tư thất bại!");
+    }
+  };
+
+
+
   const handleShufflePlay = () => {
     if (!Array.isArray(songs) || songs.length === 0) {
       console.error("Danh sách bài hát trống hoặc không hợp lệ");
       return;
     }
-  
+
     // Tạo một hàng đợi tạm thời từ danh sách bài hát
     const tempQueue = [...songs];
-  
+
     // Trộn danh sách bài hát
     for (let i = tempQueue.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [tempQueue[i], tempQueue[j]] = [tempQueue[j], tempQueue[i]];
     }
-  
+
     // Nạp danh sách bài hát đã trộn vào Redux queue
     dispatch(clearQueue()); // Xóa queue cũ
     tempQueue.forEach((song) => {
       dispatch(addToQueue(song)); // Thêm từng bài hát vào queue
     });
-  
+
     // Phát bài hát đầu tiên trong danh sách đã trộn
     dispatch(setSelectedSong(tempQueue[0]));
     dispatch(togglePlay(true));
@@ -158,23 +197,44 @@ function PlaylistContent({ type }) {
   const content = (
     <div className="w-64 bg-gray-800 text-white rounded-lg shadow-lg p-2">
       <ul className="space-y-1">
-        {type === "playlist" && (
+        {/* Nút tải xuống luôn hiển thị */}
+        <li
+          onClick={handleDownloadAllSongs}
+          className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group"
+        >
+          <MdDownloading
+            size={20}
+            className="mr-3 text-gray-400 group-hover:text-green-400"
+          />
+          <span>Tải xuống</span>
+        </li>
+  
+        {/* Các nút chỉ hiển thị nếu người dùng là chủ sở hữu */}
+        {type === "playlist" && playlist?.user === user?.id && (
           <>
             <li
-              onClick={handleDownloadAllSongs}
-              className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group">
-              <MdDownloading size={20} className="mr-3 text-gray-400 group-hover:text-green-400" />
-              <span>Tải xuống</span>
-            </li>
-            <li className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group"
-              onClick={handleDeletePlaylist}>
-              <FaMinusCircle size={18} className="mr-3 text-gray-400 group-hover:text-red-400" />
+              className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group"
+              onClick={handleDeletePlaylist}
+            >
+              <FaMinusCircle
+                size={18}
+                className="mr-3 text-gray-400 group-hover:text-red-400"
+              />
               <span>Xóa</span>
             </li>
             <li
-              className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group">
-              <IoPencil size={18} className="mr-3 text-gray-400 group-hover:text-blue-400" />
-              <span>Sửa thông tin</span>
+              className="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors duration-200 cursor-pointer rounded group"
+              onClick={handleTogglePrivacy}
+            >
+              <IoPencil
+                size={18}
+                className="mr-3 text-gray-400 group-hover:text-blue-400"
+              />
+              <span>
+                {playlist?.is_private
+                  ? "Chuyển sang công khai"
+                  : "Chuyển sang cá nhân"}
+              </span>
             </li>
           </>
         )}
