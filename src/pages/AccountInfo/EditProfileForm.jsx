@@ -20,7 +20,7 @@ const EditProfileForm = () => {
   });
 
   // Thay đổi từ object errors sang các state riêng biệt
-  const [emailError, setEmailError] = useState(null);
+  const [nameError, setNameError] = useState(null);
   const [genderError, setGenderError] = useState(null);
   const [birthDateError, setBirthDateError] = useState(null);
 
@@ -32,7 +32,7 @@ const EditProfileForm = () => {
     });
 
     // Xóa lỗi khi người dùng nhập
-    if (name === "email") setEmailError(null);
+    if (name === "name") setNameError(null);
     if (name === "gender") setGenderError(null);
   };
 
@@ -50,15 +50,12 @@ const EditProfileForm = () => {
     let isValid = true;
 
     // Reset các lỗi
-    setEmailError(null);
+    setNameError(null);
     setGenderError(null);
     setBirthDateError(null);
 
-    if (!formData.email) {
-      setEmailError("Vui lòng nhập email");
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setEmailError("Email không hợp lệ");
+    if (!formData.name || formData.name.trim() === "") {
+      setNameError("Vui lòng nhập họ và tên");
       isValid = false;
     }
 
@@ -87,7 +84,7 @@ const EditProfileForm = () => {
     try {
       // Gửi yêu cầu cập nhật
       await updateUser(user.id, {
-        email: formData.email,
+        name: formData.name,
         gender: formData.gender,
         dob: formData.dob,
       });
@@ -124,6 +121,22 @@ const EditProfileForm = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Họ và tên */}
             <div className="mb-4">
+              <label htmlFor="email" className="block text-white mb-2">
+                Email
+              </label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full bg-[#3E3E3E] h-11 text-gray-300 border-none rounded-md p-2 focus:bg-[#4A4A4A] focus:outline-none focus:ring-1 focus:ring-[#525252]"
+              />
+            </div>
+
+            {/* Email */}
+            <div className="mb-4">
               <label htmlFor="name" className="block text-white mb-2">
                 Họ và tên
               </label>
@@ -132,25 +145,10 @@ const EditProfileForm = () => {
                 name="name"
                 type="text"
                 value={formData.name}
-                disabled
-                className="w-full bg-[#3E3E3E] h-11 text-gray-300 border-none rounded-md p-2 focus:bg-[#4A4A4A] focus:outline-none focus:ring-1 focus:ring-[#525252]"
-              />
-            </div>
-
-            {/* Email */}
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-white mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
                 onChange={handleChange}
                 className="w-full bg-[#3E3E3E] h-11 text-white border border-[#7C7C7C] rounded-md p-2 hover:bg-[#454545] focus:bg-[#4A4A4A] focus:outline-none focus:border-white transition-colors duration-200"
               />
-              {emailError && <ErrorMessage message={emailError} />}
+              {nameError && <ErrorMessage message={nameError} />}
             </div>
 
             {/* Giới tính */}

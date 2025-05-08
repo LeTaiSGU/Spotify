@@ -126,6 +126,7 @@ export const updateUser = async (userId, data) => {
 };
 
 
+
 // artists
 
 export const getTopArtistByUserId= async () => {
