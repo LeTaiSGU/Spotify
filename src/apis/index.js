@@ -2,6 +2,13 @@
 import { API_ROOT } from "~/utils/constants";
 import authorizedAxiosInstance from "~/utils/authorizeAxios";
 
+//songs
+export const getSongHistory = async (userID) => {
+  const response = await authorizedAxiosInstance.get(
+    `${API_ROOT}/api/listening-history/${userID}/`
+  );
+  return response.data;
+};
 //playlist
 export const createPlaylist = async () => {
   const response = await authorizedAxiosInstance.post(

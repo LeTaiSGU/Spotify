@@ -28,7 +28,7 @@ const PublicPlaylists = () => {
   };
 
   return (
-    <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
+    <div className="w-full p-5 bg-stone-900 rounded-xl text-white">
       <h2 className="text-xl font-bold mb-3">Public Playlists</h2>
       {loading ? (
         <p>Loading...</p>

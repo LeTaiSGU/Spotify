@@ -16,6 +16,9 @@ import {
   createNewPlaylist,
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
+import { getPlaylistsById } from "~/apis"
+import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
+
 
 // Component SongRow mới để thay thế SongCard
 
@@ -26,7 +29,7 @@ export const SongRow = ({ song }) => {
   const [loading, setLoading] = React.useState(false);
   const dispatch = useDispatch();
   const modalRef = useRef(null);
-  const user = useSelector((state) => state.auth?.user || { id: 1 });
+  // const user = useSelector((state) => state.auth?.user || { id: 1 });
 
   React.useEffect(() => {
     const fetchMainArtist = async () => {
@@ -67,14 +70,7 @@ export const SongRow = ({ song }) => {
   const fetchPlaylists = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/playlists/user`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch playlists");
-      }
-
-      const data = await response.json();
+      const data = await getPlaylistsById();
       console.log("User playlists:", data);
       setPlaylists(data);
     } catch (error) {
@@ -124,7 +120,9 @@ export const SongRow = ({ song }) => {
       console.log("Response status:", response.status);
 
       if (response.ok) {
-        alert(`Đã thêm bài hát "${song.song_name}" vào playlist!`);
+        toast.success(
+          `Đã thêm bài hát "${song.song_name}" vào playlist!`
+        );
         setShowPlaylistModal(false);
         return true; // Trả về true để .then() hoạt động
       } else {
@@ -132,17 +130,19 @@ export const SongRow = ({ song }) => {
         const contentType = response.headers.get("content-type");
         if (contentType && contentType.includes("application/json")) {
           const errorData = await response.json();
-          alert(
+          toast.error(
             `Lỗi: ${errorData.detail || "Không thể thêm bài hát vào playlist"}`
           );
         } else {
-          alert(`Lỗi: ${response.status} ${response.statusText}`);
+          toast.error(
+            `Lỗi: ${response.status} ${response.statusText}`
+          );
         }
         return false;
       }
     } catch (error) {
       console.error("Error adding song to playlist:", error);
-      alert("Đã xảy ra lỗi khi thêm bài hát vào playlist");
+      toast.error("Đã xảy ra lỗi khi thêm bài hát vào playlist");
       return false;
     }
   };
@@ -167,6 +167,7 @@ export const SongRow = ({ song }) => {
           addSongToPlaylist(newPlaylist.id).then(() => {
             // Sau khi thêm bài hát thành công, cập nhật lại danh sách playlist
             fetchPlaylists();
+            dispatch(fetchLibraryDetailsAPI());
           });
         } else {
           // Nếu không có id playlist, vẫn cập nhật danh sách
@@ -262,7 +263,7 @@ export const SongRow = ({ song }) => {
               {song.song_name}
             </h3>
             <p className="text-gray-400 text-sm">
-              {mainArtistInfo ? mainArtistInfo.name : "Unknown Artist"}
+              {song.artist_owner ? song.artist_owner.name : "Unknown Artist"}
             </p>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import {
@@ -11,28 +11,10 @@ import {
 } from "../../redux/slice/songSlice";
 import "../../style/contentPlaylist.css";
 import PublicPlaylists from "./publicPlaylists";
+import { useNavigate } from "react-router-dom";
 
 const CardSong = ({ song }) => {
-  // Lấy dữ liệu artitst
-  const [mainArtistInfo, setMainArtistInfo] = useState(null);
-
-  useEffect(() => {
-    const fetchMainArtist = async () => {
-      if (song?.artist_owner) {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/api/artists/${song.artist_owner}`
-          );
-          const data = await response.json();
-          setMainArtistInfo(data);
-        } catch (error) {
-          console.error("Error fetching main artist:", error);
-        }
-      }
-    };
-
-    fetchMainArtist();
-  }, [song?.artist_owner]);
+  const navigate = useNavigate();
   // Lấy dữ liệu song từ Redux store
   const dispatch = useDispatch();
 
@@ -60,10 +42,16 @@ const CardSong = ({ song }) => {
     dispatch(setSelectedSong(song));
   };
 
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
+    navigate(`/song/${song?.id}`);
+  };
+
   return (
     <div
       className="w-[200px] bg-[#121212] rounded-lg shadow-sm flex-shrink-0 p-2 relative group hover:bg-[#1f1f1f]"
       onClick={handleCardClick} // Thêm onClick để xử lý khi click vào card
+      onDoubleClick={handleDoubleClick}
     >
       <div className="relative">
         <img
@@ -107,10 +95,6 @@ const MusicSession = () => {
   // Thêm effect để reset selectedSong khi showPlaylistContent thay đổi
 
   const scroll = (ref, direction) => {
-    console.log("Scroll direction:", direction);
-    console.log("Ref current:", ref.current); // Thêm log để kiểm tra ref
-    console.log("Current scroll position:", ref.current?.scrollLeft); // Kiểm tra vị trí scroll hiện tại
-
     if (ref.current) {
       const scrollAmount = 300;
       const newScrollPosition =
@@ -118,7 +102,7 @@ const MusicSession = () => {
           ? ref.current.scrollLeft - scrollAmount
           : ref.current.scrollLeft + scrollAmount;
 
-      console.log("New scroll position:", newScrollPosition);
+      // console.log("New scroll position:", newScrollPosition);
 
       ref.current.scrollTo({
         left: newScrollPosition,
@@ -171,7 +155,6 @@ const MusicSession = () => {
       </div>
 
       <PublicPlaylists />
-
     </div>
   );
 };

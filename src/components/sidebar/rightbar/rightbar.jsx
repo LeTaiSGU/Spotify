@@ -1,38 +1,21 @@
 import React, { useRef, useEffect, useState } from "react";
 import { message } from "antd";
 import { saveAs } from "file-saver";
+import ReactPlayer from "react-player";
 import Header from "./header";
 import { X, Download, TvMinimalPlay } from "lucide-react";
 import MarqueeSpan from "./marqueSpan.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { togglePlay } from "../../../redux/slice/songSlice";
 
-const BoxArtist = ({ artistId, isMainArtist }) => {
-  const [artistInfo, setArtistInfo] = useState(null);
+const BoxArtist = ({ artist, isMainArtist }) => {
+  if (!artist) return null;
+  // console.log(artist);
 
-  useEffect(() => {
-    const fetchArtist = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:8000/api/artists/${artistId}`
-        );
-        const data = await response.json();
-        setArtistInfo(data);
-      } catch (error) {
-        console.error("Error fetching artist:", error);
-      }
-    };
-
-    if (artistId) {
-      fetchArtist();
-    }
-  }, [artistId]);
-
-  if (!artistInfo) return null;
   return (
     <div className="flex flex-row items-center justify-between rounded-xl p-2 text-white">
       <div className="flex flex-col">
-        <h2 className="text-base font-semibold">{artistInfo.name}</h2>
+        <h2 className="text-base font-semibold">{artist.name}</h2>
         <span className="text-sm text-[#bbbbbb] font-semibold">
           {isMainArtist ? "Tác giả" : "Nghệ sĩ tham gia"}
         </span>
@@ -56,16 +39,16 @@ const ArtistSection = ({ song }) => {
       {/* Hiển thị nghệ sĩ chính */}
       <BoxArtist
         key="artist-main"
-        artistId={song.artist_owner}
+        artist={song.artist_owner}
         isMainArtist={true}
       />
 
       {/* Hiển thị danh sách nghệ sĩ phụ */}
       {Array.isArray(song.artists) &&
-        song.artists.map((artistId, index) => (
+        song.artists.map((artist, index) => (
           <BoxArtist
-            key={`artist-${artistId}-${index}`}
-            artistId={artistId}
+            key={`artist-${artist}-${index}`}
+            artist={artist}
             isMainArtist={false}
           />
         ))}
@@ -78,7 +61,7 @@ const Rightbar = () => {
   const [showMV, setShowMV] = useState(false);
   const dispatch = useDispatch();
   const selectedSong = useSelector((state) => state.songs.selectedSong);
-  const [mainArtistInfo, setMainArtistInfo] = useState(null);
+  const userId = useSelector((state) => state.auth.user.id);
 
   //Test user
   const getUser = async (id) => {
@@ -99,23 +82,23 @@ const Rightbar = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchMainArtist = async () => {
-      if (selectedSong?.artist_owner) {
-        try {
-          const response = await fetch(
-            `http://localhost:8000/api/artists/${selectedSong.artist_owner}`
-          );
-          const data = await response.json();
-          setMainArtistInfo(data);
-        } catch (error) {
-          console.error("Error fetching main artist:", error);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchMainArtist = async () => {
+  //     if (selectedSong?.artist_owner) {
+  //       try {
+  //         const response = await fetch(
+  //           `http://localhost:8000/api/artists/${selectedSong.artist_owner.id}`
+  //         );
+  //         const data = await response.json();
+  //         setMainArtistInfo(data);
+  //       } catch (error) {
+  //         console.error("Error fetching main artist:", error);
+  //       }
+  //     }
+  //   };
 
-    fetchMainArtist();
-  }, [selectedSong?.artist_owner]);
+  //   fetchMainArtist();
+  // }, [selectedSong?.artist_owner]);
 
   //mv
   const handleOpenMV = () => {
@@ -132,13 +115,26 @@ const Rightbar = () => {
   // Add download handlers
   async function handleDownloadAudio(url, songName) {
     try {
-      const user = await getUser(1);
+      if (!userId) {
+        message.error("Vui lòng đăng nhập để tải nhạc");
+        return;
+      }
 
-      console.log("User data:", user); // Kiểm tra dữ liệu người dùng
-      if (!user || !user.is_premium) {
+      const user = await getUser(userId);
+      if (!user) {
+        message.error("Không thể lấy thông tin người dùng");
+        return;
+      }
+
+      if (!user.is_premium) {
         message.info(
           "Vui lòng nâng cấp lên tài khoản premium để sử dụng chức năng này."
         );
+        return;
+      }
+
+      if (!url) {
+        message.error("Không tìm thấy đường dẫn tải nhạc");
         return;
       }
 
@@ -149,27 +145,43 @@ const Rightbar = () => {
 
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error("Lỗi khi tải file âm thanh");
+        throw new Error(
+          `Lỗi khi tải file: ${response.status} ${response.statusText}`
+        );
       }
 
-      const blob = await response.blob(); // convert response to binary file
-      const fileName = `${songName}.${extension}`;
+      const blob = await response.blob();
+      const fileName = `${songName || "audio"}.${extension}`;
       saveAs(blob, fileName);
       message.success("Tải nhạc thành công!");
     } catch (error) {
       console.error("Lỗi khi tải file:", error);
-      message.error("Đã xảy ra lỗi khi tải nhạc.");
+      message.error(error.message || "Đã xảy ra lỗi khi tải nhạc");
     }
   }
 
   async function handleDownloadVideo(url, videoName) {
     try {
-      const user = await getUser(1); // hoặc thay 1 bằng userId thực tế nếu có
-      console.log("User data:", user); // Kiểm tra dữ liệu người dùng
-      if (!user || !user.is_premium) {
+      if (!userId) {
+        message.error("Vui lòng đăng nhập để tải video");
+        return;
+      }
+
+      const user = await getUser(userId);
+      if (!user) {
+        message.error("Không thể lấy thông tin người dùng");
+        return;
+      }
+
+      if (!user.is_premium) {
         message.info(
           "Vui lòng nâng cấp lên tài khoản premium để sử dụng chức năng này."
         );
+        return;
+      }
+
+      if (!url) {
+        message.error("Không tìm thấy đường dẫn video");
         return;
       }
 
@@ -180,16 +192,18 @@ const Rightbar = () => {
 
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error("Lỗi khi tải video");
+        throw new Error(
+          `Lỗi khi tải video: ${response.status} ${response.statusText}`
+        );
       }
 
       const blob = await response.blob();
-      const fileName = `${videoName}.${extension}`;
+      const fileName = `${videoName || "video"}.${extension}`;
       saveAs(blob, fileName);
       message.success("Tải video thành công!");
     } catch (error) {
       console.error("Lỗi khi tải file:", error);
-      message.error("Đã xảy ra lỗi khi tải video.");
+      message.error(error.message || "Đã xảy ra lỗi khi tải video");
     }
   }
   // Add click outside handler
