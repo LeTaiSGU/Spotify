@@ -14,7 +14,6 @@ import Payment from "./components/payment/Payment";
 import PaymentSuccess from "./components/payment/PaymentSuccess";
 
 import AdminLayout from "./components/admin/layoutAdmin";
-
 import Dashboard from "./pages/admin/Dashboard";
 import Song from "./pages/admin/song/Song";
 import Album from "./pages/admin/album/Album";
@@ -29,6 +28,9 @@ import UpdateArtist from "./pages/admin/artist/UpdateArtist";
 import CreatePlaylist from "./pages/admin/playlist/CreatePlaylist";
 import UpdatePlaylist from "./pages/admin/playlist/UpdatePlaylist";
 
+import PLS from "./pages/admin/playlistsongs/PLS";
+import CPLS from "./pages/admin/playlistsongs/CPLS";
+import UPLS from "./pages/admin/playlistsongs/UPLS";
 
 
 
@@ -49,8 +51,6 @@ function App() {
           <Route path="user/more-artists" element={<AllAvatar />} />
           <Route path="user/more-songs" element={<MusicList />} />
           <Route path="user/payment" element={<Payment />} />
-          
-
         </Route>
         <Route path="user/payment/success" element={<PaymentSuccess />} />
         <Route path="login" element={<LoginPage />} />
@@ -77,6 +77,10 @@ function App() {
           <Route path="playlist" element={<Playlist />} />
           <Route path="playlist/create" element={<CreatePlaylist />} />
           <Route path="playlist/update" element={<UpdatePlaylist />} />
+          <Route path="playlistsong" element={<PLS />} />
+          <Route path="playlistsongs/create" element={<CPLS />} />
+          <Route path="playlistsongs/update" element={<UPLS />} />
+
           {/* <Route path="users" element={<Users />} /> */}
         </Route>
 

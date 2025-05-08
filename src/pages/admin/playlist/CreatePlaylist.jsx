@@ -26,31 +26,34 @@ const CreatePlaylist = () => {
       {u.name}
     </Option>
   ));
-
-  const onFinish = (values) => {
-    const file = values.image[0].originFileObj;
-    const reader = new FileReader();
+  const onFinish = async (values) => {
+    const formData = new FormData();
   
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-  
-      const payload = {
-        name: values.name,
-        user: values.user,
-        is_private: values.isPrivate, // hoặc values.is_private nếu tên là vậy
-        cover_image: base64Image,     // đúng field Django mong đợi
-      };
-      console.log("Payload:", payload); // Kiểm tra payload trước khi gửi
-      try {
-        await axios.post("http://localhost:8000/api/playlists/create/", payload);
-        console.log("Gửi thành công");
-      } catch (error) {
-        console.error("Lỗi gửi dữ liệu:", error.response?.data || error.message);
-      }
+    const data = {
+      name: values.name,
+      description: values.description, // đúng tên field trong model
     };
   
-    reader.readAsDataURL(file); // quan trọng!
+    formData.append("data", JSON.stringify(data));
+  
+    if (values.image?.[0]?.originFileObj) {
+      formData.append("img_upload", values.image[0].originFileObj);
+    }
+  
+    try {
+      const response = await axios.post("http://localhost:8000/api/artists/create/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      console.log("Tạo thành công:", response.data);
+    } catch (error) {
+      console.error("Tạo nghệ sĩ thất bại:", error.response?.data || error.message);
+    }
   };
+  
   
 
   return (
