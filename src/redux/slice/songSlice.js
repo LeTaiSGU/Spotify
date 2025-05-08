@@ -1,10 +1,11 @@
 // src/features/songSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { API_ROOT } from "~/utils/constants";
 
 export const fetchTopSongs = createAsyncThunk(
   "songs/fetchTopSongs",
   async () => {
-    const response = await fetch("http://localhost:8000/api/songs/top");
+    const response = await fetch(`${API_ROOT}/api/songs/top`);
     if (!response.ok) {
       throw new Error("Failed to fetch top songs");
     }

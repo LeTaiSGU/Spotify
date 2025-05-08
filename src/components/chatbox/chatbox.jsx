@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_ROOT } from "~/utils/constants";
 
 //
 export default function ChatBox({ onClose }) {
@@ -32,7 +33,7 @@ export default function ChatBox({ onClose }) {
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      const res = await fetch("http://localhost:8000/api/chats/chat/", {
+      const res = await fetch(`${API_ROOT}/api/chats/chat/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: currentInput }),

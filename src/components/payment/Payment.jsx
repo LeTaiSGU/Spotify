@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
-import axios from 'axios';
-import { addMonths } from 'date-fns';
-import { toast } from 'react-toastify';
+import React, { useEffect } from "react";
+import axios from "axios";
+import { addMonths } from "date-fns";
+import { toast } from "react-toastify";
+import { API_ROOT } from "~/utils/constants";
 // Hàm lấy CSRF token từ cookie
 function getCookie(name) {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
     for (let cookie of cookies) {
       cookie = cookie.trim();
-      if (cookie.substring(0, name.length + 1) === name + '=') {
+      if (cookie.substring(0, name.length + 1) === name + "=") {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
       }
@@ -21,27 +22,29 @@ function getCookie(name) {
 const SpotifyPayment = () => {
   useEffect(() => {
     // Gửi request GET để Django trả về CSRF cookie
-    axios.get("http://localhost:8000/api/payments/csrf/", { withCredentials: true });
+    axios.get(`${API_ROOT}/api/payments/csrf/`, { withCredentials: true });
   }, []);
 
   const handlePayment = async () => {
-   
     try {
       const formData = new FormData();
       formData.append("amount", 99000); // Số tiền thanh toán
       formData.append("orderInfo", "Thanh toán đơn hàng");
-  
-    // Dữ liệu cứng
+
+      // Dữ liệu cứng
       formData.append("userId", 1); // ID user cứng
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
       formData.append("payDate", today); // Ngày thanh toán hiện tại
-      const response = await axios.post("http://localhost:8000/api/payments/momo/", formData, {
-        
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${API_ROOT}/api/payments/momo/`,
+        formData,
+        {
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          withCredentials: true,
+        }
+      );
       console.log("Phản hồi:", response);
 
       const payUrl = response.data.payUrl;
@@ -61,7 +64,9 @@ const SpotifyPayment = () => {
         <h2 className="text-2xl font-bold text-center mb-6">Spotify Premium</h2>
         <div className="text-center mb-6">
           <p className="mb-2">Chào mừng bạn đến với Spotify Premium!</p>
-          <p className="mb-4">Chỉ với 99k/tháng, bạn sẽ có trải nghiệm âm nhạc không giới hạn.</p>
+          <p className="mb-4">
+            Chỉ với 99k/tháng, bạn sẽ có trải nghiệm âm nhạc không giới hạn.
+          </p>
         </div>
         <button
           onClick={handlePayment}
@@ -75,4 +80,3 @@ const SpotifyPayment = () => {
 };
 
 export default SpotifyPayment;
-
