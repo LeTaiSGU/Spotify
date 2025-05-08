@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
+import { Button, Form, Upload, Input, Select, Checkbox, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
@@ -16,45 +16,52 @@ const CreatePlaylist = () => {
         setUsers(res.data);
       })
       .catch((err) => {
-        console.error("Error fetching users:", err);
+        console.error("Lỗi tải user:", err);
         message.error("Không thể tải danh sách user");
       });
   }, []);
 
-  const userOptions = users.map((u) => (
-    <Option key={u.id} value={u.id}>
-      {u.name}
-    </Option>
-  ));
   const onFinish = async (values) => {
     const formData = new FormData();
-  
+
+    // Tạo dữ liệu JSON cần thiết
     const data = {
       name: values.name,
-      description: values.description, // đúng tên field trong model
+      user: values.user,
+      is_private: values.isPrivate || false,
     };
-  
+
     formData.append("data", JSON.stringify(data));
-  
+
+    // Đính kèm ảnh bìa nếu có
     if (values.image?.[0]?.originFileObj) {
       formData.append("img_upload", values.image[0].originFileObj);
     }
-  
+
+    // Debug form data
+    for (let [key, val] of formData.entries()) {
+      console.log(`${key}:`, val);
+    }
+
     try {
-      const response = await axios.post("http://localhost:8000/api/artists/create/", formData, {
+      const response = await axios.post("http://localhost:8000/api/playlists/Admin/create/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-  
-      console.log("Tạo thành công:", response.data);
+      message.success("Tạo playlist thành công!");
+      form.resetFields();
     } catch (error) {
-      console.error("Tạo nghệ sĩ thất bại:", error.response?.data || error.message);
+      console.error("Tạo playlist thất bại:", error.response?.data || error.message);
+      message.error("Tạo playlist thất bại!");
     }
   };
-  
-  
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
+  };
 
   return (
     <div className="p-4 flex justify-center items-center">
@@ -67,7 +74,7 @@ const CreatePlaylist = () => {
         style={{ maxWidth: 1000, width: "100%" }}
         onFinish={onFinish}
       >
-        {/* Tên playlist */}
+        {/* Tên Playlist */}
         <Form.Item
           label="Tên Playlist"
           name="name"
@@ -76,15 +83,18 @@ const CreatePlaylist = () => {
           <Input placeholder="Nhập tên playlist..." />
         </Form.Item>
 
-        {/* Select user */}
-        <Form.Item label="User" name="user">
-          <Select
-            placeholder="Chọn user cho playlist"
-            showSearch
-            optionFilterProp="label"
-            allowClear
-          >
-            {userOptions}
+        {/* Chọn User */}
+        <Form.Item
+          label="User"
+          name="user"
+          rules={[{ required: true, message: "Vui lòng chọn user" }]}
+        >
+          <Select placeholder="Chọn user cho playlist" allowClear>
+            {users.map((u) => (
+              <Option key={u.id} value={u.id}>
+                {u.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -93,7 +103,7 @@ const CreatePlaylist = () => {
           label="Ảnh bìa"
           name="image"
           valuePropName="fileList"
-          getValueFromEvent={e => Array.isArray(e) ? e : e && e.fileList}
+          getValueFromEvent={normFile}
           rules={[{ required: true, message: "Vui lòng chọn ảnh bìa" }]}
         >
           <Upload beforeUpload={() => false} listType="picture">
@@ -101,18 +111,16 @@ const CreatePlaylist = () => {
           </Upload>
         </Form.Item>
 
-
-        {/* Checkbox */}
+        {/* Checkbox riêng tư */}
         <Form.Item
-          name="isPrivate"
           label="Riêng tư"
+          name="isPrivate"
           valuePropName="checked"
-          initialValue={false}
         >
           <Checkbox />
         </Form.Item>
 
-        {/* Nút submit */}
+        {/* Submit */}
         <Form.Item className="flex justify-end">
           <Button type="primary" htmlType="submit">
             Tạo Playlist

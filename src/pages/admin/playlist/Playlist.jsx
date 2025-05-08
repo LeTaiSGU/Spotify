@@ -40,7 +40,7 @@ useEffect(() => {
   const fetchPlaylists = async (selectedUser) => {
     if (selectedUser) {
       try {
-        const response = await axios.get(`http://localhost:8000/api/playlists/getplaylistbyUser/${selectedUser}/`, {
+        const response = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`, {
           params: {
             userId: selectedUser,  // Lọc playlist theo userId
             page: pageNo,
@@ -131,11 +131,11 @@ useEffect(() => {
         <Select
           placeholder="Chọn user"
           style={{ width: 200 }}
-          onChange={(value) => setSelectedUser(value)} // Khi chọn user, update selectedUser
+          onChange={(value) => setSelectedUser(value)} 
         >
           {users.map((user) => (
             <Option key={user.id} value={user.id}>
-              {user.username}
+              {user.name}
             </Option>
           ))}
         </Select>

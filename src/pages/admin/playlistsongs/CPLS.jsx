@@ -93,7 +93,7 @@ const AddSongToPlaylist = () => {
           >
             {users.map((user) => (
               <Option key={user.id} value={user.id}>
-                {user.username}
+                {user.name}
               </Option>
             ))}
           </Select>

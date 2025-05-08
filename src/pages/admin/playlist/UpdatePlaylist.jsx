@@ -34,7 +34,7 @@ const UpdatePlaylist = () => {
     const fetchPlaylists = async (userId) => {
       if (userId) {
         try {
-          const response = await axios.get(`http://localhost:8000/api/playlists/user/${userId}`, {
+          const response = await axios.get(`http://localhost:8000/api/Admin/playlists/user/${userId}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
