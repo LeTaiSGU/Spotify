@@ -20,9 +20,15 @@ const LoginForm = () => {
     if (!isEmailValid || !isPasswordValid) return;
     dispatch(loginUser({ email, password }))
       .unwrap()
-      .then(() => {
-        toast.success("Đăng nhập thành công!");
-        navigate("/");
+      .then((userData) => {
+        alert("Đăng nhập thành công!");
+
+        // Kiểm tra nếu là admin thì chuyển đến trang admin
+        if (userData && userData.is_admin) {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       })
       .catch(() => {
         // error sẽ được lấy từ state.auth.error
