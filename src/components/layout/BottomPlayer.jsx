@@ -1,6 +1,12 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
+import { addHistoryListen } from "../../apis/historylistenApi";
 import { useSelector, useDispatch } from "react-redux";
-import { togglePlay, toggleRightbar } from "../../redux/slice/songSlice";
+import {
+  togglePlay,
+  toggleRightbar,
+  setSelectedSong,
+} from "../../redux/slice/songSlice";
+
 import "./BottomPlayer.css";
 import {
   FaPlay,
@@ -13,6 +19,7 @@ import {
   FaVolumeMute,
 } from "react-icons/fa";
 import { Maximize, Minimize } from "lucide-react";
+import adsMusic from "../../assets/ads-music.mp3";
 
 const timeStringToSeconds = (timeString) => {
   if (!timeString) return 0;
@@ -22,9 +29,11 @@ const timeStringToSeconds = (timeString) => {
 
 const BottomPlayer = () => {
   const dispatch = useDispatch();
+  const [isRepeat, setIsRepeat] = useState(false);
   const [daCapNhatLuotNghe, setDaCapNhatLuotNghe] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(50);
+  const [isShuffle, setIsShuffle] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -32,11 +41,18 @@ const BottomPlayer = () => {
   const isRightbarVisible = useSelector(
     (state) => state.songs.isRightbarVisible
   );
+  const userId = useSelector((state) => state.auth?.user?.id);
   const handleToggleRightbar = () => {
     dispatch(toggleRightbar(!isRightbarVisible));
   };
 
-  const { selectedSong, isPlaying } = useSelector((state) => state.songs);
+  const { selectedSong, isPlaying, songQueue } = useSelector(
+    (state) => state.songs
+  );
+  const Currentuser = useSelector((state) => state.auth?.user);
+  const isPremium = Currentuser?.is_premium;
+
+  const [songCounter, setSongCounter] = useState(0);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -79,6 +95,7 @@ const BottomPlayer = () => {
   };
 
   const handleTimeChange = (e) => {
+    if (selectedSong?.isAd) return; // Không cho phép tua nếu là quảng cáo
     const newTime = e.target.value;
     setCurrentTime(newTime);
     if (audioRef.current) {
@@ -132,101 +149,125 @@ const BottomPlayer = () => {
   //   dispatch(toggleRandom());
   // };
 
-  // const handleNextSong = () => {
-  //   if (!currentSong || queue.length === 0) return;
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
-  //   const currentIndex = queue.findIndex(
-  //     (s) => s.songId === currentSong.songId
-  //   );
+  const handleNextSong = () => {
+    if (!songQueue || songQueue.length === 0) {
+      console.error("Hàng đợi bài hát trống");
+      return;
+    }
 
-  //   // Nếu đang ở bài cuối cùng
-  //   if (currentIndex === queue.length - 1) {
-  //     // Chỉ cho phép phát lại từ đầu nếu repeatMode === 2 (lặp lại playlist/album)
-  //     if (repeatMode === 2) {
-  //       dispatch(playNextSong());
-  //     }
-  //     return;
-  //   }
+    const currentIndex = songQueue.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
 
-  //   dispatch(playNextSong());
-  // };
+    if (currentIndex === -1) {
+      console.error("Bài hát hiện tại không có trong hàng đợi");
+      return;
+    }
 
-  // const handlePreviousSong = () => {
-  //   if (!currentSong || queue.length === 0) return;
+    let nextIndex;
 
-  //   const currentIndex = queue.findIndex(
-  //     (s) => s.songId === currentSong.songId
-  //   );
+    if (isShuffle) {
+      // Chọn bài hát ngẫu nhiên
+      do {
+        nextIndex = Math.floor(Math.random() * songQueue.length);
+      } while (nextIndex === currentIndex); // Đảm bảo không lặp lại bài hiện tại
+    } else {
+      nextIndex = currentIndex + 1;
+    }
 
-  //   // Nếu đang ở bài đầu tiên
-  //   if (currentIndex === 0) {
-  //     // Chỉ cho phép phát bài cuối nếu repeatMode === 2 (lặp lại playlist/album)
-  //     if (repeatMode === 2) {
-  //       dispatch(playPreviousSong());
-  //     }
-  //     return;
-  //   }
+    // Nếu đang ở bài cuối cùng và không bật trộn bài
+    if (nextIndex >= songQueue.length && !isShuffle) {
+      console.log("Đã đến bài cuối cùng trong hàng đợi");
+      if (isRepeat) {
+        dispatch(setSelectedSong(songQueue[0])); // Phát lại từ đầu
+        dispatch(togglePlay(true));
+      } else {
+        dispatch(togglePlay(false)); // Dừng phát
+      }
+      return;
+    }
 
-  //   dispatch(playPreviousSong());
-  // };
+    const nextSong = songQueue[nextIndex];
 
-  // const handleSongEnded = async () => {
-  //   if (repeatMode === 1) {
-  //     audioRef.current.currentTime = 0;
-  //     audioRef.current.play();
-  //     return;
-  //   }
+    setSongCounter((prev) => prev + 1);
 
-  //   const currentIndex = queue.findIndex(
-  //     (s) => s?.songId === currentSong?.songId
-  //   );
+    if (!isPremium && songCounter + 1 === 2) {
+      const ad = {
+        song_name: "Quảng cáo",
+        duration: "00:00:30",
+        img: "https://via.placeholder.com/150",
+        file_upload: adsMusic,
+        description: "Đây là quảng cáo",
+        mv: "none",
+        play_count: 0,
+        status: true,
+        isAd: true,
+      };
 
-  //   // Nếu đang phát playlist và bật random
-  //   if (queue.length > 1 && isRandom) {
-  //     dispatch(playNextSong()); // Sẽ random trong queue hiện tại
-  //     return;
-  //   }
+      // Lưu bài hát tiếp theo để phát sau quảng cáo
+      dispatch(setSelectedSong(ad)); // Phát quảng cáo
+      dispatch(togglePlay(true));
+      setSongCounter(0); // Reset bộ đếm
 
-  //   // Nếu là bài cuối hoặc chỉ có 1 bài trong queue (single song)
-  //   if (currentIndex === queue.length - 1 || queue.length === 1) {
-  //     if (repeatMode === 2) {
-  //       dispatch(playNextSong());
-  //     } else {
-  //       try {
-  //         // Fetch random song mới
-  //         const excludeSongId = currentSong?.songId;
-  //         const result = await dispatch(
-  //           fetchRandomSong(excludeSongId)
-  //         ).unwrap();
+      // Sau khi quảng cáo kết thúc, phát bài hát tiếp theo
+      audioRef.current.onended = () => {
+        dispatch(setSelectedSong(nextSong));
+        dispatch(togglePlay(true));
+      };
 
-  //         if (result) {
-  //           // Đè queue cũ và phát ngay
-  //           dispatch(clearQueue());
-  //           dispatch(setQueue([result]));
-  //           dispatch(setCurrentSong(result));
-  //           dispatch(togglePlay(true));
+      return;
+    }
 
-  //           // Cập nhật audio
-  //           if (audioRef.current) {
-  //             audioRef.current.src = result.fileUpload;
-  //             audioRef.current.load();
-  //             audioRef.current
-  //               .play()
-  //               .catch((error) =>
-  //                 console.error("Error playing new random song:", error)
-  //               );
-  //           }
-  //         }
-  //       } catch (error) {
-  //         console.error("Error fetching random song:", error);
-  //         dispatch(togglePlay(false));
-  //       }
-  //     }
-  //   } else {
-  //     // Còn bài tiếp theo trong queue
-  //     dispatch(playNextSong());
-  //   }
-  // };
+    // Phát bài hát tiếp theo
+    dispatch(setSelectedSong(nextSong));
+    dispatch(togglePlay(true));
+  };
+
+  const handlePreviousSong = () => {
+    if (!songQueue || songQueue.length === 0) {
+      console.error("Hàng đợi bài hát trống");
+      return;
+    }
+
+    const currentIndex = songQueue.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
+
+    if (currentIndex === -1) {
+      console.error("Bài hát hiện tại không có trong hàng đợi");
+      return;
+    }
+
+    const previousIndex = currentIndex - 1;
+
+    // Nếu đang ở bài đầu tiên
+    if (previousIndex < 0) {
+      console.log("Đang ở bài đầu tiên trong hàng đợi");
+      if (isRepeat) {
+        // Nếu chế độ lặp lại được bật, phát bài cuối cùng
+        dispatch(setSelectedSong(songQueue[songQueue.length - 1]));
+        dispatch(togglePlay(true));
+      } else {
+        // Nếu không, dừng phát
+        dispatch(togglePlay(false));
+      }
+      return;
+    }
+
+    // Phát bài hát trước đó
+    const previousSong = songQueue[previousIndex];
+    dispatch(setSelectedSong(previousSong));
+    dispatch(togglePlay(true));
+  };
 
   //update listening counts
   // Thêm useEffect mới để theo dõi thời gian nghe
@@ -246,10 +287,13 @@ const BottomPlayer = () => {
               method: "put",
             }
           );
-
+          const historyListening = await addHistoryListen(
+            userId,
+            selectedSong.id
+          );
           if (response.ok) {
             setDaCapNhatLuotNghe(true);
-            console.log("Đã cập nhật lượt nghe thành công");
+            console.log("Cập nhật lượt nghe và lịch sử nghe nhạc thành công");
           }
         } catch (error) {
           console.error("Lỗi khi cập nhật lượt nghe:", error);
@@ -271,6 +315,16 @@ const BottomPlayer = () => {
 
   const handleAudioEnd = useCallback(() => {
     console.log("Audio ended - Resetting state");
+    const currentIndex = songQueue?.findIndex(
+      (song) => song.id === selectedSong?.id
+    );
+    const nextSong = songQueue[currentIndex + 1];
+
+    // if (isRepeat && audioRef.current) {
+    //   audioRef.current.currentTime = 0;
+    //   audioRef.current.play();
+    //   return;
+    // }
 
     // Reset thời gian về 0
     if (audioRef.current) {
@@ -278,12 +332,19 @@ const BottomPlayer = () => {
       setCurrentTime(0);
     }
 
+    if (nextSong) {
+      dispatch(setSelectedSong(nextSong)); // Chọn bài hát tiếp theo
+      dispatch(togglePlay(true)); // Phát bài hát tiếp theo
+    } else {
+      dispatch(togglePlay(false)); // Dừng phát nếu không còn bài hát
+    }
+
     // Sau đó mới cập nhật các state khác
     setDaCapNhatLuotNghe(false);
-    dispatch(togglePlay(false));
+    // dispatch(togglePlay(false));
 
-    console.log("Đã reset time và state");
-  }, [dispatch]);
+    // console.log("Đã reset time và state");
+  }, [dispatch, isRepeat, songQueue, selectedSong, setCurrentTime]);
   // Thêm useEffect để reset trạng thái khi đổi bài
   useEffect(() => {
     // Chỉ reset daCapNhatLuotNghe khi thay đổi bài hát
@@ -327,10 +388,10 @@ const BottomPlayer = () => {
 
   useEffect(() => {
     const fetchMainArtist = async () => {
-      if (selectedSong?.artist_owner) {
+      if (selectedSong?.artist_owner.id) {
         try {
           const response = await fetch(
-            `http://localhost:8000/api/artists/${selectedSong.artist_owner}`
+            `http://localhost:8000/api/artists/${selectedSong.artist_owner.id}`
           );
           const data = await response.json();
           setMainArtistInfo(data);
@@ -351,7 +412,7 @@ const BottomPlayer = () => {
           <div className="song-details">
             <span className="song-title">{selectedSong.song_name}</span>
             <span className="song-artist">
-              {mainArtistInfo?.name || "Loading..."}
+              {selectedSong?.artist_owner?.name || "Loading..."}
             </span>
           </div>
         </div>
@@ -364,22 +425,21 @@ const BottomPlayer = () => {
       <div className="controls">
         <div className="control-buttons">
           <button
-          // className={`control-btn ${isRandom ? "active" : ""}`}
-          // onClick={handleToggleRandom}
-          // disabled={!currentSong}
-          // title={isRandom ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
+            className={`control-btn ${isShuffle ? "active" : ""}`}
+            onClick={() => setIsShuffle(!isShuffle)}
+            title={isShuffle ? "Tắt trộn bài" : "Bật trộn bài"}
           >
             <FaRandom />
           </button>
           <button
-          // className="control-btn"
-          // onClick={handlePreviousSong}
-          // disabled={
-          //   !currentSong ||
-          //   queue.length === 0 ||
-          //   (queue.findIndex((s) => s.songId === currentSong.songId) === 0 &&
-          //     repeatMode !== 2)
-          // }
+            className="control-btn"
+            onClick={handlePreviousSong}
+            // disabled={
+            //   !currentSong ||
+            //   queue.length === 0 ||
+            //   (queue.findIndex((s) => s.songId === currentSong.songId) === 0 &&
+            //     repeatMode !== 2)
+            // }
           >
             <FaStepBackward />
           </button>
@@ -391,29 +451,32 @@ const BottomPlayer = () => {
             {isPlaying ? <FaPause /> : <FaPlay />}
           </button>
           <button
-          // className="control-btn"
-          // onClick={handleNextSong}
-          // disabled={
-          //   !currentSong ||
-          //   queue.length === 0 ||
-          //   (queue.findIndex((s) => s.songId === currentSong.songId) ===
-          //     queue.length - 1 &&
-          //     repeatMode !== 2)
-          // }
+            className="control-btn"
+            onClick={handleNextSong}
+            // disabled={
+            //   !currentSong ||
+            //   queue.length === 0 ||
+            //   (queue.findIndex((s) => s.songId === currentSong.songId) ===
+            //     queue.length - 1 &&
+            //     repeatMode !== 2)
+            // }
           >
             <FaStepForward />
           </button>
           <button
-          // className={`control-btn ${repeatMode > 0 ? "active" : ""}`}
-          // onClick={toggleRepeat}
-          // disabled={!currentSong}
-          // title={
-          //   repeatMode === 0
-          //     ? "Bật lặp lại"
-          //     : repeatMode === 1
-          //     ? "Lặp lại một bài"
-          //     : "Lặp lại playlist"
-          // }
+            // className={`control-btn ${repeatMode > 0 ? "active" : ""}`}
+            // onClick={toggleRepeat}
+            // disabled={!currentSong}
+            // title={
+            //   repeatMode === 0
+            //     ? "Bật lặp lại"
+            //     : repeatMode === 1
+            //     ? "Lặp lại một bài"
+            //     : "Lặp lại playlist"
+            // }
+            className={`control-btn ${isRepeat ? "active" : ""}`}
+            onClick={() => setIsRepeat(!isRepeat)}
+            title={isRepeat ? "Tắt lặp lại" : "Bật lặp lại"}
           >
             <FaRedo />
             {/* {repeatMode === 1 && <span className="repeat-indicator">1</span>} */}
@@ -432,7 +495,7 @@ const BottomPlayer = () => {
                 value={currentTime}
                 onChange={handleTimeChange}
                 className="progress-slider"
-                disabled={!selectedSong}
+                disabled={selectedSong.isAd} // Vô hiệu hóa nếu là quảng cáo
               />
               <span className="remaining-time">
                 {formatTime(
@@ -521,9 +584,9 @@ const BottomPlayer = () => {
       {selectedSong && (
         <audio
           ref={audioRef}
-          src={selectedSong.fileUpload}
+          src={selectedSong?.fileUpload}
           onTimeUpdate={handleTimeUpdate}
-          onEnded={handleAudioEnd}
+          onEnded={handleNextSong}
         />
       )}
     </div>

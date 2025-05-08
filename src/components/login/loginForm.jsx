@@ -4,6 +4,7 @@ import PasswordField from "../ui/password-input";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "~/redux/slice/authSlice";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -19,9 +20,19 @@ const LoginForm = () => {
     if (!isEmailValid || !isPasswordValid) return;
     dispatch(loginUser({ email, password }))
       .unwrap()
-      .then(() => {
-        alert("Đăng nhập thành công!");
-        navigate("/");
+      .then((userData) => {
+        toast.success("Đăng nhập thành công");
+
+        console.log("User data after login:", userData); // Debug thông tin user
+
+        // Thêm timeout nhỏ để đảm bảo Redux store được cập nhật
+        setTimeout(() => {
+          if (userData.user && userData.user.is_admin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        }, 100);
       })
       .catch(() => {
         // error sẽ được lấy từ state.auth.error

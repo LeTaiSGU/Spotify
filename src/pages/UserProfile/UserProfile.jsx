@@ -4,10 +4,9 @@ import MoreListSongs from "./MoreListSongs";
 import AllAvatar from "./AllAvatar";
 import ProfileHeader from "./ProfileHeader";
 
-
 function UserProfile() {
   return (
-    <div className="w-full">
+    <div className="w-full h-full custom-scrollbar">
       <ProfileHeader />
       <LessListSongs />
       <AvatarBar />
