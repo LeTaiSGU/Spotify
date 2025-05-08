@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import avatar from "../../assets/avatar.png";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../redux/slice/authSlice";
-import { refreshToken } from "../../apis";
 
 const RightIconGroup = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,14 +15,9 @@ const RightIconGroup = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleRefresh = () => {
-    refreshToken()
-      .then((response) => {
-        console.log("Token refreshed successfully:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error refreshing token:", error);
-      });
+  const handleNavigateToAccount = () => {
+    setIsMenuOpen(false);
+    navigate("/account"); // Navigate to /account
   };
 
   const handleNavigateToProfile = () => {
@@ -75,7 +69,7 @@ const RightIconGroup = () => {
           </button>
           {isMenuOpen && (
             <div className="menu">
-              <div className="menu-item" onClick={handleRefresh}>
+              <div className="menu-item" onClick={handleNavigateToAccount}>
                 Account
               </div>
               <div className="menu-item" onClick={handleNavigateToProfile}>
