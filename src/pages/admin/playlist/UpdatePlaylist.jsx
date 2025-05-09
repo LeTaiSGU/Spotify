@@ -138,7 +138,7 @@ const UpdatePlaylist = () => {
                   })
                   .catch((err) => {
                     console.error("Error fetching playlists:", err);
-                    message.error("Không thể tải danh sách playlist");
+                   
                   });
               }
             }}
