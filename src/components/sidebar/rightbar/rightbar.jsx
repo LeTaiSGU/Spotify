@@ -7,6 +7,7 @@ import { X, Download, TvMinimalPlay } from "lucide-react";
 import MarqueeSpan from "./marqueSpan.jsx";
 import { useSelector, useDispatch } from "react-redux";
 import { togglePlay } from "../../../redux/slice/songSlice";
+import { API_ROOT } from "~/utils/constants";
 
 const BoxArtist = ({ artist, isMainArtist }) => {
   if (!artist) return null;
@@ -66,7 +67,7 @@ const Rightbar = () => {
   //Test user
   const getUser = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/users/${id}`);
+      const response = await fetch(`${API_ROOT}/api/users/${id}`);
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error("User not found");
