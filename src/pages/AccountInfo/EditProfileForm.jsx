@@ -163,10 +163,10 @@ const EditProfileForm = () => {
                 onChange={handleChange}
                 className="w-full bg-[#3E3E3E] h-11 text-white border border-[#7C7C7C] rounded-md p-2 hover:bg-[#454545] focus:bg-[#4A4A4A] focus:outline-none focus:border-white cursor-pointer transition-colors duration-200"
               >
-                <option value="true" className="bg-[#3E3E3E]">
+                <option value="True" className="bg-[#3E3E3E]">
                   Nam
                 </option>
-                <option value="false" className="bg-[#3E3E3E]">
+                <option value="False" className="bg-[#3E3E3E]">
                   Nữ
                 </option>
               </select>

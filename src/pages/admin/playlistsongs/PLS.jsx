@@ -34,7 +34,7 @@ const PLS = () => {
   // Fetch playlists by user
   const fetchPlaylistsByUser = async (userId) => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/playlists/getplaylistbyUser/${userId}/`, {
+      const res = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${userId}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

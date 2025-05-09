@@ -39,7 +39,7 @@ const AddSongToPlaylist = () => {
   useEffect(() => {
     if (selectedUserId) {
       axios
-        .get(`http://localhost:8000/api/playlists/getplaylistbyUser/${selectedUserId}/`, {
+        .get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUserId}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
