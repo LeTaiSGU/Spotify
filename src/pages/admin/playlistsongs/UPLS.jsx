@@ -24,7 +24,7 @@ const EditPlaylistSongs = () => {
   // Lấy playlist của người dùng đã chọn
   useEffect(() => {
     if (selectedUser) {
-      axios.get(`http://localhost:8000/api/playlists/getplaylistbyUser/${selectedUser}/`)
+      axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`)
         .then(res => setPlaylists(res.data))
         .catch(() => message.error('Không thể tải danh sách playlist'));
     }
