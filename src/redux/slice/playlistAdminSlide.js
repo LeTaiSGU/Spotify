@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 // Fetch all playlists
-const API_BASE_URL = "http://localhost:8000/api/playlists/getall";
+const API_BASE_URL = `${API_ROOT}/api/playlists/getall`;
 export const fetchPlaylistsAdmin = createAsyncThunk(
   "playlistAdmin/fetchPlaylistsAdmin",
   async ({ pageNo, pageSize } = {}, thunkAPI) => {
@@ -35,26 +36,20 @@ export const fetchPlaylistAdminById = createAsyncThunk(
   "playlistAdmin/fetchPlaylistAdminById",
   async (playlistId, thunkAPI) => {
     try {
-      const res = await axios.get(
-        `http://localhost:8000/api/playlists/${playlistId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const res = await axios.get(`${API_ROOT}/api/playlists/${playlistId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       const playlist = res.data.result;
 
       try {
-        const songsRes = await axios.get(
-          `http://localhost:8000/api/playlists/`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const songsRes = await axios.get(`${API_ROOT}/api/playlists/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         playlist.songs = songsRes.data.result;
       } catch (err) {

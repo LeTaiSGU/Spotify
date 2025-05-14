@@ -1,6 +1,7 @@
 import React from "react";
 import "./TopBar.css";
-import { useDispatch, useSelector } from "react-redux";
+import RightIconGroup from "./RightIconGroup"; // Adjust the import based on your file structure
+import { useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Home, Search } from "lucide-react"; // Import các icon từ thư viện lucide-react
@@ -12,7 +13,6 @@ const LeftIconGroup = () => {
 
   const handleSpotifyClick = () => {
     navigate("/");
-    window.location.reload();
   };
 
   return (
@@ -121,58 +121,6 @@ const CenterSection = () => {
           <Search size={16} />
         </button>
       </form>
-    </div>
-  );
-};
-
-// Right Icon Group Component (Profile Icon + Menu)
-const RightIconGroup = () => {
-  const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { user } = useSelector((state) => state.auth); // Lấy thông tin user từ Redux
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-
-
-  const handleLogin = () => {
-    navigate("/login"); // Điều hướng đến trang đăng nhập
-  // Thêm các handler xử lý menu
-  }
-
-  const handleLogout = () => {
-    // Xử lý logout ở đây nếu cần
-    // Ví dụ: dispatch(logout());
-    setIsMenuOpen(false);
-    navigate("/login"); // Chuyển về trang login sau khi đăng xuất
-  };
-
-  return (
-    <div className="right-icons">
-      {user ? (
-        // Hiển thị avatar và menu nếu đã đăng nhập
-        <>
-          <button className="profile-icon" onClick={toggleMenu}>
-            <img src={user.avatar} alt="Profile" className="avatar" />
-          </button>
-          {isMenuOpen && (
-            <div className="menu">
-              <div className="menu-item">Account</div>
-              <div className="menu-item" onClick={() => {navigate('/user'),setIsMenuOpen(false)}}>Profile</div>
-              <div className="menu-item" onClick={handleLogout}>
-                Log out
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        // Hiển thị nút "Đăng nhập" nếu chưa đăng nhập
-        <button className="login-button" onClick={handleLogin}>
-          Đăng nhập
-        </button>
-      )}
     </div>
   );
 };

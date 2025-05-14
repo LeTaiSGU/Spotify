@@ -21,14 +21,18 @@ const LoginForm = () => {
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then((userData) => {
-        toast.success("Đăng nhập thành công!")
+        toast.success("Đăng nhập thành công");
 
-        // Kiểm tra nếu là admin thì chuyển đến trang admin
-        if (userData && userData.is_admin) {
-          navigate("/admin");
-        } else {
-          navigate("/");
-        }
+        console.log("User data after login:", userData); // Debug thông tin user
+
+        // Thêm timeout nhỏ để đảm bảo Redux store được cập nhật
+        setTimeout(() => {
+          if (userData.user && userData.user.is_admin) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        }, 100);
       })
       .catch(() => {
         // error sẽ được lấy từ state.auth.error

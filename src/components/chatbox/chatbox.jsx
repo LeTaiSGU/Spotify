@@ -1,65 +1,131 @@
 import { useEffect, useState } from "react";
 import { API_ROOT } from "~/utils/constants";
+
 //
 export default function ChatBox({ onClose }) {
   const [messages, setMessages] = useState(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    return savedMessages ? JSON.parse(savedMessages) : [];
+    try {
+      const savedMessages = localStorage.getItem("chatMessages");
+      // Kiểm tra xem dữ liệu có hợp lệ không
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        // Kiểm tra xem dữ liệu có phải là mảng không
+        if (Array.isArray(parsed)) {
+          // Kiểm tra từng phần tử trong mảng
+          const validMessages = parsed.filter(
+            (msg) =>
+              msg &&
+              typeof msg === "object" &&
+              "role" in msg &&
+              "content" in msg &&
+              typeof msg.role === "string" &&
+              typeof msg.content === "string"
+          );
+          console.log("Loaded valid messages:", validMessages);
+          return validMessages;
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error("Error parsing chatMessages from localStorage:", error);
+      // Nếu có lỗi, xóa dữ liệu cũ và trả về mảng rỗng
+      localStorage.removeItem("chatMessages");
+      return [];
+    }
   });
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   // Lưu messages vào localStorage mỗi khi có thay đổi
   useEffect(() => {
-    localStorage.setItem("chatMessages", JSON.stringify(messages));
+    try {
+      // Lọc bỏ các tin nhắn loading trước khi lưu
+      const messagesForStorage = messages.filter((msg) => !msg.isLoading);
+      localStorage.setItem("chatMessages", JSON.stringify(messagesForStorage));
+      console.log("Saved messages to localStorage:", messagesForStorage);
+    } catch (error) {
+      console.error("Error saving messages to localStorage:", error);
+    }
   }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
 
     const userMessage = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    const currentInput = input;
+
+    // Cập nhật messages sau khi loại bỏ tin nhắn loading
+    const updatedMessages = [
+      ...messages.filter((msg) => !msg.isLoading),
+      userMessage,
+    ];
+    setMessages(updatedMessages);
     setInput("");
 
     // Thêm tin nhắn loading
-    setIsLoading(true);
     const loadingMessage = {
       role: "assistant",
       content: "...",
       isLoading: true,
     };
-    setMessages((prev) => [...prev, loadingMessage]);
+    setMessages([...updatedMessages, loadingMessage]);
 
     try {
+      // Tạo bản sao của tin nhắn không có tin nhắn loading
+      const messageHistory = updatedMessages;
+
+      // Log tin nhắn đang gửi
+      console.log("Sending message history:", messageHistory);
+
+      // Sử dụng định dạng như trong ví dụ
+      const requestBody = {
+        messages: messageHistory,
+      };
+
+      console.log("Request body:", JSON.stringify(requestBody));
+
       const res = await fetch(`${API_ROOT}/api/chats/chat/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: currentInput }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await res.json();
+      // Log phản hồi từ server
+      console.log("Server response:", data);
 
       // Xóa tin nhắn loading và thêm tin nhắn thật
-      setIsLoading(false);
-      setMessages((prev) =>
-        prev
-          .filter((msg) => !msg.isLoading) // Xóa tin nhắn loading
-          .concat({
+      setMessages((prev) => {
+        const filteredMessages = prev.filter((msg) => !msg.isLoading);
+
+        // Lấy nội dung phản hồi từ trường reply
+        let responseContent = "Lỗi từ server.";
+        if (data && data.reply) {
+          responseContent = data.reply;
+        }
+
+        return [
+          ...filteredMessages,
+          {
             role: "assistant",
-            content: data.reply || "Lỗi từ server.",
-          })
-      );
-    } catch (error) {
-      setIsLoading(false);
-      setMessages((prev) =>
-        prev
-          .filter((msg) => !msg.isLoading)
-          .concat({
+            content: responseContent,
+          },
+        ];
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setMessages((prev) => {
+        const filteredMessages = prev.filter((msg) => !msg.isLoading);
+
+        // Thông báo lỗi kết nối
+        const errorMessage = "Không thể kết nối đến server.";
+
+        return [
+          ...filteredMessages,
+          {
             role: "assistant",
-            content: "Không thể kết nối đến server.",
-          })
-      );
+            content: errorMessage,
+          },
+        ];
+      });
     }
   };
 

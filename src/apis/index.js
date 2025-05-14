@@ -109,9 +109,58 @@ export const getAlbumById = async (albumId) => {
   return response.data;
 };
 
-export const refreshToken = async () => {
+export const changePassword = async (userId, data) => {
   const response = await authorizedAxiosInstance.post(
-    `${API_ROOT}/api/users/token/refresh/`
+    `${API_ROOT}/api/users/${userId}/change-password/`,
+    data
   );
   return response.data;
+};
+
+export const updateUser = async (userId, data) => {
+  const response = await authorizedAxiosInstance.put(
+    `${API_ROOT}/api/users/${userId}/`,
+    data
+  );
+  return response.data;
+};
+
+
+
+// artists
+
+export const getTopArtistByUserId= async () => {
+  const response = await authorizedAxiosInstance.get(
+    `${API_ROOT}/api/listening-history/top-artists/`
+  );
+  return response.data;
+}
+
+
+// listening history
+export const getHistoryListen = async (userId) => {
+  try {
+    const response = await authorizedAxiosInstance.get(
+      `${API_ROOT}/api/listening-history/${userId}/`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử nghe nhạc:", error);
+    throw error;
+  }
+};
+
+export const addHistoryListen = async (userId, songId) => {
+  try {
+    const response = await authorizedAxiosInstance.post(
+      `${API_ROOT}/api/listening-history/${userId}/`,
+      {
+        song_id: songId,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi thêm lịch sử nghe nhạc:", error);
+    throw error;
+  }
 };

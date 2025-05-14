@@ -7,25 +7,58 @@ const { TextArea } = Input;
 
 const UpdatePlaylist = () => {
   const [form] = Form.useForm();
+  const [users, setUsers] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [playlistDetail, setPlaylistDetail] = useState(null);
 
   useEffect(() => {
-    const fetchPlaylists = async () => {
+    // Fetch all users to populate the user combobox
+    const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/playlists/getall/", {
+        const response = await axios.get("http://localhost:8000/api/users/getall/", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        setPlaylists(response.data);
+        setUsers(response.data);
       } catch (error) {
-        console.error("Error fetching playlists:", error);
-        message.error("Không thể tải danh sách playlist");
+        console.error("Error fetching users:", error);
+        message.error("Không thể tải danh sách user");
       }
     };
-    fetchPlaylists();
+    fetchUsers();
   }, []);
+
+  useEffect(() => {
+    // Fetch playlists when a user is selected
+    const fetchPlaylists = async (userId) => {
+      if (userId) {
+        try {
+          const response = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${userId}/`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          setPlaylists(response.data);
+        } catch (error) {
+          console.error("Error fetching playlists:", error);
+          message.error("Không thể tải danh sách playlist");
+        }
+      }
+    };
+
+    // If a user is selected, fetch playlists for that user
+    if (form.getFieldValue("user")) {
+      fetchPlaylists(form.getFieldValue("user"));
+    } else {
+      setPlaylists([]); // Clear playlists if no user is selected
+    }
+  }, [form.getFieldValue("user")]);
+
+  const userOptions = users.map((user) => ({
+    label: user.name,
+    value: user.id,
+  }));
 
   const playlistsOptions = playlists.map((playlist) => ({
     label: playlist.name,
@@ -34,20 +67,20 @@ const UpdatePlaylist = () => {
 
   const onFinish = async (values) => {
     const formData = new FormData();
-  
+
     // JSON phần dữ liệu text
     const data = {
       name: values.name,
       is_private: values.isPrivate,
     };
-  
+
     formData.append("data", JSON.stringify(data));
-  
+
     // Nếu người dùng upload ảnh mới thì thêm vào FormData
     if (values.image?.[0]?.originFileObj) {
       formData.append("img_upload", values.image[0].originFileObj);
     }
-  
+
     try {
       await axios.patch(
         `http://localhost:8000/api/playlists/update/${values.playlistId}/`,
@@ -77,21 +110,56 @@ const UpdatePlaylist = () => {
         style={{ maxWidth: 1000, width: "100%" }}
         onFinish={onFinish}
       >
+        {/* Combobox chọn user */}
+        <Form.Item
+          label="Chọn User"
+          name="user"
+          rules={[{ required: true, message: "Chọn user để cập nhật playlist" }]}
+        >
+          <Select
+            showSearch
+            options={userOptions}
+            placeholder="Chọn user"
+            optionFilterProp="label"
+            onChange={(value) => {
+              // Fetch playlists when a user is selected
+              form.setFieldsValue({ playlistId: undefined });
+              setPlaylistDetail(null); // Reset playlist details
+              setPlaylists([]); // Clear playlists
+              if (value) {
+                axios
+                  .get(`http://localhost:8000/api/playlists/user/${value}`, {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                  })
+                  .then((res) => {
+                    setPlaylists(res.data);
+                  })
+                  .catch((err) => {
+                    console.error("Error fetching playlists:", err);
+                   
+                  });
+              }
+            }}
+          />
+        </Form.Item>
+
         {/* Combobox chọn playlist */}
         <Form.Item
-          label="Tìm playlist"
-          name="searchPlaylist"
-          rules={[{ required: true, message: "Chọn playlist để cập nhật" }]}>
+          label="Chọn Playlist"
+          name="playlistId"
+          rules={[{ required: true, message: "Chọn playlist để cập nhật" }]}
+        >
           <Select
             showSearch
             options={playlistsOptions}
-            placeholder="Tìm playlist"
+            placeholder="Chọn playlist"
             optionFilterProp="label"
             onChange={(value) => {
               const selected = playlists.find((p) => p.id === value);
               if (selected) {
                 form.setFieldsValue({
-                  playlistId: selected.id,
                   name: selected.name,
                   isPrivate: selected.is_private,
                 });
@@ -110,7 +178,8 @@ const UpdatePlaylist = () => {
         <Form.Item
           label="Tên Playlist"
           name="name"
-          rules={[{ required: true, message: "Vui lòng nhập tên playlist" }]}>
+          rules={[{ required: true, message: "Vui lòng nhập tên playlist" }]}
+        >
           <Input placeholder="Nhập tên playlist..." />
         </Form.Item>
 
@@ -119,7 +188,8 @@ const UpdatePlaylist = () => {
           label="Ảnh"
           name="image"
           valuePropName="fileList"
-          rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}>
+          rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
+        >
           <Upload
             listType="picture"
             accept="image/*"
@@ -127,7 +197,7 @@ const UpdatePlaylist = () => {
             maxCount={1}
             disabled={!playlistDetail}
             multiple={false}
-            onChange={({ fileList }) => form.setFieldsValue({ image: fileList })}  // Fix fileList
+            onChange={({ fileList }) => form.setFieldsValue({ image: fileList })}
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
@@ -138,7 +208,8 @@ const UpdatePlaylist = () => {
           name="isPrivate"
           label="Private"
           valuePropName="checked"
-          initialValue={false}>
+          initialValue={false}
+        >
           <Checkbox disabled={!playlistDetail} />
         </Form.Item>
 

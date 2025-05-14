@@ -6,6 +6,7 @@ import EditPlaylistModal from "../sidebar/editPlaylist";
 import PlaylistEditModal from "../sidebar/editPlaylist";
 import { getPlaylist, getAlbumById, getSongById } from "~/apis";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Sửa định nghĩa component Avatar
 const Avatar = ({ playlist, onRefresh }) => {
@@ -48,6 +49,7 @@ const PlaylistHeader = ({ type }) => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {
@@ -134,7 +136,9 @@ const PlaylistHeader = ({ type }) => {
                     alt="avatar"
                     className="w-8 h-8 object-cover shadow-lg me-2 rounded-3xl"
                   />
-                  <span className="font-bold hover:cursor-pointer hover:underline">
+                  <span 
+                  onClick={() => { navigate(`/${type === "playlist" ? "user" : "artist"}/${type === "playlist" ? data?.owner?.id : type === "album" ? data?.artist?.id : data?.artist_owner?.id}`) }}
+                  className="font-bold hover:cursor-pointer hover:underline">
                     {
                       type === "playlist" ? (data?.owner?.name || "User") :
                       type === "album" ? (data?.artist?.name || "Artist") :
