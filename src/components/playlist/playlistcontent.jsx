@@ -5,9 +5,9 @@ import ButtonPlay from "../ui/buttonplay";
 import Playlist from "./playlist";
 import { MdDownloading } from "react-icons/md";
 import { FaMinusCircle } from "react-icons/fa";
-import { Popover } from 'antd';
-import { EllipsisOutlined } from '@ant-design/icons';
-import { deletePlaylist, } from "~/apis/index";
+import { Popover } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons";
+import { deletePlaylist } from "~/apis/index";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
@@ -23,13 +23,17 @@ import {
 } from "../../redux/slice/songSlice";
 
 import { useEffect, useState } from "react";
-import { getSongBylistId, getSongsByAlbumId, getSongById, getPlaylist, updatePlaylist } from "~/apis";
-
-
+import {
+  getSongBylistId,
+  getSongsByAlbumId,
+  getSongById,
+  getPlaylist,
+  updatePlaylist,
+} from "~/apis";
 
 function PlaylistContent({ type }) {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const songQueue = useSelector((state) => state.songs.songQueue);
   const [songs, setSongs] = useState([]);
@@ -51,15 +55,12 @@ function PlaylistContent({ type }) {
 
           setPlaylist(playlistData);
           result = await getSongBylistId(id);
-        }
-        else if (type === "album") {
+        } else if (type === "album") {
           result = await getSongsByAlbumId(id);
-        }
-        else if (type === "song") {
+        } else if (type === "song") {
           const song = await getSongById(id);
           result = [song];
-        }
-        else {
+        } else {
           console.error("Loại không hợp lệ:", type);
           return;
         }
@@ -72,19 +73,17 @@ function PlaylistContent({ type }) {
     fetchSongs();
   }, [id, type, user, navigate]);
 
-
-
   const handleDeletePlaylist = async () => {
     try {
       await deletePlaylist(id);
-      toast.success("Xóa playlist thành công")
+      toast.success("Xóa playlist thành công");
       await dispatch(fetchLibraryDetailsAPI());
-      navigate("/")
+      navigate("/");
     } catch (e) {
-      console.error("Xóa playlist thất bại", e)
-      toast.error("Xóa playlist thất bại")
+      console.error("Xóa playlist thất bại", e);
+      toast.error("Xóa playlist thất bại");
     }
-  }
+  };
 
   const handlePlaySonglist = () => {
     if (!Array.isArray(songs) || songs.length === 0) {
@@ -104,30 +103,29 @@ function PlaylistContent({ type }) {
     dispatch(toggleRightbar(true));
   };
 
-
-
   const handleTogglePrivacy = async () => {
     if (playlist?.user !== user?.id) {
-      toast.error("Bạn không có quyền thay đổi quyền riêng tư của playlist này!");
+      toast.error(
+        "Bạn không có quyền thay đổi quyền riêng tư của playlist này!"
+      );
       return;
     }
 
     try {
-
       const data = new FormData();
 
       // Thêm data dưới dạng JSON string
       const playlistData = {
-        is_private: !playlist.is_private
+        is_private: !playlist.is_private,
       };
-      data.append('data', JSON.stringify(playlistData));
-
+      data.append("data", JSON.stringify(playlistData));
 
       const updatedPlaylist = await updatePlaylist(playlist.id, data);
 
       setPlaylist(updatedPlaylist); // Cập nhật trạng thái playlist trong state
       toast.success(
-        `Playlist đã được chuyển sang ${updatedPlaylist.is_private ? "cá nhân" : "công khai"
+        `Playlist đã được chuyển sang ${
+          updatedPlaylist.is_private ? "cá nhân" : "công khai"
         }!`
       );
     } catch (error) {
@@ -135,8 +133,6 @@ function PlaylistContent({ type }) {
       toast.error("Thay đổi quyền riêng tư thất bại!");
     }
   };
-
-
 
   const handleShufflePlay = () => {
     if (!Array.isArray(songs) || songs.length === 0) {
@@ -215,7 +211,7 @@ function PlaylistContent({ type }) {
           />
           <span>Tải xuống</span>
         </li>
-  
+
         {/* Các nút chỉ hiển thị nếu người dùng là chủ sở hữu */}
         {type === "playlist" && playlist?.user === user?.id && (
           <>
@@ -250,9 +246,12 @@ function PlaylistContent({ type }) {
   );
 
   return (
-    <div className="flex flex-col w-full rounded-xl bg-gradient-to-b from-[#868588] to-[#1A0A12] text-white custom-scrollbar">
+    <div
+      className="flex flex-col w-full h-full rounded-xl bg-gradient-to-b from-[#868588] to-[#1A0A12] text-white overflow-y-auto custom-scrollbar"
+      style={{ height: "calc(100vh - 180px)" }}
+    >
       <PlaylistHeader type={type} />
-      <div className="flex flex-col h-full w-full p-4 bg-black/20 ">
+      <div className="flex flex-col w-full p-4 bg-black/20">
         <div className="flex flex-row items-center gap-4 m-3">
           <button
             onClick={handlePlaySonglist}
@@ -276,17 +275,18 @@ function PlaylistContent({ type }) {
           </div>
 
           {/* <Ellipsis className="scale-110 text-gray-400 hover:text-white cursor-pointer" /> */}
-          {type === "playlist" &&
-            <Popover placement='right' content={content} trigger="click">
+          {type === "playlist" && (
+            <Popover placement="right" content={content} trigger="click">
               <EllipsisOutlined className="text-white text-4xl cursor-pointer hover:text-gray-400" />
             </Popover>
-          }
-
+          )}
         </div>
-        <Playlist type={type} />
+        <div>
+          <Playlist type={type} />
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default PlaylistContent;

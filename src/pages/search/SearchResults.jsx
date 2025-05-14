@@ -16,9 +16,8 @@ import {
   createNewPlaylist,
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
-import { getPlaylistsById } from "~/apis"
+import { getPlaylistsById } from "~/apis";
 import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
-
 
 // Component SongRow mới để thay thế SongCard
 
@@ -120,9 +119,7 @@ export const SongRow = ({ song }) => {
       console.log("Response status:", response.status);
 
       if (response.ok) {
-        toast.success(
-          `Đã thêm bài hát "${song.song_name}" vào playlist!`
-        );
+        toast.success(`Đã thêm bài hát "${song.song_name}" vào playlist!`);
         setShowPlaylistModal(false);
         return true; // Trả về true để .then() hoạt động
       } else {
@@ -134,9 +131,7 @@ export const SongRow = ({ song }) => {
             `Lỗi: ${errorData.detail || "Không thể thêm bài hát vào playlist"}`
           );
         } else {
-          toast.error(
-            `Lỗi: ${response.status} ${response.statusText}`
-          );
+          toast.error(`Lỗi: ${response.status} ${response.statusText}`);
         }
         return false;
       }
@@ -319,7 +314,8 @@ export const SongRow = ({ song }) => {
                     <div className="w-10 h-10 mr-3">
                       <img
                         src={
-                          playlist.avatar || "https://via.placeholder.com/40"
+                          playlist.cover_image ||
+                          "https://via.placeholder.com/40"
                         }
                         alt={playlist.name || playlist.title}
                         className="w-full h-full object-cover rounded-sm"
