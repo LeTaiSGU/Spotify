@@ -10,16 +10,9 @@ const CreateArtist = () => {
 
   const onFinish = async (values) => {
     const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("bio", values.description);
 
-    // Lấy dữ liệu từ form
-    const data = {
-      name: values.name,
-      bio: values.description, // Đổi tên 'description' thành 'bio' nếu backend dùng 'bio'
-    };
-
-    formData.append("data", JSON.stringify(data));
-
-    // Đính kèm ảnh
     if (values.image?.[0]?.originFileObj) {
       formData.append("img_upload", values.image[0].originFileObj);
     }
@@ -30,15 +23,22 @@ const CreateArtist = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/artists/create/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/artists/create/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       console.log("Tạo nghệ sĩ thành công:", response.data);
     } catch (error) {
-      console.error("Tạo nghệ sĩ thất bại:", error.response?.data || error.message);
+      console.error(
+        "Tạo nghệ sĩ thất bại:",
+        error.response?.data || error.message
+      );
     }
   };
 
