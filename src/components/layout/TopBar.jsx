@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Home, Search } from "lucide-react"; // Import các icon từ thư viện lucide-react
 import { searchContent, setSearchLoading } from "../../redux/slice/searchSlice"; // Adjust the import based on your file structure
+import { API_ROOT } from "~/utils/constants";
 
 // Left Icon Group Component
 const LeftIconGroup = () => {
@@ -60,11 +61,7 @@ const CenterSection = () => {
       console.log("Search query is valid, dispatching actions");
       try {
         // Kiểm tra API có hoạt động không
-        fetch(
-          `http://localhost:8000/api/search/?q=${encodeURIComponent(
-            searchQuery
-          )}`
-        )
+        fetch(`${API_ROOT}/api/search/?q=${encodeURIComponent(searchQuery)}`)
           .then((response) => {
             console.log("API search test response status:", response.status);
             if (!response.ok) {
@@ -135,12 +132,10 @@ const RightIconGroup = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-
-
   const handleLogin = () => {
     navigate("/login"); // Điều hướng đến trang đăng nhập
-  // Thêm các handler xử lý menu
-  }
+    // Thêm các handler xử lý menu
+  };
 
   const handleLogout = () => {
     // Xử lý logout ở đây nếu cần
@@ -160,7 +155,14 @@ const RightIconGroup = () => {
           {isMenuOpen && (
             <div className="menu">
               <div className="menu-item">Account</div>
-              <div className="menu-item" onClick={() => {navigate('/user'),setIsMenuOpen(false)}}>Profile</div>
+              <div
+                className="menu-item"
+                onClick={() => {
+                  navigate("/user"), setIsMenuOpen(false);
+                }}
+              >
+                Profile
+              </div>
               <div className="menu-item" onClick={handleLogout}>
                 Log out
               </div>

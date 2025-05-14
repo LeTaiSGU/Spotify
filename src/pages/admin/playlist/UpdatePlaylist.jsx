@@ -2,6 +2,7 @@ import { React, useEffect, useState } from "react";
 import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 const { TextArea } = Input;
 
@@ -13,7 +14,7 @@ const UpdatePlaylist = () => {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/playlists/getall/", {
+        const response = await axios.get(`${API_ROOT}/api/playlists/getall/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -34,23 +35,23 @@ const UpdatePlaylist = () => {
 
   const onFinish = async (values) => {
     const formData = new FormData();
-  
+
     // JSON phần dữ liệu text
     const data = {
       name: values.name,
       is_private: values.isPrivate,
     };
-  
+
     formData.append("data", JSON.stringify(data));
-  
+
     // Nếu người dùng upload ảnh mới thì thêm vào FormData
     if (values.image?.[0]?.originFileObj) {
       formData.append("img_upload", values.image[0].originFileObj);
     }
-  
+
     try {
       await axios.patch(
-        `http://localhost:8000/api/playlists/update/${values.playlistId}/`,
+        `${API_ROOT}/api/playlists/update/${values.playlistId}/`,
         formData,
         {
           headers: {
@@ -81,7 +82,8 @@ const UpdatePlaylist = () => {
         <Form.Item
           label="Tìm playlist"
           name="searchPlaylist"
-          rules={[{ required: true, message: "Chọn playlist để cập nhật" }]}>
+          rules={[{ required: true, message: "Chọn playlist để cập nhật" }]}
+        >
           <Select
             showSearch
             options={playlistsOptions}
@@ -110,7 +112,8 @@ const UpdatePlaylist = () => {
         <Form.Item
           label="Tên Playlist"
           name="name"
-          rules={[{ required: true, message: "Vui lòng nhập tên playlist" }]}>
+          rules={[{ required: true, message: "Vui lòng nhập tên playlist" }]}
+        >
           <Input placeholder="Nhập tên playlist..." />
         </Form.Item>
 
@@ -119,7 +122,8 @@ const UpdatePlaylist = () => {
           label="Ảnh"
           name="image"
           valuePropName="fileList"
-          rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}>
+          rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
+        >
           <Upload
             listType="picture"
             accept="image/*"
@@ -127,7 +131,9 @@ const UpdatePlaylist = () => {
             maxCount={1}
             disabled={!playlistDetail}
             multiple={false}
-            onChange={({ fileList }) => form.setFieldsValue({ image: fileList })}  // Fix fileList
+            onChange={({ fileList }) =>
+              form.setFieldsValue({ image: fileList })
+            } // Fix fileList
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
@@ -138,7 +144,8 @@ const UpdatePlaylist = () => {
           name="isPrivate"
           label="Private"
           valuePropName="checked"
-          initialValue={false}>
+          initialValue={false}
+        >
           <Checkbox disabled={!playlistDetail} />
         </Form.Item>
 

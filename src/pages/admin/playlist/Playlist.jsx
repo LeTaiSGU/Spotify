@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Space, Card } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; 
+import AdminTable from "../../../components/admin/ui/Table";
+import { API_ROOT } from "~/utils/constants";
 
 const Playlist = () => {
   const [playlistsAdmin, setPlaylistsAdmin] = useState([]);
@@ -9,7 +10,7 @@ const Playlist = () => {
   const [pageNo, setPageNo] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
-  
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [popupData, setPopupData] = useState({ type: "", songs: [] });
 
@@ -17,7 +18,7 @@ const Playlist = () => {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/playlists/getall/", {
+        const response = await axios.get(`${API_ROOT}/api/playlists/getall/`, {
           params: {
             page: pageNo,
             size: pageSize,
@@ -26,11 +27,11 @@ const Playlist = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-  
+
         // Kiểm tra xem response.data có phải là mảng không
         if (Array.isArray(response.data)) {
-          setPlaylistsAdmin(response.data);  // Nếu là mảng, gán trực tiếp cho playlistsAdmin
-          setTotalElements(response.data.length);  // Nếu là mảng, tổng số phần tử là độ dài của mảng
+          setPlaylistsAdmin(response.data); // Nếu là mảng, gán trực tiếp cho playlistsAdmin
+          setTotalElements(response.data.length); // Nếu là mảng, tổng số phần tử là độ dài của mảng
         } else {
           console.error("API returned unexpected data format:", response.data);
         }
@@ -38,10 +39,9 @@ const Playlist = () => {
         console.error("Error fetching playlists:", error);
       }
     };
-  
+
     fetchPlaylists();
   }, [pageNo, pageSize]);
-  
 
   const handleStatusChange = (playlistId) => {
     // Dispatch your action to toggle playlist status here
@@ -54,8 +54,7 @@ const Playlist = () => {
       dataIndex: "id", // Đổi từ 'playlistId' thành 'id'
       key: "id",
       sorter: (a, b) => a.id - b.id, // Sắp xếp theo 'id'
-      sortOrder:
-        sortedInfo.columnKey === "id" ? sortedInfo.order : null,
+      sortOrder: sortedInfo.columnKey === "id" ? sortedInfo.order : null,
     },
     {
       title: "Tên Playlist",
