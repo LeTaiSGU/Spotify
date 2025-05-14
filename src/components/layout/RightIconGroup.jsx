@@ -31,6 +31,8 @@ const RightIconGroup = () => {
     try {
       // Use the async thunk to handle logout API call
       await dispatch(logoutUser()).unwrap();
+      // Clear chat messages from localStorage
+      localStorage.removeItem("chatMessages");
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed:", error);
