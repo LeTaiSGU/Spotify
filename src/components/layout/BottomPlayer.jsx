@@ -6,6 +6,7 @@ import {
   toggleRightbar,
   setSelectedSong,
 } from "../../redux/slice/songSlice";
+import { API_ROOT } from "~/utils/constants";
 
 import "./BottomPlayer.css";
 import {
@@ -282,7 +283,7 @@ const BottomPlayer = () => {
         try {
           console.log("Đã nghe hơn 75% bài hát");
           const response = await fetch(
-            `http://localhost:8000/api/songs/playcount/${selectedSong.id}`,
+            `${API_ROOT}/api/songs/playcount/${selectedSong.id}`,
             {
               method: "put",
             }
@@ -391,7 +392,7 @@ const BottomPlayer = () => {
       if (selectedSong?.artist_owner.id) {
         try {
           const response = await fetch(
-            `http://localhost:8000/api/artists/${selectedSong.artist_owner.id}`
+            `${API_ROOT}/api/artists/${selectedSong.artist_owner.id}`
           );
           const data = await response.json();
           setMainArtistInfo(data);

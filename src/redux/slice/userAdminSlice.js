@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 // Fetch danh sách user dùng cho select (status = true)
 export const fetchUsersSelect = createAsyncThunk(
   "userAdmin/fetchUsersSelect",
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get("http://localhost:8080/api/user/status", {
+      const res = await axios.get(`${API_ROOT}/api/user/status`, {
         params: {
           status: true,
           pageNo: 0,
