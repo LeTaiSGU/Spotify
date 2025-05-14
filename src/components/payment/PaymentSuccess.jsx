@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 function getCookie(name) {
   let cookieValue = null;
@@ -20,10 +21,10 @@ function getCookie(name) {
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const isPosted = useRef(false); 
+  const isPosted = useRef(false);
 
   useEffect(() => {
-    if (isPosted.current) return; 
+    if (isPosted.current) return;
 
     const query = new URLSearchParams(location.search);
     const userId = query.get("userId");
@@ -32,7 +33,9 @@ const PaymentSuccess = () => {
 
     if (!userId || !amount || !payDate) return;
 
-    const exprDate = new Date(new Date(payDate).getTime() + 30 * 24 * 60 * 60 * 1000)
+    const exprDate = new Date(
+      new Date(payDate).getTime() + 30 * 24 * 60 * 60 * 1000
+    )
       .toISOString()
       .split("T")[0];
 
@@ -45,7 +48,7 @@ const PaymentSuccess = () => {
     };
 
     axios
-      .post("http://localhost:8000/api/payments/save-payment/", paymentData, {
+      .post(`${API_ROOT}/api/payments/save-payment/`, paymentData, {
         withCredentials: true,
         headers: {
           "X-CSRFToken": getCookie("csrftoken"),
@@ -53,7 +56,7 @@ const PaymentSuccess = () => {
       })
       .then(() => {
         console.log("✅ Lưu thanh toán thành công");
-        isPosted.current = true; // ✅ Đánh dấu đã gửi
+        isPosted.current = true; 
       })
       .catch((err) => {
         console.error("❌ Lỗi lưu thanh toán:", err);
@@ -64,13 +67,17 @@ const PaymentSuccess = () => {
     }, 10000);
 
     return () => clearTimeout(timer);
-  }, [ navigate]);
+  }, [navigate]);
 
   return (
     <div className="flex flex-col justify-center items-center h-screen layout">
-      <h1 className="text-4xl font-bold text-green-500 mb-4">🎉 Thanh toán thành công!</h1>
+      <h1 className="text-4xl font-bold text-green-500 mb-4">
+        🎉 Thanh toán thành công!
+      </h1>
       <p className="text-lg mb-2">Cảm ơn bạn đã sử dụng dịch vụ.</p>
-      <p className="text-sm text-gray-600">Bạn sẽ được chuyển về trang chủ trong vài giây...</p>
+      <p className="text-sm text-gray-600">
+        Bạn sẽ được chuyển về trang chủ trong vài giây...
+      </p>
     </div>
   );
 };
