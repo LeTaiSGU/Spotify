@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
+import { Button, Form, Upload, Input, Select, Checkbox, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { API_ROOT } from "~/utils/constants";
@@ -17,43 +17,51 @@ const CreatePlaylist = () => {
         setUsers(res.data);
       })
       .catch((err) => {
-        console.error("Error fetching users:", err);
+        console.error("Lỗi tải user:", err);
         message.error("Không thể tải danh sách user");
       });
   }, []);
 
-  const userOptions = users.map((u) => (
-    <Option key={u.id} value={u.id}>
-      {u.name}
-    </Option>
-  ));
+  const onFinish = async (values) => {
+    const formData = new FormData();
 
-  const onFinish = (values) => {
-    const file = values.image[0].originFileObj;
-    const reader = new FileReader();
-
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-
-      const payload = {
-        name: values.name,
-        user: values.user,
-        is_private: values.isPrivate, // hoặc values.is_private nếu tên là vậy
-        cover_image: base64Image, // đúng field Django mong đợi
-      };
-      console.log("Payload:", payload); // Kiểm tra payload trước khi gửi
-      try {
-        await axios.post(`${API_ROOT}/api/playlists/create/`, payload);
-        console.log("Gửi thành công");
-      } catch (error) {
-        console.error(
-          "Lỗi gửi dữ liệu:",
-          error.response?.data || error.message
-        );
-      }
+    // Tạo dữ liệu JSON cần thiết
+    const data = {
+      name: values.name,
+      user: values.user,
+      is_private: values.isPrivate || false,
     };
 
-    reader.readAsDataURL(file); // quan trọng!
+    formData.append("data", JSON.stringify(data));
+
+    // Đính kèm ảnh bìa nếu có
+    if (values.image?.[0]?.originFileObj) {
+      formData.append("img_upload", values.image[0].originFileObj);
+    }
+
+    // Debug form data
+    for (let [key, val] of formData.entries()) {
+      console.log(`${key}:`, val);
+    }
+
+    try {
+      const response = await axios.post("http://localhost:8000/api/playlists/Admin/create/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      message.success("Tạo playlist thành công!");
+      form.resetFields();
+    } catch (error) {
+      console.error("Tạo playlist thất bại:", error.response?.data || error.message);
+      message.error("Tạo playlist thất bại!");
+    }
+  };
+
+  const normFile = (e) => {
+    if (Array.isArray(e)) return e;
+    return e?.fileList;
   };
 
   return (
@@ -67,7 +75,7 @@ const CreatePlaylist = () => {
         style={{ maxWidth: 1000, width: "100%" }}
         onFinish={onFinish}
       >
-        {/* Tên playlist */}
+        {/* Tên Playlist */}
         <Form.Item
           label="Tên Playlist"
           name="name"
@@ -76,15 +84,18 @@ const CreatePlaylist = () => {
           <Input placeholder="Nhập tên playlist..." />
         </Form.Item>
 
-        {/* Select user */}
-        <Form.Item label="User" name="user">
-          <Select
-            placeholder="Chọn user cho playlist"
-            showSearch
-            optionFilterProp="label"
-            allowClear
-          >
-            {userOptions}
+        {/* Chọn User */}
+        <Form.Item
+          label="User"
+          name="user"
+          rules={[{ required: true, message: "Vui lòng chọn user" }]}
+        >
+          <Select placeholder="Chọn user cho playlist" allowClear>
+            {users.map((u) => (
+              <Option key={u.id} value={u.id}>
+                {u.name}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -93,7 +104,7 @@ const CreatePlaylist = () => {
           label="Ảnh bìa"
           name="image"
           valuePropName="fileList"
-          getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
+          getValueFromEvent={normFile}
           rules={[{ required: true, message: "Vui lòng chọn ảnh bìa" }]}
         >
           <Upload beforeUpload={() => false} listType="picture">
@@ -101,17 +112,16 @@ const CreatePlaylist = () => {
           </Upload>
         </Form.Item>
 
-        {/* Checkbox */}
+        {/* Checkbox riêng tư */}
         <Form.Item
-          name="isPrivate"
           label="Riêng tư"
+          name="isPrivate"
           valuePropName="checked"
-          initialValue={false}
         >
           <Checkbox />
         </Form.Item>
 
-        {/* Nút submit */}
+        {/* Submit */}
         <Form.Item className="flex justify-end">
           <Button type="primary" htmlType="submit">
             Tạo Playlist

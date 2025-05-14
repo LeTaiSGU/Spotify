@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Avatar } from "antd";
-
-const mockData = [
-  { avatar: "https://i.pravatar.cc/150?img=1", displayname: "Nguyễn Văn A" },
-  { avatar: "https://i.pravatar.cc/150?img=2", displayname: "Trần Thị B" },
-  { avatar: "https://i.pravatar.cc/150?img=3", displayname: "Lê Văn C" },
-  { avatar: "https://i.pravatar.cc/150?img=4", displayname: "Phạm Thị D" },
-  { avatar: "https://i.pravatar.cc/150?img=5", displayname: "Hoàng Văn E" },
-  { avatar: "https://i.pravatar.cc/150?img=6", displayname: "Đặng Thị F" },
-];
+import { getTopArtistByUserId } from "~/apis"; // Import API
 
 function AllAvatar() {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [avatarSize, setAvatarSize] = useState(100);
   const [svgSize, setSvgSize] = useState(40);
+  const [artists, setArtists] = useState([]); // State để lưu danh sách nghệ sĩ
+
+  useEffect(() => {
+    // Gọi API để lấy danh sách nghệ sĩ
+    const fetchArtists = async () => {
+      try {
+        const response = await getTopArtistByUserId(); // Gọi API
+        setArtists(response); // Lưu danh sách nghệ sĩ vào state
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách nghệ sĩ:", error);
+      }
+    };
+
+    fetchArtists();
+  }, []);
 
   useEffect(() => {
     const updateSize = () => {
@@ -35,19 +42,19 @@ function AllAvatar() {
   }, []);
 
   return (
-    <div className="bg-stone-900 min-h-screen p-8 text-white">
+    <div className="bg-stone-900 min-h-screen p-8 text-white w-full">
       <h1 className="text-3xl font-bold mb-2">Nghệ sĩ hàng đầu tháng này</h1>
       <p className="text-gray-400 mb-6">Chỉ hiển thị với bạn</p>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {mockData.map((item, index) => (
+        {artists.map((item, index) => (
           <div
-            key={index}
+            key={item.id} // Sử dụng id từ API làm key
             className="flex flex-col items-center p-5 rounded-lg relative transition-all duration-200 hover:bg-gray-700 "
             onMouseLeave={() => setHoveredIndex(null)}
             onMouseEnter={() => setHoveredIndex(index)}
           >
             <Avatar src={item.avatar} size={avatarSize} />
-            <p className="self-start text-xl font-medium mt-3">{item.displayname}</p>
+            <p className="self-start text-xl font-medium mt-3">{item.name}</p>
             <p className="self-start text-lg text-gray-400">Artist</p>
 
             {hoveredIndex === index && (

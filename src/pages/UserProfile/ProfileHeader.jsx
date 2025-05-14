@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { GoPencil } from "react-icons/go";
 import { Modal, Input, Spin, DatePicker } from "antd";
 import { useSelector } from "react-redux";
-import dayjs from "dayjs";
+import { updateUser } from "~/apis";
+import { toast } from "react-toastify";
 
 function ProfileHeader() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatedName, setUpdatedName] = useState("");
   const [updatedDob, setUpdatedDob] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
 
   const currentUserLibrary = useSelector(
     (state) => state.userLibrary.currentUserLibrary
@@ -28,14 +30,49 @@ function ProfileHeader() {
   const displayAvatar = avatar || defaultAvatar;
 
   const showModal = () => setIsModalOpen(true);
-  const handleOk = () => setIsModalOpen(false);
   const handleCancel = () => setIsModalOpen(false);
 
-  // Format dob for DatePicker if exists
-  const birthDate = dob ? dayjs(dob) : null;
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file);
+    }
+  };
 
-  // Date format
-  const dateFormat = "YYYY-MM-DD";
+  const handleOk = async () => {
+    try {
+      // Validate dữ liệu trước khi gửi
+      if (!updatedName || updatedName.trim() === "") {
+        toast.error("Vui lòng nhập tên người dùng.");
+        return;
+      }
+  
+      const updatedData = {
+        name: updatedName,
+      };
+  
+      if (updatedDob) {
+        updatedData.dob = updatedDob;
+      }
+  
+      // Nếu có avatar mới, thêm vào FormData
+      const data = new FormData();
+      data.append("data", JSON.stringify(updatedData));
+      if (avatarFile) {
+        data.append("img_upload", avatarFile);
+      }
+  
+      // Gửi yêu cầu cập nhật
+      await updateUser(user.id, data);
+  
+      // Hiển thị thông báo thành công
+      toast.success("Cập nhật thông tin thành công!");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật thông tin:", error);
+      toast.error("Đã xảy ra lỗi khi cập nhật thông tin.");
+    }
+  };
 
   return (
     <div className="!w-full !max-w-none !p-0">
@@ -68,7 +105,12 @@ function ProfileHeader() {
             {publicPlaylists.length} danh sách phát công khai{" "}
           </p>
         </div>
-        <input type="file" id="avatarInput" className="hidden" />
+        <input
+          type="file"
+          id="avatarInput"
+          className="hidden"
+          onChange={handleAvatarChange}
+        />
       </div>
 
       {/* Modal chỉnh sửa hồ sơ */}
@@ -83,7 +125,6 @@ function ProfileHeader() {
         <form
           onSubmit={(e) => {
             e.preventDefault(); // Ngăn chặn reload trang
-            handleOk(); // Gọi hàm xử lý khi nhấn OK
           }}
         >
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-5">
@@ -93,7 +134,7 @@ function ProfileHeader() {
               onClick={() => document.getElementById("avatarInput").click()}
             >
               <img
-                src={displayAvatar}
+                src={avatarFile ? URL.createObjectURL(avatarFile) : displayAvatar}
                 alt={`Avatar của ${name}`}
                 className="w-full h-full object-cover transition-all duration-300 group-hover:blur-xs group-hover:brightness-75"
               />
@@ -111,21 +152,8 @@ function ProfileHeader() {
                 </label>
                 <Input
                   className="w-full !border-none"
-                  defaultValue={name}
+                  value={updatedName}
                   onChange={(e) => setUpdatedName(e.target.value)} // Cập nhật state
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-1 block">
-                  Ngày sinh
-                </label>
-                <DatePicker
-                  className="w-full !border-none "
-                  defaultValue={birthDate}
-                  format={dateFormat}
-                  placeholder="Chọn ngày sinh"
-                  onChange={(date) => setUpdatedDob(date)} // Cập nhật state
                 />
               </div>
             </div>

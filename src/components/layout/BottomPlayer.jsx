@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
-import { addHistoryListen } from "../../apis/historylistenApi";
+import { addHistoryListen } from "~/apis";
 import { useSelector, useDispatch } from "react-redux";
 import {
   togglePlay,
@@ -321,11 +321,11 @@ const BottomPlayer = () => {
     );
     const nextSong = songQueue[currentIndex + 1];
 
-    // if (isRepeat && audioRef.current) {
-    //   audioRef.current.currentTime = 0;
-    //   audioRef.current.play();
-    //   return;
-    // }
+    if (isRepeat && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+      return;
+    }
 
     // Reset thời gian về 0
     if (audioRef.current) {

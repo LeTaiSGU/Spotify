@@ -1,41 +1,24 @@
-import { useEffect, React } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form, Upload, Input, Select, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchArtistsSelect,
-  selectItemsArtist,
-  fetchArtistById,
-  updateArtist,
-  selectArtist,
-  clearSelectedArtist, // Thêm action này vào slice của bạn
-} from "../../../redux/slice/artistSlice";
+import axios from "axios";
 
 const { TextArea } = Input;
 
 const UpdateArtist = () => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
-
-  // Điều chỉnh để phù hợp với cấu trúc dữ liệu từ API Django
-  const artists = useSelector(selectItemsArtist);
-  // Điều chỉnh để sử dụng đúng định dạng response
-  const artistList = Array.isArray(artists) ? artists : artists?.content || [];
-
-  const artistDetail = useSelector(selectArtist);
+  const [artistList, setArtistList] = useState([]);
+  const [artistDetail, setArtistDetail] = useState(null);
 
   useEffect(() => {
-    // Reset form khi component được mount
     form.resetFields();
-    dispatch(fetchArtistsSelect());
+    fetchArtistOptions();
 
-    // Cleanup khi component unmount
     return () => {
-      // Xóa nghệ sĩ đã chọn khi rời khỏi trang
-      dispatch(clearSelectedArtist());
+      setArtistDetail(null);
       form.resetFields();
     };
-  }, [dispatch, form]);
+  }, [form]);
 
   useEffect(() => {
     if (artistDetail) {
@@ -56,48 +39,74 @@ const UpdateArtist = () => {
           : [],
       });
     } else {
-      // Reset form khi không có nghệ sĩ được chọn
       form.resetFields();
     }
   }, [artistDetail, form]);
 
-  const artistOptions = artistList.map((artist) => ({
-    label: artist.name,
-    value: artist.id, // Sử dụng id thay vì artistId
-  }));
-
-  const onSelectArtist = (value) => {
-    dispatch(fetchArtistById(value));
+  const fetchArtistOptions = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/artists/");
+      setArtistList(Array.isArray(res.data) ? res.data : res.data.content || []);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải danh sách nghệ sĩ");
+    }
   };
 
-  const onFinish = (values) => {
-    const payload = {
-      id: values.id, // Sử dụng id thay vì artistId
+  const onSelectArtist = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/artists/${id}/`);
+      setArtistDetail(res.data);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải thông tin nghệ sĩ");
+    }
+  };
+
+  const onFinish = async (values) => {
+    const formData = new FormData();
+
+    const jsonData = {
       name: values.name,
       description: values.description,
-      image: values.image || [],
     };
 
-    dispatch(updateArtist(payload))
-      .unwrap()
-      .then(() => {
-        message.success("Cập nhật nghệ sĩ thành công!");
-        form.resetFields();
-        // Làm mới danh sách nghệ sĩ
-        dispatch(fetchArtistsSelect());
-      })
-      .catch((err) => {
-        console.error(err);
-        message.error(
-          "Cập nhật thất bại: " + (err.message || "Vui lòng thử lại")
-        );
-      });
+    formData.append("data", JSON.stringify(jsonData));
+
+    if (values.image && values.image.length > 0 && values.image[0].originFileObj) {
+      formData.append("img_upload", values.image[0].originFileObj);
+    }
+
+    try {
+      await axios.patch(
+        `http://localhost:8000/api/artists/${values.id}/update/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      message.success("Cập nhật nghệ sĩ thành công!");
+      form.resetFields();
+      setArtistDetail(null);
+      fetchArtistOptions();
+    } catch (err) {
+      console.error(err);
+      message.error("Cập nhật thất bại: " + (err.message || "Vui lòng thử lại"));
+    }
   };
 
   const normFile = (e) => {
     if (Array.isArray(e)) return e;
     return e?.fileList;
   };
+
+  const artistOptions = artistList.map((artist) => ({
+    label: artist.name,
+    value: artist.id,
+  }));
 
   return (
     <div className="p-4 flex justify-center items-center">
@@ -110,11 +119,9 @@ const UpdateArtist = () => {
         style={{ maxWidth: 1000, width: "100%" }}
         onFinish={onFinish}
       >
-        {/* Select nghệ sĩ */}
         <Form.Item
           label="Chọn nghệ sĩ"
           name="searchArtist"
-          required={false}
           rules={[{ required: true, message: "Chọn nghệ sĩ để cập nhật" }]}
         >
           <Select
@@ -126,35 +133,28 @@ const UpdateArtist = () => {
           />
         </Form.Item>
 
-        {/* ID nghệ sĩ */}
         <Form.Item label="Artist ID" name="id">
           <Input disabled />
         </Form.Item>
 
-        {/* Tên nghệ sĩ */}
         <Form.Item
           label="Tên"
-          required={false}
           name="name"
           rules={[{ required: true, message: "Vui lòng nhập tên nghệ sĩ" }]}
         >
           <Input />
         </Form.Item>
 
-        {/* Mô tả */}
         <Form.Item
           label="Mô tả"
-          required={false}
           name="description"
           rules={[{ required: true, message: "Vui lòng nhập mô tả" }]}
         >
           <TextArea rows={4} />
         </Form.Item>
 
-        {/* Ảnh đại diện */}
         <Form.Item
           label="Ảnh"
-          required={false}
           name="image"
           valuePropName="fileList"
           getValueFromEvent={normFile}
@@ -170,7 +170,6 @@ const UpdateArtist = () => {
           </Upload>
         </Form.Item>
 
-        {/* Submit */}
         <Form.Item className="flex justify-end">
           <Button type="primary" htmlType="submit">
             Cập nhật nghệ sĩ

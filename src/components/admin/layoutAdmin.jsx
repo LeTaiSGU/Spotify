@@ -3,7 +3,8 @@ import { DesktopOutlined, PieChartOutlined } from "@ant-design/icons";
 import { Layout, Menu, theme } from "antd";
 import SpotifyIcon from "../ui/spotify-icon";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-
+import { useDispatch } from "react-redux";
+import { logoutUser } from "~/redux/slice/authSlice";
 const { Header, Content, Footer, Sider } = Layout;
 
 function getItem(label, key, icon, children) {
@@ -41,12 +42,7 @@ const items = [
     getItem("Danh nhạc playlist", "playlistsong"),
     getItem("Thêm nhạc playlist", "playlistsongs/create"),
     getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
-  ]),
-  getItem("Danh sách thể loại", "genres", <DesktopOutlined />, [
-    getItem("Danh sách thể loạ", "genre"),
-    getItem("Thêm thể loại mới", "playlist/create"),
-    getItem("Cập nhật thể loại", "playlist/update"),
-  ]),
+  ])
 ];
 
 const pageTitles = {
@@ -72,11 +68,21 @@ const LayoutAdmin = () => {
   };
   const location = useLocation(); // <-- Lấy URL hiện tại
   const navigate = useNavigate(); // <-- Để điều hướng khi click menu
-
+  const dispatch = useDispatch();
   const path = location.pathname.replace("/admin/", "");
 
   // Giả sử path là /admin/songs => lấy "songs"
-
+  const handleLogout = () => {
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        // Chuyển hướng về trang đăng nhập sau khi đăng xuất thành công
+        window.location.href = "/login";
+      })
+      .catch((error) => {
+        console.error("Đăng xuất thất bại:", error);
+      });
+  };
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Sider
@@ -101,8 +107,7 @@ const LayoutAdmin = () => {
           onOpenChange={onOpenChange}
           onClick={({ key }) => {
             if (key === "logout") {
-              localStorage.removeItem("token");
-              navigate("/login");
+              handleLogout();
             } else {
               navigate(`/admin/${key}`);
             }

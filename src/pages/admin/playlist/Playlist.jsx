@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Modal, Space, Card } from "antd";
+import { Button, Modal, Space, Card, Select, message } from "antd";
 import AdminTable from "../../../components/admin/ui/Table";
-import { API_ROOT } from "~/utils/constants";
+
+const { Option } = Select;
 
 const Playlist = () => {
   const [playlistsAdmin, setPlaylistsAdmin] = useState([]);
@@ -10,41 +11,75 @@ const Playlist = () => {
   const [pageNo, setPageNo] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [popupData, setPopupData] = useState({ type: "", songs: [] });
+  const [users, setUsers] = useState([]); // Lưu danh sách người dùng
+  const [selectedUser, setSelectedUser] = useState(null); // Lưu user đã chọn
 
-  // Fetch playlists from the API
+  // Fetch users from the API
   useEffect(() => {
-    const fetchPlaylists = async () => {
+    const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${API_ROOT}/api/playlists/getall/`, {
-          params: {
-            page: pageNo,
-            size: pageSize,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        // Kiểm tra xem response.data có phải là mảng không
-        if (Array.isArray(response.data)) {
-          setPlaylistsAdmin(response.data); // Nếu là mảng, gán trực tiếp cho playlistsAdmin
-          setTotalElements(response.data.length); // Nếu là mảng, tổng số phần tử là độ dài của mảng
-        } else {
-          console.error("API returned unexpected data format:", response.data);
-        }
+        const response = await axios.get(
+          "http://localhost:8000/api/users/getall",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setUsers(response.data);
       } catch (error) {
-        console.error("Error fetching playlists:", error);
+        console.error("Error fetching users:", error);
+        message.error("Không thể tải danh sách người dùng");
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  // Fetch playlists based on the selected user
+  // Fetch playlists based on the selected user
+  useEffect(() => {
+    const fetchPlaylists = async (selectedUser) => {
+      if (selectedUser) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`,
+            {
+              params: {
+                userId: selectedUser, // Lọc playlist theo userId
+                page: pageNo,
+                size: pageSize,
+              },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (Array.isArray(response.data)) {
+            setPlaylistsAdmin(response.data); // Nếu là mảng, gán trực tiếp cho playlistsAdmin
+            setTotalElements(response.data.length); // Nếu là mảng, tổng số phần tử là độ dài của mảng
+          } else {
+            console.error(
+              "API returned unexpected data format:",
+              response.data
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching playlists:", error);
+          message.error("Không thể tải danh sách playlist");
+        }
       }
     };
 
-    fetchPlaylists();
-  }, [pageNo, pageSize]);
+    // Call the function to fetch playlists when user is selected
+    if (selectedUser) {
+      fetchPlaylists(selectedUser);
+    }
+  }, [pageNo, pageSize, selectedUser]); // Rerun when selectedUser, pageNo, or pageSize changes
 
   const handleStatusChange = (playlistId) => {
-    // Dispatch your action to toggle playlist status here
     console.log(`Toggle status for playlist ID: ${playlistId}`);
   };
 
@@ -100,7 +135,19 @@ const Playlist = () => {
     <div className="p-4">
       <Space style={{ marginBottom: 16 }}>
         <Button onClick={clearAll}>Clear</Button>
+        <Select
+          placeholder="Chọn user"
+          style={{ width: 200 }}
+          onChange={(value) => setSelectedUser(value)}
+        >
+          {users.map((user) => (
+            <Option key={user.id} value={user.id}>
+              {user.name}
+            </Option>
+          ))}
+        </Select>
       </Space>
+
       <Modal
         title={`Danh sách bài hát ${popupData.type}`}
         open={isModalVisible}
