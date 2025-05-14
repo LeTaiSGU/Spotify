@@ -16,14 +16,11 @@ const UpdatePlaylist = () => {
     // Fetch all users to populate the user combobox
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8000/api/users/getall/",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await axios.get(`${API_ROOT}/api/users/getall/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -39,7 +36,7 @@ const UpdatePlaylist = () => {
       if (userId) {
         try {
           const response = await axios.get(
-            `http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${userId}/`,
+            `${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${userId}/`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -137,7 +134,7 @@ const UpdatePlaylist = () => {
               setPlaylists([]); // Clear playlists
               if (value) {
                 axios
-                  .get(`http://localhost:8000/api/playlists/user/${value}`, {
+                  .get(`${API_ROOT}/api/playlists/user/${value}`, {
                     headers: {
                       Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -207,7 +204,7 @@ const UpdatePlaylist = () => {
             multiple={false}
             onChange={({ fileList }) =>
               form.setFieldsValue({ image: fileList })
-            }
+            } // Fix fileList
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
