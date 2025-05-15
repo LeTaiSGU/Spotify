@@ -150,45 +150,13 @@ export const createAlbum = createAsyncThunk(
   async (albumData, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-
-      // Sử dụng đúng tên trường theo model Django
       formData.append("title", albumData.title);
       formData.append("release_date", albumData.releaseDate);
-
-      // Sửa tên trường từ artist sang artist_id
       formData.append("artist_id", albumData.artistId);
-
-      // Thêm description nếu model có yêu cầu
       formData.append("description", albumData.description || "");
 
-      // Model sử dụng avatar thay vì cover_image
       if (albumData.image?.[0]?.originFileObj) {
-        const file = albumData.image[0].originFileObj;
-
-        try {
-          const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800,
-            maxSizeMB: 0.5,
-          });
-
-          const reader = new FileReader();
-          const base64Promise = new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(compressedImage);
-          });
-
-          const base64String = await base64Promise;
-          formData.append("avatar", base64String); // Thay đổi từ cover_image thành avatar
-        } catch (compressionError) {
-          console.error("Image compression failed:", compressionError);
-          formData.append("avatar", "https://via.placeholder.com/300");
-        }
-      }
-
-      // In ra log để debug
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
+        formData.append("img_upload", albumData.image[0].originFileObj);
       }
 
       const res = await axios.post(`${API_BASE_URL}/create/`, formData, {
@@ -199,7 +167,6 @@ export const createAlbum = createAsyncThunk(
       });
       return res.data.result || res.data;
     } catch (err) {
-      console.error("Create album error:", err.response?.data || err.message);
       return rejectWithValue(err.response?.data || "Create album failed");
     }
   }
