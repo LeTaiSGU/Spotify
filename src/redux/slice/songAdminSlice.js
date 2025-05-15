@@ -293,7 +293,7 @@ export const updateSong = createAsyncThunk(
       const songDataObj = {
         song_name: songData.songName,
         album: songData.albumId,
-        artist_owner: songData.artistOwnerId,
+        artist_id: songData.artist_id,
         description: songData.description || "No description",
         artists: songData.artists || [],
       };

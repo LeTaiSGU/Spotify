@@ -1,24 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Button, Form, Upload, Input, Select, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  updateArtist,
+  fetchArtistsSelect,
+  fetchArtistById,
+  selectItemsArtist,
+  selectArtist,
+  clearSelectedArtist,
+} from "../../../redux/slice/artistSlice";
 
 const { TextArea } = Input;
 
 const UpdateArtist = () => {
   const [form] = Form.useForm();
-  const [artistList, setArtistList] = useState([]);
-  const [artistDetail, setArtistDetail] = useState(null);
+  const dispatch = useDispatch();
+  const artists = useSelector(selectItemsArtist);
+  const artistDetail = useSelector(selectArtist);
 
   useEffect(() => {
     form.resetFields();
-    fetchArtistOptions();
+    dispatch(fetchArtistsSelect());
 
     return () => {
-      setArtistDetail(null);
+      dispatch(clearSelectedArtist());
       form.resetFields();
     };
-  }, [form]);
+  }, [dispatch, form]);
 
   useEffect(() => {
     if (artistDetail) {
@@ -43,56 +52,25 @@ const UpdateArtist = () => {
     }
   }, [artistDetail, form]);
 
-  const fetchArtistOptions = async () => {
-    try {
-      const res = await axios.get("http://localhost:8000/api/artists/");
-      setArtistList(
-        Array.isArray(res.data) ? res.data : res.data.content || []
-      );
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải danh sách nghệ sĩ");
-    }
-  };
-
-  const onSelectArtist = async (id) => {
-    try {
-      const res = await axios.get(`http://localhost:8000/api/artists/${id}/`);
-      setArtistDetail(res.data);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải thông tin nghệ sĩ");
-    }
+  const onSelectArtist = (id) => {
+    dispatch(fetchArtistById(id));
   };
 
   const onFinish = async (values) => {
-    const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("description", values.description);
-
-    if (
-      values.image &&
-      values.image.length > 0 &&
-      values.image[0].originFileObj
-    ) {
-      formData.append("avatar", values.image[0].originFileObj);
-    }
-
     try {
-      await axios.patch(
-        `http://localhost:8000/api/artists/${values.id}/update/`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await dispatch(
+        updateArtist({
+          id: values.id,
+          name: values.name,
+          description: values.description,
+          image: values.image,
+        })
+      ).unwrap();
 
       message.success("Cập nhật nghệ sĩ thành công!");
       form.resetFields();
-      setArtistDetail(null);
-      fetchArtistOptions();
+      dispatch(clearSelectedArtist());
+      dispatch(fetchArtistsSelect());
     } catch (err) {
       console.error(err);
       message.error(
@@ -106,7 +84,7 @@ const UpdateArtist = () => {
     return e?.fileList;
   };
 
-  const artistOptions = artistList.map((artist) => ({
+  const artistOptions = artists.map((artist) => ({
     label: artist.name,
     value: artist.id,
   }));
