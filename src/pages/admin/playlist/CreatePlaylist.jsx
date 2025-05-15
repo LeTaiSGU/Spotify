@@ -45,7 +45,7 @@ const CreatePlaylist = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/playlists/Admin/create/", formData, {
+      const response = await axios.post("${API_ROOT}/api/playlists/Admin/create/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
