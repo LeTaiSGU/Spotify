@@ -1,8 +1,5 @@
 {
-     "builds": [
-        { "src": "dist/**", "use": "@vercel/static" }
-      ],
-     "rewrites": [
+  "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
