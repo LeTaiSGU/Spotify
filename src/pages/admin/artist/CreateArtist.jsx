@@ -23,6 +23,7 @@ const CreateArtist = () => {
     }
 
     // Debug FormData
+    console.log("Form data being sent:");
     for (let [key, value] of formData.entries()) {
       console.log(`${key}:`, value);
     }

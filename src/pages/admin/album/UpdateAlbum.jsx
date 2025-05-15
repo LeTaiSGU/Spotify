@@ -96,25 +96,46 @@ const UpdateAlbum = () => {
   };
 
   const onFinish = (values) => {
-    const payload = {
+    const formData = new FormData();
+
+    const jsonData = {
       id: values.id,
       title: values.title,
       releaseDate: values.releaseDate.format("YYYY-MM-DD"),
       description: values.description || "",
       artistId: values.artist,
-      type: values.type,
-      image: values.image || [],
+      type: values.type || "ALBUM",
     };
 
-    dispatch(updateAlbum(payload))
+    formData.append("data", JSON.stringify(jsonData));
+
+    // Xử lý upload ảnh mới
+    if (values.image && values.image.length > 0) {
+      const file = values.image[0].originFileObj;
+      if (file) {
+        // Kiểm tra kích thước file (giới hạn 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          message.error("Kích thước file không được vượt quá 5MB");
+          return;
+        }
+        // Kiểm tra định dạng file
+        if (!file.type.startsWith("image/")) {
+          message.error("File phải là định dạng ảnh");
+          return;
+        }
+        formData.append("img_upload", file);
+      }
+    }
+
+    dispatch(updateAlbum(formData))
       .unwrap()
       .then(() => {
         message.success("Cập nhật album thành công!");
         form.resetFields();
         dispatch(clearSelectedAlbum());
+        dispatch(fetchAlbumsSelect());
       })
       .catch((err) => {
-        console.error(err);
         message.error(
           "Cập nhật thất bại! " + (err.message || "Vui lòng thử lại.")
         );

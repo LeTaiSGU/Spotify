@@ -191,7 +191,7 @@ export const updateArtist = createAsyncThunk(
       }
 
       // Rest remains the same
-      const res = await axios.patch(
+      const res = await axios.put(
         `${API_BASE_URL}/${artistData.id}/update/`,
         formData,
         {
