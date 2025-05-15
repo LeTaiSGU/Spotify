@@ -150,45 +150,13 @@ export const createAlbum = createAsyncThunk(
   async (albumData, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-
-      // Sử dụng đúng tên trường theo model Django
       formData.append("title", albumData.title);
       formData.append("release_date", albumData.releaseDate);
-
-      // Sửa tên trường từ artist sang artist_id
       formData.append("artist_id", albumData.artistId);
-
-      // Thêm description nếu model có yêu cầu
       formData.append("description", albumData.description || "");
 
-      // Model sử dụng avatar thay vì cover_image
       if (albumData.image?.[0]?.originFileObj) {
-        const file = albumData.image[0].originFileObj;
-
-        try {
-          const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800,
-            maxSizeMB: 0.5,
-          });
-
-          const reader = new FileReader();
-          const base64Promise = new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(compressedImage);
-          });
-
-          const base64String = await base64Promise;
-          formData.append("avatar", base64String); // Thay đổi từ cover_image thành avatar
-        } catch (compressionError) {
-          console.error("Image compression failed:", compressionError);
-          formData.append("avatar", "https://via.placeholder.com/300");
-        }
-      }
-
-      // In ra log để debug
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
+        formData.append("img_upload", albumData.image[0].originFileObj);
       }
 
       const res = await axios.post(`${API_BASE_URL}/create/`, formData, {
@@ -199,7 +167,6 @@ export const createAlbum = createAsyncThunk(
       });
       return res.data.result || res.data;
     } catch (err) {
-      console.error("Create album error:", err.response?.data || err.message);
       return rejectWithValue(err.response?.data || "Create album failed");
     }
   }
@@ -209,46 +176,77 @@ export const updateAlbum = createAsyncThunk(
   "album/updateAlbum",
   async (albumData, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
+      let formData = new FormData();
 
-      // Sử dụng đúng tên trường theo model Django
-      formData.append("title", albumData.title);
-      formData.append("release_date", albumData.releaseDate);
+      // Kiểm tra xem albumData có phải là FormData không
+      if (albumData instanceof FormData) {
+        // Nếu đã là FormData, sử dụng trực tiếp
+        console.log("Nhận FormData từ component");
+        formData = albumData;
+      } else {
+        // Nếu là object thông thường, chuyển đổi sang FormData
+        console.log("Chuyển đổi object thành FormData");
 
-      // Sửa từ artist thành artist_id
-      formData.append("artist_id", albumData.artistId);
-      formData.append("description", albumData.description || "");
+        // Tạo object JSON chứa thông tin album
+        const jsonData = {
+          id: albumData.id,
+          title: albumData.title,
+          releaseDate: albumData.releaseDate,
+          description: albumData.description || "",
+          artistId: albumData.artistId,
+          type: albumData.type || "ALBUM",
+        };
 
-      if (albumData.image?.[0]?.originFileObj) {
-        const file = albumData.image[0].originFileObj;
+        // Đính kèm JSON data
+        formData.append("data", JSON.stringify(jsonData));
 
-        try {
-          const compressedImage = await compressImage(file, {
-            maxWidthOrHeight: 800,
-            maxSizeMB: 0.5,
-          });
+        // Xử lý ảnh nếu có
+        if (
+          albumData.image &&
+          albumData.image.length > 0 &&
+          albumData.image[0].originFileObj
+        ) {
+          const file = albumData.image[0].originFileObj;
 
-          const reader = new FileReader();
-          const base64Promise = new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(compressedImage);
-          });
+          try {
+            // Nén ảnh trước khi gửi
+            const compressedImage = await compressImage(file, {
+              maxWidthOrHeight: 800,
+              maxSizeMB: 0.5,
+            });
 
-          const base64String = await base64Promise;
-          formData.append("avatar", base64String);
-        } catch (compressionError) {
-          console.error("Image compression failed:", compressionError);
+            formData.append("img_upload", compressedImage);
+            console.log("Đã đính kèm ảnh đã nén");
+          } catch (compressionError) {
+            console.error("Lỗi nén ảnh:", compressionError);
+            // Sử dụng ảnh gốc nếu nén thất bại
+            formData.append("img_upload", file);
+            console.log("Đã đính kèm ảnh gốc (nén thất bại)");
+          }
         }
       }
 
-      // In ra log để debug
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
+      // Lấy ID album từ FormData hoặc từ object
+      let albumId;
+      if (albumData instanceof FormData) {
+        const jsonData = albumData.get("data");
+        if (jsonData) {
+          albumId = JSON.parse(jsonData).id;
+        }
+      } else {
+        albumId = albumData.id;
       }
 
-      const res = await axios.patch(
-        `${API_BASE_URL}/${albumData.id}/update/`,
+      console.log("Album ID:", albumId);
+      console.log("FormData entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(
+          `${key}: ${typeof value === "object" ? "File object" : value}`
+        );
+      }
+
+      const res = await axios.put(
+        `${API_BASE_URL}/${albumId}/update/`,
         formData,
         {
           headers: {
@@ -257,9 +255,11 @@ export const updateAlbum = createAsyncThunk(
           },
         }
       );
+
+      console.log("Cập nhật thành công:", res.data);
       return res.data.result || res.data;
     } catch (err) {
-      console.error("Update album error:", err.response?.data || err.message);
+      console.error("Lỗi cập nhật album:", err.response?.data || err.message);
       return rejectWithValue(err.response?.data || "Update album failed");
     }
   }

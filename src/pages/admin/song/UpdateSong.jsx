@@ -74,9 +74,9 @@ const UpdateSong = () => {
       form.setFieldsValue({
         songName: songDetail.song_name,
         description: songDetail.description || "",
-        artistOwnerId: songDetail.artist_owner,
-        albumId: songDetail.album,
-        artists: songDetail.artists || [],
+        artistOwnerId: songDetail.artist_owner.id,
+        albumId: songDetail.album.id,
+        artists: songDetail.artists.map((artist) => artist.name) || [],
         image: songDetail.img
           ? [
               {
@@ -200,12 +200,14 @@ const UpdateSong = () => {
       songName: values.songName,
       description: values.description || "",
       albumId: values.albumId,
-      artistOwnerId: values.artistOwnerId,
+      artist_id: values.artistOwnerId,
       duration: durationInSeconds,
       artists: values.artists || [],
       image: values.image,
       fileUpload: values.fileUpload,
+      video_upload: values.video_upload,
     };
+    console.log("Nhạc: ", songData);
 
     dispatch(updateSong(songData))
       .unwrap()
@@ -351,6 +353,24 @@ const UpdateSong = () => {
             }}
           >
             <Button icon={<UploadOutlined />}>Chọn file nhạc (.mp3)</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item
+          label="File MV"
+          name="video_upload"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <Upload
+            listType="text"
+            accept=".mp4"
+            maxCount={1}
+            multiple={false}
+            disabled={!selectedSongId}
+            beforeUpload={() => false}
+          >
+            <Button icon={<UploadOutlined />}>Chọn MV (.mp4)</Button>
           </Upload>
         </Form.Item>
 

@@ -16,12 +16,11 @@ import {
   createNewPlaylist,
   addSongToPlaylist as addSongToPlaylistAction,
 } from "../../redux/slice/playlistSlice";
-import { getPlaylistsById } from "~/apis"
+import { getPlaylistsById } from "~/apis";
 import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
-
+import { API_ROOT } from "~/utils/constants";
 
 // Component SongRow mới để thay thế SongCard
-
 export const SongRow = ({ song }) => {
   const [mainArtistInfo, setMainArtistInfo] = React.useState(null);
   const [showPlaylistModal, setShowPlaylistModal] = React.useState(false);
@@ -36,7 +35,7 @@ export const SongRow = ({ song }) => {
       if (song?.artist_owner) {
         try {
           const response = await fetch(
-            `http://localhost:8000/api/artists/${song.artist_owner}`
+            `${API_ROOT}/api/artists/${song.artist_owner}`
           );
           const data = await response.json();
           setMainArtistInfo(data);
@@ -102,13 +101,12 @@ export const SongRow = ({ song }) => {
   };
 
   // Cập nhật hàm addSongToPlaylist để trả về Promise
-
   const addSongToPlaylist = async (playlistId) => {
     try {
       console.log(`Đang thêm bài hát ${song.id} vào playlist ${playlistId}`);
 
       const response = await fetch(
-        `http://localhost:8000/api/playlist_songs/${playlistId}/add/${song.id}/`,
+        `${API_ROOT}/api/playlist_songs/${playlistId}/add/${song.id}/`,
         {
           method: "POST",
           headers: {
@@ -120,9 +118,7 @@ export const SongRow = ({ song }) => {
       console.log("Response status:", response.status);
 
       if (response.ok) {
-        toast.success(
-          `Đã thêm bài hát "${song.song_name}" vào playlist!`
-        );
+        toast.success(`Đã thêm bài hát "${song.song_name}" vào playlist!`);
         setShowPlaylistModal(false);
         return true; // Trả về true để .then() hoạt động
       } else {
@@ -134,9 +130,7 @@ export const SongRow = ({ song }) => {
             `Lỗi: ${errorData.detail || "Không thể thêm bài hát vào playlist"}`
           );
         } else {
-          toast.error(
-            `Lỗi: ${response.status} ${response.statusText}`
-          );
+          toast.error(`Lỗi: ${response.status} ${response.statusText}`);
         }
         return false;
       }
@@ -319,7 +313,8 @@ export const SongRow = ({ song }) => {
                     <div className="w-10 h-10 mr-3">
                       <img
                         src={
-                          playlist.avatar || "https://via.placeholder.com/40"
+                          playlist.cover_image ||
+                          "https://via.placeholder.com/40"
                         }
                         alt={playlist.name || playlist.title}
                         className="w-full h-full object-cover rounded-sm"

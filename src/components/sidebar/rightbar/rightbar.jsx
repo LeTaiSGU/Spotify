@@ -88,7 +88,7 @@ const Rightbar = () => {
   //     if (selectedSong?.artist_owner) {
   //       try {
   //         const response = await fetch(
-  //           `http://localhost:8000/api/artists/${selectedSong.artist_owner.id}`
+  //           `${API_ROOT}/api/artists/${selectedSong.artist_owner.id}`
   //         );
   //         const data = await response.json();
   //         setMainArtistInfo(data);

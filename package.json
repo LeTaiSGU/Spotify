@@ -53,6 +53,7 @@
     "tailwind-scrollbar": "^4.0.1",
     "tapable": "^2.2.1",
     "vite": "^6.2.0",
+    "rollup": "^4.0.0",
     "vite-bundle-analyzer": "^0.18.1"
   }
 }

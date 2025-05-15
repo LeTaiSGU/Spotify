@@ -125,17 +125,14 @@ export const updateUser = async (userId, data) => {
   return response.data;
 };
 
-
-
 // artists
 
-export const getTopArtistByUserId= async () => {
+export const getTopArtistByUserId = async () => {
   const response = await authorizedAxiosInstance.get(
     `${API_ROOT}/api/listening-history/top-artists/`
   );
   return response.data;
-}
-
+};
 
 // listening history
 export const getHistoryListen = async (userId) => {
