@@ -17,7 +17,7 @@ const EditPlaylistSongs = () => {
 
   // Lấy danh sách người dùng
   useEffect(() => {
-    axios.get('http://localhost:8000/api/users/getall/')
+    axios.get('${API_ROOT}/api/users/getall/')
       .then(res => setUsers(res.data))
       .catch(() => message.error('Không thể tải danh sách người dùng'));
   }, []);
@@ -25,7 +25,7 @@ const EditPlaylistSongs = () => {
   // Lấy playlist của người dùng đã chọn
   useEffect(() => {
     if (selectedUser) {
-      axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`)
+      axios.get(`${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`)
         .then(res => setPlaylists(res.data))
         .catch(() => message.error('Không thể tải danh sách playlist'));
     }
