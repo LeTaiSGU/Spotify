@@ -6,36 +6,45 @@ const { Option } = Select;
 
 const AddSongToPlaylist = () => {
   const [form] = Form.useForm();
-  const [users, setUsers] = useState([]);  // Lưu trữ danh sách người dùng
-  const [playlists, setPlaylists] = useState([]);  // Lưu trữ danh sách playlist
-  const [songs, setSongs] = useState([]);  // Lưu trữ danh sách bài hát
-  const [selectedUserId, setSelectedUserId] = useState(null);  // Lưu trữ người dùng đã chọn
+  const [users, setUsers] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
+  const [songs, setSongs] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
-  // Lấy danh sách người dùng
   useEffect(() => {
     axios
-      .get("${API_ROOT}/api/users/getall/", {
+      .get(`${API_ROOT}/api/users/getall/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
-      .then((res) => setUsers(res.data))
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setUsers(res.data);
+        } else {
+          message.error("Dữ liệu người dùng không đúng định dạng");
+        }
+      })
       .catch(() => message.error("Không thể tải danh sách người dùng"));
   }, []);
 
-  // Lấy danh sách bài hát
   useEffect(() => {
     axios
-      .get("`${API_ROOT}/api/songs/getallsong/", {
+      .get(`${API_ROOT}/api/songs/getallsong/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
-      .then((res) => setSongs(res.data))
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setSongs(res.data);
+        } else {
+          message.error("Dữ liệu bài hát không đúng định dạng");
+        }
+      })
       .catch(() => message.error("Không thể tải bài hát"));
   }, []);
 
-  // Lấy danh sách playlist theo người dùng
   useEffect(() => {
     if (selectedUserId) {
       axios
@@ -44,28 +53,33 @@ const AddSongToPlaylist = () => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         })
-        .then((res) => setPlaylists(res.data))
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            setPlaylists(res.data);
+          } else {
+            message.error("Dữ liệu playlist không đúng định dạng");
+          }
+        })
         .catch(() => message.error("Không thể tải playlist của người dùng"));
     }
   }, [selectedUserId]);
 
   const onFinish = async (values) => {
-    const playlist_id = values.playlist_id;
-    const song_id = values.song_id;
-  
+    const { playlist_id, song_id } = values;
+
     try {
       const response = await axios.post(
         `${API_ROOT}/api/playlist_songs/${playlist_id}/${song_id}/`,
-        null, 
+        null,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json", // 👈 thêm dòng này
+            "Content-Type": "application/json",
           },
           withCredentials: true,
         }
       );
-  
+
       if (response.status === 201) {
         message.success("Đã thêm bài hát vào playlist!");
         form.resetFields();
@@ -81,7 +95,6 @@ const AddSongToPlaylist = () => {
   return (
     <div className="p-4 max-w-xl mx-auto">
       <Form layout="vertical" form={form} onFinish={onFinish}>
-        {/* Chọn người dùng */}
         <Form.Item
           name="user_id"
           label="Người dùng"
@@ -89,32 +102,32 @@ const AddSongToPlaylist = () => {
         >
           <Select
             placeholder="Chọn người dùng"
-            onChange={setSelectedUserId}  // Cập nhật khi chọn người dùng
+            onChange={setSelectedUserId}
           >
-            {users.map((user) => (
-              <Option key={user.id} value={user.id}>
-                {user.name}
-              </Option>
-            ))}
+            {Array.isArray(users) &&
+              users.map((user) => (
+                <Option key={user.id} value={user.id}>
+                  {user.name}
+                </Option>
+              ))}
           </Select>
         </Form.Item>
 
-        {/* Chọn playlist */}
         <Form.Item
           name="playlist_id"
           label="Playlist"
           rules={[{ required: true, message: "Vui lòng chọn playlist" }]}
         >
           <Select placeholder="Chọn playlist" disabled={!selectedUserId}>
-            {playlists.map((playlist) => (
-              <Option key={playlist.id} value={playlist.id}>
-                {playlist.name}
-              </Option>
-            ))}
+            {Array.isArray(playlists) &&
+              playlists.map((playlist) => (
+                <Option key={playlist.id} value={playlist.id}>
+                  {playlist.name}
+                </Option>
+              ))}
           </Select>
         </Form.Item>
 
-        {/* Chọn bài hát */}
         <Form.Item
           name="song_id"
           label="Bài hát"
@@ -125,14 +138,17 @@ const AddSongToPlaylist = () => {
             placeholder="Nhập tên bài hát để tìm"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              option.children.toLowerCase().includes(input.toLowerCase())
+              option?.children
+                ?.toLowerCase()
+                ?.includes(input.toLowerCase())
             }
           >
-            {songs.map((song) => (
-              <Option key={song.id} value={song.id}>
-                {song.song_name}
-              </Option>
-            ))}
+            {Array.isArray(songs) &&
+              songs.map((song) => (
+                <Option key={song.id} value={song.id}>
+                  {song.song_name}
+                </Option>
+              ))}
           </Select>
         </Form.Item>
 
