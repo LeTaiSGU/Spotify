@@ -5,6 +5,6 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/user/payment/**", "dest": "/" }
+    { "src": "/user/payment/**", "dest": "/index.html" }
   ]
 }
