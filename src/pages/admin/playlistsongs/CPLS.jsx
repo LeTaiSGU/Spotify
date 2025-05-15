@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Form, Select, Button, message } from "antd";
 import axios from "axios";
-
+import { API_ROOT } from "~/utils/constants";
 const { Option } = Select;
 
 const AddSongToPlaylist = () => {
@@ -14,7 +14,7 @@ const AddSongToPlaylist = () => {
   // Lấy danh sách người dùng
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/users/getall/", {
+      .get("`${API_ROOT}/api/users/getall/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -39,7 +39,7 @@ const AddSongToPlaylist = () => {
   useEffect(() => {
     if (selectedUserId) {
       axios
-        .get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUserId}/`, {
+        .get(``${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUserId}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
