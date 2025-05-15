@@ -26,7 +26,7 @@ const AddSongToPlaylist = () => {
   // Lấy danh sách bài hát
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/songs/getallsong/", {
+      .get("`${API_ROOT}/api/songs/getallsong/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -55,7 +55,7 @@ const AddSongToPlaylist = () => {
   
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/playlist_songs/${playlist_id}/${song_id}/`,
+        `${API_ROOT}/api/playlist_songs/${playlist_id}/${song_id}/`,
         null, 
         {
           headers: {
