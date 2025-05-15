@@ -12,7 +12,7 @@ const CreatePlaylist = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_ROOT}/api/users/getall/`)
+      .get('${API_ROOT}/api/users/getall/')
       .then((res) => {
         setUsers(res.data);
       })
@@ -45,7 +45,7 @@ const CreatePlaylist = () => {
     }
 
     try {
-      const response = await axios.post("${API_ROOT}/api/playlists/Admin/create/", formData, {
+      const response = await axios.post(`${API_ROOT}/api/playlists/Admin/create/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
