@@ -33,17 +33,17 @@ const items = [
     getItem("Thêm Album/EP", "album/create"),
     getItem("Cập nhật Album/EP", "album/update"),
   ]),
-//   getItem("Danh sách phát", "playlists", <DesktopOutlined />, [
-//     getItem("Danh sách phát", "playlist"),
-//     getItem("Thêm danh sách phát", "playlist/create"),
-//     getItem("Cập nhật danh sách phát", "playlist/update"),
-//   ]),
-//   getItem("Quản lí nhạc playlist ", "playlistsongs", <DesktopOutlined />, [
-//     getItem("Danh nhạc playlist", "playlistsong"),
-//     getItem("Thêm nhạc playlist", "playlistsongs/create"),
-//     getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
-//   ])
-// ];
+  getItem("Danh sách phát", "playlists", <DesktopOutlined />, [
+    getItem("Danh sách phát", "playlist"),
+    getItem("Thêm danh sách phát", "playlist/create"),
+    getItem("Cập nhật danh sách phát", "playlist/update"),
+  ]),
+  getItem("Quản lí nhạc playlist ", "playlistsongs", <DesktopOutlined />, [
+    getItem("Danh nhạc playlist", "playlistsong"),
+    getItem("Thêm nhạc playlist", "playlistsongs/create"),
+    getItem("Cập nhật nhạc playlist", "playlistsongs/update"),
+  ])
+];
 
 const pageTitles = {
   logout: "Đăng xuất",
