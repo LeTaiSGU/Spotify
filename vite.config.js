@@ -1,19 +1,35 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { analyzer } from "vite-bundle-analyzer"; // Sửa từ visualizer thành analyzer
+import { visualizer } from "rollup-plugin-visualizer"; // optional
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [tailwindcss(), react(), analyzer()], // Sử dụng analyzer thay vì visualizer
-  server: {
-    port: 3000,
-    hmr: true, // Bật Hot Module Replacement để tăng tốc dev
+  base: '', 
+  plugins: [react(), visualizer()],
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+    minify: "esbuild",
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+          if (id.includes("playlist") || id.includes("contentPlaylist")) {
+            return "playlist";
+          }
+        },
+      },
+    },
   },
   resolve: {
-    alias: [
-      { find: '~', replacement: '/src' }
-    ]
+    alias: [{ find: "~", replacement: "/src" }],
   },
-  base: ''
+  server: {
+    port: 3000,
+    hmr: true,
+  },
 });
