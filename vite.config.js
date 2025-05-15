@@ -15,6 +15,7 @@ export default defineConfig({
     alias: [{ find: "~", replacement: "/src" }],
   },
   build: {
+    outDir: 'dist',
     rollupOptions: {
       output: {
         manualChunks(id) {
