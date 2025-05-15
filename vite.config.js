@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import { analyzer } from "vite-bundle-analyzer"; // Sửa từ visualizer thành analyzer
 
 export default defineConfig({
   base: "./", // hoặc "" tùy routing
-  plugins: [react()],
+  plugins: [tailwindcss(), react(), analyzer()],
   build: {
     outDir: "dist",
     sourcemap: false,
