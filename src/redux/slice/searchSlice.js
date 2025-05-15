@@ -2,6 +2,15 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { API_ROOT } from "~/utils/constants";
 
+// Helper function to remove description field from objects
+const removeDescription = (items) => {
+  if (!Array.isArray(items)) return items;
+  return items.map((item) => {
+    const { description, ...rest } = item;
+    return rest;
+  });
+};
+
 console.log("searchSlice.js loaded");
 
 // Thunk để gọi API tìm kiếm - sử dụng endpoint search_all
@@ -19,9 +28,9 @@ export const searchContent = createAsyncThunk(
       console.log("Search API response:", response.data);
 
       const result = {
-        songs: response.data.songs || [],
-        albums: response.data.albums || [],
-        artists: response.data.artists || [],
+        songs: removeDescription(response.data.songs || []),
+        albums: removeDescription(response.data.albums || []),
+        artists: removeDescription(response.data.artists || []),
         query: query,
       };
 
