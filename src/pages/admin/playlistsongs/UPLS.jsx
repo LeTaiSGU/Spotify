@@ -34,14 +34,14 @@ const EditPlaylistSongs = () => {
   // Lấy danh sách bài hát trong playlist đã chọn
   useEffect(() => {
     if (selectedPlaylist) {
-      axios.get(``${API_ROOT}/api/playlist_songs/${selectedPlaylist}`)
+      axios.get(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}`)
         .then(res => setSongsInPlaylist(res.data))
         .catch(() => message.error('Không thể tải danh sách bài hát'));
     }
   }, [selectedPlaylist]);
 
   const handleDeleteSong = (songId) => {
-    axios.delete(``${API_ROOT}/api/playlist_songs/${selectedPlaylist}/${songId}/`)
+    axios.delete(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}/${songId}/`)
       .then(() => {
         setSongsInPlaylist(prev => prev.filter(s => s.id !== songId));
         message.success('Đã xóa bài hát khỏi playlist');
