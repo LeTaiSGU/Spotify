@@ -68,6 +68,7 @@ const CreateSong = () => {
       duration: durationInSeconds,
       image: values.image,
       fileUpload: values.audio,
+      video_upload: values.mv,
       artists: values.featuredArtists || [],
       // Add any additional fields needed by your API
     };
@@ -243,6 +244,26 @@ const CreateSong = () => {
             }}
           >
             <Button icon={<UploadOutlined />}>Chọn nhạc (.mp3)</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item
+          label="File MV"
+          required={false}
+          name="mv"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+          rules={[{ required: false, message: "Vui lòng chọn file MV (.mp4)" }]}
+        >
+          <Upload
+            name="mv"
+            listType="text"
+            accept=".mp4"
+            maxCount={1}
+            multiple={false}
+            beforeUpload={() => false}
+          >
+            <Button icon={<UploadOutlined />}>Chọn MV (.mp4)</Button>
           </Upload>
         </Form.Item>
 
