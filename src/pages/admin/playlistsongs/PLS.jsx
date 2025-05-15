@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Space, Card, Select, message } from "antd";
 import AdminTable from "../../../components/admin/ui/Table";
-
+import { API_ROOT } from "~/utils/constants";
 const { Option } = Select;
 
 const PLS = () => {
@@ -34,7 +34,7 @@ const PLS = () => {
   // Fetch playlists by user
   const fetchPlaylistsByUser = async (userId) => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${userId}/`, {
+      const res = await axios.get(``${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${userId}/`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -49,7 +49,7 @@ const PLS = () => {
   // Fetch songs in a playlist
   const fetchSongsByPlaylist = async (playlistId) => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/playlist_songs/${playlistId}`, {
+      const res = await axios.get(``${API_ROOT}/api/playlist_songs/${playlistId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
