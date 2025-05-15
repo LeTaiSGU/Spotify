@@ -1,10 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { visualizer } from "rollup-plugin-visualizer"; // optional
 
 export default defineConfig({
-  base: '', 
-  plugins: [react(), visualizer()],
+  base: "./", // hoặc "" tùy routing
+  plugins: [react()],
   build: {
     outDir: "dist",
     sourcemap: false,
