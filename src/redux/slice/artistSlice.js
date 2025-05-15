@@ -124,7 +124,7 @@ export const createArtist = createAsyncThunk(
   "artist/createArtist",
   async (values, thunkAPI) => {
     const formData = new FormData();
-    
+
     // Append các trường thông tin khác vào formData
     formData.append("name", values.name);
     formData.append("bio", values.bio); // Nếu có bio
@@ -151,7 +151,6 @@ export const createArtist = createAsyncThunk(
     }
   }
 );
-
 
 // Cập nhật thông tin nghệ sĩ
 export const updateArtist = createAsyncThunk(

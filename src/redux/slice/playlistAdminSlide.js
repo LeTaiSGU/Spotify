@@ -74,7 +74,7 @@ export const fetchPlaylistsSelect = createAsyncThunk(
   "playlistAdmin/fetchPlaylistsSelect",
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get("http://localhost:8080/api/playlists/page", {
+      const res = await axios.get(`${API_ROOT}/api/playlists/page`, {
         params: {
           pageNo: 0,
           pageSize: 1000,
@@ -94,6 +94,7 @@ export const fetchPlaylistsSelect = createAsyncThunk(
     }
   }
 );
+
 // Create new playlist
 export const createPlaylist = createAsyncThunk(
   "playlist/createPlaylist",
@@ -125,7 +126,7 @@ export const createPlaylist = createAsyncThunk(
 
       // Send request
       const res = await axios.post(
-        "http://localhost:8080/api/playlists/adminCreate",
+        `${API_ROOT}/api/playlists/adminCreate`,
         formData,
         {
           headers: {
@@ -147,7 +148,7 @@ export const fetchSongsSelect = createAsyncThunk(
   "songAdmin/fetchSongsSelect",
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get("http://localhost:8080/api/songs/pageAdmin", {
+      const res = await axios.get(`${API_ROOT}/api/songs/pageAdmin`, {
         params: {
           pageNo: 0,
           pageSize: 1000,
@@ -168,6 +169,7 @@ export const fetchSongsSelect = createAsyncThunk(
     }
   }
 );
+
 // Update playlist
 export const updatePlaylist = createAsyncThunk(
   "playlistAdmin/updatePlaylist",
@@ -198,7 +200,7 @@ export const updatePlaylist = createAsyncThunk(
 
       // Send request
       const res = await axios.put(
-        "http://localhost:8080/api/playlists/adminUpdate",
+        `${API_ROOT}/api/playlists/adminUpdate`,
         formData,
         {
           headers: {
@@ -221,7 +223,7 @@ export const togglePlaylistStatus = createAsyncThunk(
   async (playlistId, { rejectWithValue }) => {
     try {
       const res = await axios.put(
-        `http://localhost:8080/api/playlist/status/${playlistId}`,
+        `${API_ROOT}/api/playlist/status/${playlistId}`,
         {},
         {
           headers: {

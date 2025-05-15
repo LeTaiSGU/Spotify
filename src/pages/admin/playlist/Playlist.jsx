@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Button, Modal, Space, Card, Select, message } from "antd";
-import AdminTable from "../../../components/admin/ui/Table"; 
+import AdminTable from "../../../components/admin/ui/Table";
 
 const { Option } = Select;
 
@@ -20,11 +20,14 @@ const Playlist = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/users/getall", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axios.get(
+          "http://localhost:8000/api/users/getall",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         setUsers(response.data);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -36,40 +39,45 @@ const Playlist = () => {
 
   // Fetch playlists based on the selected user
   // Fetch playlists based on the selected user
-useEffect(() => {
-  const fetchPlaylists = async (selectedUser) => {
-    if (selectedUser) {
-      try {
-        const response = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`, {
-          params: {
-            userId: selectedUser,  // Lọc playlist theo userId
-            page: pageNo,
-            size: pageSize,
-          },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  useEffect(() => {
+    const fetchPlaylists = async (selectedUser) => {
+      if (selectedUser) {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`,
+            {
+              params: {
+                userId: selectedUser, // Lọc playlist theo userId
+                page: pageNo,
+                size: pageSize,
+              },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
 
-        if (Array.isArray(response.data)) {
-          setPlaylistsAdmin(response.data);  // Nếu là mảng, gán trực tiếp cho playlistsAdmin
-          setTotalElements(response.data.length);  // Nếu là mảng, tổng số phần tử là độ dài của mảng
-        } else {
-          console.error("API returned unexpected data format:", response.data);
+          if (Array.isArray(response.data)) {
+            setPlaylistsAdmin(response.data); // Nếu là mảng, gán trực tiếp cho playlistsAdmin
+            setTotalElements(response.data.length); // Nếu là mảng, tổng số phần tử là độ dài của mảng
+          } else {
+            console.error(
+              "API returned unexpected data format:",
+              response.data
+            );
+          }
+        } catch (error) {
+          console.error("Error fetching playlists:", error);
+          message.error("Không thể tải danh sách playlist");
         }
-      } catch (error) {
-        console.error("Error fetching playlists:", error);
-        message.error("Không thể tải danh sách playlist");
       }
+    };
+
+    // Call the function to fetch playlists when user is selected
+    if (selectedUser) {
+      fetchPlaylists(selectedUser);
     }
-  };
-
-  // Call the function to fetch playlists when user is selected
-  if (selectedUser) {
-    fetchPlaylists(selectedUser);
-  }
-}, [pageNo, pageSize, selectedUser]);  // Rerun when selectedUser, pageNo, or pageSize changes
-
+  }, [pageNo, pageSize, selectedUser]); // Rerun when selectedUser, pageNo, or pageSize changes
 
   const handleStatusChange = (playlistId) => {
     console.log(`Toggle status for playlist ID: ${playlistId}`);
@@ -81,8 +89,7 @@ useEffect(() => {
       dataIndex: "id", // Đổi từ 'playlistId' thành 'id'
       key: "id",
       sorter: (a, b) => a.id - b.id, // Sắp xếp theo 'id'
-      sortOrder:
-        sortedInfo.columnKey === "id" ? sortedInfo.order : null,
+      sortOrder: sortedInfo.columnKey === "id" ? sortedInfo.order : null,
     },
     {
       title: "Tên Playlist",
@@ -131,7 +138,7 @@ useEffect(() => {
         <Select
           placeholder="Chọn user"
           style={{ width: 200 }}
-          onChange={(value) => setSelectedUser(value)} 
+          onChange={(value) => setSelectedUser(value)}
         >
           {users.map((user) => (
             <Option key={user.id} value={user.id}>

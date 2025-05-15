@@ -11,9 +11,7 @@ export default defineConfig({
     hmr: true, // Bật Hot Module Replacement để tăng tốc dev
   },
   resolve: {
-    alias: [
-      { find: '~', replacement: '/src' }
-    ]
+    alias: [{ find: "~", replacement: "/src" }],
   },
   build: {
     rollupOptions: {

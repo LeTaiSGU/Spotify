@@ -2,6 +2,7 @@ import { React, useEffect, useState } from "react";
 import { Checkbox, Form, Input, Select, Upload, Button, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { API_ROOT } from "~/utils/constants";
 
 const { TextArea } = Input;
 
@@ -15,7 +16,7 @@ const UpdatePlaylist = () => {
     // Fetch all users to populate the user combobox
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/users/getall/", {
+        const response = await axios.get(`${API_ROOT}/api/users/getall/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -34,11 +35,14 @@ const UpdatePlaylist = () => {
     const fetchPlaylists = async (userId) => {
       if (userId) {
         try {
-          const response = await axios.get(`http://localhost:8000/api/playlists/Admin/getplaylistbyUser/${userId}/`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          });
+          const response = await axios.get(
+            `${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${userId}/`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
           setPlaylists(response.data);
         } catch (error) {
           console.error("Error fetching playlists:", error);
@@ -83,7 +87,7 @@ const UpdatePlaylist = () => {
 
     try {
       await axios.patch(
-        `http://localhost:8000/api/playlists/update/${values.playlistId}/`,
+        `${API_ROOT}/api/playlists/update/${values.playlistId}/`,
         formData,
         {
           headers: {
@@ -114,7 +118,9 @@ const UpdatePlaylist = () => {
         <Form.Item
           label="Chọn User"
           name="user"
-          rules={[{ required: true, message: "Chọn user để cập nhật playlist" }]}
+          rules={[
+            { required: true, message: "Chọn user để cập nhật playlist" },
+          ]}
         >
           <Select
             showSearch
@@ -128,7 +134,7 @@ const UpdatePlaylist = () => {
               setPlaylists([]); // Clear playlists
               if (value) {
                 axios
-                  .get(`http://localhost:8000/api/playlists/user/${value}`, {
+                  .get(`${API_ROOT}/api/playlists/user/${value}`, {
                     headers: {
                       Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
@@ -138,7 +144,6 @@ const UpdatePlaylist = () => {
                   })
                   .catch((err) => {
                     console.error("Error fetching playlists:", err);
-                   
                   });
               }
             }}
@@ -197,7 +202,9 @@ const UpdatePlaylist = () => {
             maxCount={1}
             disabled={!playlistDetail}
             multiple={false}
-            onChange={({ fileList }) => form.setFieldsValue({ image: fileList })}
+            onChange={({ fileList }) =>
+              form.setFieldsValue({ image: fileList })
+            } // Fix fileList
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>

@@ -249,6 +249,17 @@ export const createSong = createAsyncThunk(
         }
       }
 
+      // Xử lý file MV
+      if (songData.video_upload?.[0]?.originFileObj) {
+        try {
+          const file = songData.video_upload[0].originFileObj;
+          // Thêm file MV với key "video_upload"
+          formData.append("video_upload", file);
+        } catch (mvError) {
+          console.error("Error processing MV file:", mvError);
+        }
+      }
+
       console.log("Creating song with data:", songDataObj);
 
       const res = await axios.post(`${API_BASE_URL}/create`, formData, {
@@ -339,6 +350,17 @@ export const updateSong = createAsyncThunk(
           formData.append("img_upload", compressedImage);
         } catch (imgError) {
           console.error("Error processing image:", imgError);
+        }
+      }
+
+      // Xử lý file MV
+      if (songData.video_upload?.[0]?.originFileObj) {
+        try {
+          const file = songData.video_upload[0].originFileObj;
+          // Thêm file MV với key "video_upload"
+          formData.append("video_upload", file);
+        } catch (mvError) {
+          console.error("Error processing MV file:", mvError);
         }
       }
 

@@ -7,6 +7,7 @@ import {
   toggleRightbar,
   togglePlay,
 } from "../../redux/slice/songSlice";
+import { API_ROOT } from "~/utils/constants";
 
 const SongCard = ({ song }) => {
   // Lấy dữ liệu artist
@@ -18,7 +19,7 @@ const SongCard = ({ song }) => {
       if (song?.artist_owner) {
         try {
           const response = await fetch(
-            `http://localhost:8000/api/artists/${song.artist_owner}`
+            `${API_ROOT}/api/artists/${song.artist_owner}`
           );
           const data = await response.json();
           setMainArtistInfo(data);
