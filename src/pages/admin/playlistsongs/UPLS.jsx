@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Select, Table, Image, Button, Popconfirm, message, Typography, Modal, Form, Input } from 'antd';
+import {
+  Select,
+  Table,
+  Image,
+  Button,
+  Popconfirm,
+  message,
+  Typography,
+} from 'antd';
 import axios from 'axios';
-import { API_ROOT } from "~/utils/constants";
+import { API_ROOT } from '~/utils/constants';
 import './Modal.css';
+
 const { Option } = Select;
 const { Title } = Typography;
 
@@ -12,21 +21,29 @@ const EditPlaylistSongs = () => {
   const [selectedUser, setSelectedUser] = useState('');
   const [selectedPlaylist, setSelectedPlaylist] = useState('');
   const [songsInPlaylist, setSongsInPlaylist] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentSong, setCurrentSong] = useState(null);
 
   // Lấy danh sách người dùng
   useEffect(() => {
-    axios.get('${API_ROOT}/api/users/getall/')
-      .then(res => setUsers(res.data))
+    axios
+      .get(`${API_ROOT}/api/users/getall/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
+      .then((res) => setUsers(res.data))
       .catch(() => message.error('Không thể tải danh sách người dùng'));
   }, []);
 
   // Lấy playlist của người dùng đã chọn
   useEffect(() => {
     if (selectedUser) {
-      axios.get(`${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`)
-        .then(res => setPlaylists(res.data))
+      axios
+        .get(`${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then((res) => setPlaylists(res.data))
         .catch(() => message.error('Không thể tải danh sách playlist'));
     }
   }, [selectedUser]);
@@ -34,26 +51,31 @@ const EditPlaylistSongs = () => {
   // Lấy danh sách bài hát trong playlist đã chọn
   useEffect(() => {
     if (selectedPlaylist) {
-      axios.get(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}`)
-        .then(res => setSongsInPlaylist(res.data))
+      axios
+        .get(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}/`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        })
+        .then((res) => setSongsInPlaylist(res.data))
         .catch(() => message.error('Không thể tải danh sách bài hát'));
     }
   }, [selectedPlaylist]);
 
+  // Xóa bài hát khỏi playlist
   const handleDeleteSong = (songId) => {
-    axios.delete(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}/${songId}/`)
+    axios
+      .delete(`${API_ROOT}/api/playlist_songs/${selectedPlaylist}/${songId}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      })
       .then(() => {
-        setSongsInPlaylist(prev => prev.filter(s => s.id !== songId));
+        setSongsInPlaylist((prev) => prev.filter((s) => s.id !== songId));
         message.success('Đã xóa bài hát khỏi playlist');
       })
       .catch(() => message.error('Xóa thất bại'));
   };
-
-  const handleEditSong = (song) => {
-    setCurrentSong(song);
-    setIsModalVisible(true);
-  };
-
 
   const columns = [
     {
@@ -81,17 +103,14 @@ const EditPlaylistSongs = () => {
       dataIndex: 'action',
       width: 180,
       render: (_, record) => (
-        <>
-         
-          <Popconfirm
-            title="Xác nhận xóa?"
-            onConfirm={() => handleDeleteSong(record.id)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button danger>Xóa</Button>
-          </Popconfirm>
-        </>
+        <Popconfirm
+          title="Xác nhận xóa?"
+          onConfirm={() => handleDeleteSong(record.id)}
+          okText="Xóa"
+          cancelText="Hủy"
+        >
+          <Button danger>Xóa</Button>
+        </Popconfirm>
       ),
     },
   ];
@@ -106,12 +125,13 @@ const EditPlaylistSongs = () => {
           style={{ width: 300 }}
           placeholder="Chọn người dùng"
           value={selectedUser || undefined}
-          onChange={value => {
+          onChange={(value) => {
             setSelectedUser(value);
             setSelectedPlaylist(''); // reset playlist khi chọn người dùng mới
+            setSongsInPlaylist([]); // reset danh sách bài hát
           }}
         >
-          {users.map(user => (
+          {users.map((user) => (
             <Option key={user.id} value={user.id}>{user.name}</Option>
           ))}
         </Select>
@@ -124,9 +144,9 @@ const EditPlaylistSongs = () => {
             style={{ width: 300 }}
             placeholder="Chọn playlist"
             value={selectedPlaylist || undefined}
-            onChange={value => setSelectedPlaylist(value)}
+            onChange={(value) => setSelectedPlaylist(value)}
           >
-            {playlists.map(playlist => (
+            {playlists.map((playlist) => (
               <Option key={playlist.id} value={playlist.id}>{playlist.name}</Option>
             ))}
           </Select>
@@ -142,7 +162,6 @@ const EditPlaylistSongs = () => {
           pagination={{ pageSize: 5 }}
         />
       )}
-
     </div>
   );
 };
