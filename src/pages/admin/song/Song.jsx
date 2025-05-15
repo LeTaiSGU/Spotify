@@ -21,6 +21,8 @@ const Songs = () => {
   const dispatch = useDispatch();
   const [sortedInfo, setSortedInfo] = useState({});
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // Lấy danh sách album và artist để có thể hiển thị tên thay vì ID
   const albums = useSelector(selectItemsAlbum);
@@ -79,9 +81,7 @@ const Songs = () => {
 
   // Xử lý cả hai định dạng dữ liệu (phân trang hoặc mảng đơn giản)
   const songs = Array.isArray(songsData) ? songsData : songsData?.content || [];
-  const pageNo = songsData?.pageNo || 0;
-  const pageSize = songsData?.pageSize || 10;
-  const totalElements = songsData?.totalElements || songs.length;
+  const totalElements = songs.length;
 
   const handleStatusChange = (songId) => {
     setLoading(true);
@@ -252,9 +252,9 @@ const Songs = () => {
     },
   ];
 
-  const handleChange = (pagination) => {
-    const { current, pageSize } = pagination;
-    dispatch(fetchSongsAdmin({ pageNo: current - 1, pageSize })); // Gọi fetchSongsAdmin với pageNo = current - 1
+  const handleChange = (pagination, filters, sorter) => {
+    setCurrentPage(pagination.current);
+    setSortedInfo(sorter);
   };
 
   const clearSort = () => {
@@ -270,7 +270,7 @@ const Songs = () => {
           onClick={() => {
             setLoading(true);
             Promise.all([
-              dispatch(fetchSongsAdmin({ pageNo: 0, pageSize: 8 })).unwrap(),
+              dispatch(fetchSongsAdmin({ pageNo: 0, pageSize: 10 })).unwrap(),
               dispatch(fetchAlbumsSelect()).unwrap(),
               dispatch(fetchArtistsSelect()).unwrap(),
             ])
@@ -286,15 +286,18 @@ const Songs = () => {
           Làm mới
         </Button>
       </Space>
-      <AdminTable
+      <Table
         columns={columns}
         dataSource={songs}
         rowKey="id"
         loading={isLoading || loading}
-        handleChange={handleChange}
-        pageNo={pageNo}
-        pageSize={8}
-        totalElements={totalElements}
+        onChange={handleChange}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalElements,
+          showSizeChanger: false,
+        }}
       />
     </div>
   );

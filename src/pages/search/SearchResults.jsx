@@ -313,7 +313,8 @@ export const SongRow = ({ song }) => {
                     <div className="w-10 h-10 mr-3">
                       <img
                         src={
-                          playlist.avatar || "https://via.placeholder.com/40"
+                          playlist.cover_image ||
+                          "https://via.placeholder.com/40"
                         }
                         alt={playlist.name || playlist.title}
                         className="w-full h-full object-cover rounded-sm"
