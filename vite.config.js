@@ -6,7 +6,7 @@ import { analyzer } from "vite-bundle-analyzer"; // Sửa từ visualizer thành
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [tailwindcss(), react(), analyzer()], // Sử dụng analyzer thay vì visualizer
-  base: "/",
+  base: "./",
   server: {
     port: 3000,
     hmr: true, // Bật Hot Module Replacement để tăng tốc dev
