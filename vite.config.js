@@ -15,15 +15,16 @@ export default defineConfig({
     alias: [{ find: "~", replacement: "/src" }],
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     rollupOptions: {
       output: {
+        entryFileNames: `assets/[name]-[hash].js`,
+        chunkFileNames: `assets/[name]-[hash].js`,
+        assetFileNames: `assets/[name]-[hash].[ext]`,
         manualChunks(id) {
-          if (id.includes("node_modules")) {
-            return "vendor"; // Tách dependencies ra chunk riêng
-          }
+          if (id.includes("node_modules")) return "vendor";
           if (id.includes("playlist") || id.includes("contentPlaylist")) {
-            return "playlist"; // Tách các component playlist ra chunk riêng
+            return "playlist";
           }
         },
       },
