@@ -17,8 +17,8 @@ import { fetchCurrentUser } from "./redux/slice/authSlice";
 import { useEffect } from "react";
 import SearchResults from "./pages/search/SearchResults";
 
-import Payment from "./components/payment/Payment";
-import PaymentSuccess from "./components/payment/PaymentSuccess";
+import Payment from "~/components/payment/Payment";
+import PaymentSuccess from "~/components/payment/PaymentSuccess";
 
 
 import ArtistProfile from "./pages/artist/ArtistProfile";
