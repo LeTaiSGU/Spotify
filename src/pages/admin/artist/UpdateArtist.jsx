@@ -46,7 +46,9 @@ const UpdateArtist = () => {
   const fetchArtistOptions = async () => {
     try {
       const res = await axios.get("http://localhost:8000/api/artists/");
-      setArtistList(Array.isArray(res.data) ? res.data : res.data.content || []);
+      setArtistList(
+        Array.isArray(res.data) ? res.data : res.data.content || []
+      );
     } catch (err) {
       console.error(err);
       message.error("Không thể tải danh sách nghệ sĩ");
@@ -65,16 +67,15 @@ const UpdateArtist = () => {
 
   const onFinish = async (values) => {
     const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
 
-    const jsonData = {
-      name: values.name,
-      description: values.description,
-    };
-
-    formData.append("data", JSON.stringify(jsonData));
-
-    if (values.image && values.image.length > 0 && values.image[0].originFileObj) {
-      formData.append("img_upload", values.image[0].originFileObj);
+    if (
+      values.image &&
+      values.image.length > 0 &&
+      values.image[0].originFileObj
+    ) {
+      formData.append("avatar", values.image[0].originFileObj);
     }
 
     try {
@@ -94,7 +95,9 @@ const UpdateArtist = () => {
       fetchArtistOptions();
     } catch (err) {
       console.error(err);
-      message.error("Cập nhật thất bại: " + (err.message || "Vui lòng thử lại"));
+      message.error(
+        "Cập nhật thất bại: " + (err.message || "Vui lòng thử lại")
+      );
     }
   };
 
