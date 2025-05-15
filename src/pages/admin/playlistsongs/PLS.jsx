@@ -19,7 +19,7 @@ const PLS = () => {
   // Fetch all users
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/users/getall/", {
+      const res = await axios.get("${API_ROOT}/api/users/getall/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
