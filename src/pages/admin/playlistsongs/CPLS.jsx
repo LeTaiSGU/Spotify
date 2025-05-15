@@ -14,7 +14,7 @@ const AddSongToPlaylist = () => {
   // Lấy danh sách người dùng
   useEffect(() => {
     axios
-      .get("`${API_ROOT}/api/users/getall/", {
+      .get("${API_ROOT}/api/users/getall/", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -39,7 +39,7 @@ const AddSongToPlaylist = () => {
   useEffect(() => {
     if (selectedUserId) {
       axios
-        .get(``${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUserId}/`, {
+        .get(`${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUserId}/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
