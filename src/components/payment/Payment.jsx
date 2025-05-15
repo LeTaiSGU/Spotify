@@ -39,7 +39,7 @@ const SpotifyPayment = () => {
       formData.append("userId", userId); 
       const today = new Date().toISOString().split('T')[0]; 
       formData.append("payDate", today); 
-      const response = await axios.post("http://localhost:8000/api/payments/momo/", formData, {
+      const response = await axios.post(`${API_ROOT}/api/payments/momo/`, formData, {
         
         headers: {
           "X-CSRFToken": getCookie("csrftoken"),
