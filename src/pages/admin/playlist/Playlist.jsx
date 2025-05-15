@@ -20,8 +20,8 @@ const Playlist = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(
-          "${API_ROOT}/api/users/getall",
+       const response = await axios.get(
+        `${API_ROOT}/api/users/getall`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
