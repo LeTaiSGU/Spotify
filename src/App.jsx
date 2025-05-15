@@ -201,9 +201,9 @@ function App() {
         <Route
           path="user/payment/success"
           element={
-            <PrivateRoute>
+{/*             <PrivateRoute> */}
               <PaymentSuccess />
-            </PrivateRoute>
+            // </PrivateRoute>
           }
         />
         <Route path="login" element={<LoginPage />} />
