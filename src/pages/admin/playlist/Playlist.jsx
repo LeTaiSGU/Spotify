@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+//import axios from "axios";
 import { API_ROOT } from "~/utils/constants";
 import { Button, Modal, Space, Card, Select, message } from "antd";
 import AdminTable from "../../../components/admin/ui/Table";
+import authorizedAxiosInstance from "~/utils/authorizeAxios";
+
 
 const { Option } = Select;
 
@@ -21,7 +23,7 @@ const Playlist = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${API_ROOT}/api/users/getall`, {
+        const response = await authorizedAxiosInstance.get(`${API_ROOT}/api/users/getall`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -41,7 +43,7 @@ const Playlist = () => {
     const fetchPlaylists = async (selectedUser) => {
       if (selectedUser) {
         try {
-          const response = await axios.get(
+          const response = await authorizedAxiosInstance.get(
             `${API_ROOT}/api/playlists/Admin/getplaylistbyUser/${selectedUser}/`,
             {
               params: {
