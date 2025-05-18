@@ -28,7 +28,7 @@ const PublicPlaylists = () => {
   };
 
   return (
-    <div className="w-full p-2 sm:p-4 md:p-5 bg-stone-900 rounded-xl text-white">
+    <div className="w-full sm:p-4 md:p-5 bg-stone-900 text-white">
       <h2 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Danh sách phát công khai</h2>
       {loading ? (
         <p>Loading...</p>

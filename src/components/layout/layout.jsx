@@ -28,7 +28,7 @@ const Layout = () => {
       <TopBar />
       <div className="main-container">
         <Sidebar />
-        <div className="main-content custom-scrollbar">
+        <div className="main-content custom-scrollbar pb-[90px]">
           <Outlet />
         </div>
         {selectedSong && isRightbarVisible && <Rightbar />}
