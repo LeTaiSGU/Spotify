@@ -117,44 +117,47 @@ const MusicSession = () => {
   };
 
   return (
-    <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
-      <h2 className="text-xl font-bold mb-3">Gợi ý cho bạn</h2>
-      <div className="relative">
-        {/* Nút trái */}
-        <button
-          onClick={() => scroll(recommendedRef, "left")}
-          className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
-        >
-          <LeftOutlined />
-        </button>
+    <div className="flex flex-col w-full">
+      <div className="w-full p-5 bg-stone-900 h-full text-white">
+        <h2 className="text-xl font-bold mb-3">Gợi ý cho bạn</h2>
+        <div className="relative">
+          {/* Nút trái */}
+          <button
+            onClick={() => scroll(recommendedRef, "left")}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
+          >
+            <LeftOutlined />
+          </button>
 
-        <div
-          ref={recommendedRef}
-          className="w-full flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
-        >
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            songs?.map((song, index) => (
-              <CardSong
-                key={song.songId || index}
-                song={song}
-                onSongClick={handleSongClick}
-              />
-            ))
-          )}
+          <div
+            ref={recommendedRef}
+            className="w-full flex gap-1 overflow-x-auto hidden-scrollbar scroll-smooth px-12"
+          >
+            {loading ? (
+              <p>Loading...</p>
+            ) : (
+              songs?.map((song, index) => (
+                <CardSong
+                  key={song.songId || index}
+                  song={song}
+                  onSongClick={handleSongClick}
+                />
+              ))
+            )}
+          </div>
+
+          {/* Nút phải */}
+          <button
+            onClick={() => scroll(recommendedRef, "right")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
+          >
+            <RightOutlined />
+          </button>
         </div>
 
-        {/* Nút phải */}
-        <button
-          onClick={() => scroll(recommendedRef, "right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-gray-700 text-white rounded-full z-10"
-        >
-          <RightOutlined />
-        </button>
       </div>
-
       <PublicPlaylists />
+
     </div>
   );
 };
