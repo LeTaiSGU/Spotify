@@ -5,9 +5,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchLibraryDetailsAPI, selectUserLibrary } from "~/redux/slice/userLibrarySlice";
 import { useNavigate } from "react-router-dom";
 
+
 const SidebarPlaylists = () => {
   const dispatch = useDispatch();
   const libraryDetails = useSelector(selectUserLibrary);
+  const user = useSelector((state) => state.auth?.user); // Lấy thông tin user
   const navigate = useNavigate();
 
   const navigateToItem = (playlistId, item_type) => {
@@ -63,8 +65,20 @@ const SidebarPlaylists = () => {
 
   return (
     <div className="flex-1 overflow-y-auto">
-       
-        {libraryDetails?.map((item) => (
+      {!user ? (
+        <div className="flex flex-col items-center justify-start mt-8">
+          <button
+            className="flex items-center gap-2 px-5 py-2.5 bg-green-700 text-white rounded-full shadow-lg hover:scale-105 hover:from-green-600 hover:to-emerald-700 transition-all duration-200 font-semibold text-base"
+            onClick={() => navigate("/login")}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12H3m0 0l4-4m-4 4l4 4m13-4a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Xây dựng thư viện của bạn 
+          </button>
+        </div>
+      ) : (
+        libraryDetails?.map((item) => (
           <div
             key={item.id}
             className="flex items-center gap-3 p-2 mx-2 rounded-md hover:bg-gray-700 cursor-pointer"
@@ -92,8 +106,8 @@ const SidebarPlaylists = () => {
               </div>
             </div>
           </div>
-        ))}
-      
+        ))
+      )}
     </div>
   );
 };

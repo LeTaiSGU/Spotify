@@ -5,15 +5,19 @@ import { VscLibrary } from "react-icons/vsc";
 import { createPlaylist } from "~/apis";
 import { toast } from "react-toastify";
 import { fetchLibraryDetailsAPI } from "~/redux/slice/userLibrarySlice";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 
 
 const SidebarHeader = ({ onToggle, isExpanded }) => {
   const dispatch = useDispatch();
-
+  const user = useSelector((state) => state.auth?.user); // Lấy thông tin user
 
   const handleCreatePlaylist = () => {
+    if (!user) {
+      toast.info("Vui lòng đăng nhập để tạo danh sách phát!");
+      return;
+    }
     createPlaylist()
       .then((response) => {
         const newPlaylist = response.data;

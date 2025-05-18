@@ -1,6 +1,6 @@
 // playlistheader.jsx
 import { React, useState, useEffect } from "react";
-import avatar from "../../assets/avatar.png";
+// import avatar from "../../assets/avatar.png";
 import { ImagePlus } from "lucide-react";
 import EditPlaylistModal from "../sidebar/editPlaylist";
 import PlaylistEditModal from "../sidebar/editPlaylist";
@@ -126,7 +126,7 @@ const PlaylistHeader = ({ type }) => {
                   </div>
                 )}
 
-                <span className="flex flex-row text-sm font-semibold justify-start items-center">
+                {/* <span className="flex flex-row text-sm font-semibold justify-start items-center">
                   <img
                     src={
                       type === "playlist" ? (data?.owner?.image || avatar) :
@@ -160,7 +160,7 @@ const PlaylistHeader = ({ type }) => {
                       {data?.release_date || ""}
                     </span>
                   )}
-                </span>
+                </span> */}
               </div>
             </>
           ) : (
