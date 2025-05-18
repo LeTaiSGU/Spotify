@@ -118,7 +118,7 @@ const MusicSession = () => {
 
   return (
     <div className="w-full p-5 bg-stone-900 rounded-xl h-full text-white">
-      <h2 className="text-xl font-bold mb-3">Recommended for You</h2>
+      <h2 className="text-xl font-bold mb-3">Gợi ý cho bạn</h2>
       <div className="relative">
         {/* Nút trái */}
         <button

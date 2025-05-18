@@ -205,7 +205,7 @@ const BottomPlayer = () => {
       const ad = {
         song_name: "Quảng cáo",
         duration: "00:00:30",
-        img: "https://via.placeholder.com/150",
+        img: "https://images.ctfassets.net/tvhwpwv117no/1fwfK7JvApwNqEZnPh6k9O/30b35b04e0183cf492f816b15a9de10d/EMAIL_HEADER_GENERIC_1200x900.jpg",
         file_upload: adsMusic,
         description: "Đây là quảng cáo",
         mv: "none",

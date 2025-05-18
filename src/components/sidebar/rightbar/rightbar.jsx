@@ -61,8 +61,8 @@ const Rightbar = () => {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [showMV, setShowMV] = useState(false);
   const dispatch = useDispatch();
-  const selectedSong = useSelector((state) => state.songs.selectedSong);
-  const userId = useSelector((state) => state.auth.user.id);
+  const selectedSong = useSelector((state) => state.songs?.selectedSong);
+  const userId = useSelector((state) => state.auth?.user?.id);
 
   //Test user
   const getUser = async (id) => {

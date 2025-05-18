@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import avatar from "../../assets/avatar.png";
+// import avatar from "../../assets/avatar.png";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../redux/slice/authSlice";
 
@@ -48,6 +48,9 @@ const RightIconGroup = () => {
   };
 
   return (
+
+
+
     <div className=" right-icons flex items-center">
       {!user ? (
         <div className="flex gap-4">
@@ -67,7 +70,7 @@ const RightIconGroup = () => {
       ) : (
         <>
           <button className="profile-icon" onClick={toggleMenu}>
-            <img src={avatar} alt="Profile" className="avatar" />
+            <img src={user.avatar} alt="Profile" className="avatar" />
           </button>
           {isMenuOpen && (
             <div className="menu">

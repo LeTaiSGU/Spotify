@@ -126,7 +126,7 @@ function LessListSongs() {
     <div className="bg-stone-900">
       <div className="p-6 text-white rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-semibold text-white">Top List Songs</h1>
+          <h1 className="text-3xl font-semibold text-white">Bài hát hàng đầu</h1>
           <span
             className="text-lg text-gray-400 cursor-pointer hover:text-white"
             onClick={() => {
